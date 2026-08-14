@@ -1,0 +1,36 @@
+# Entorno virtual
+.venv
+
+
+# Python
+__pycache__
+
+
+# Variables de entorno
+.env
+
+# Flask
+instance/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Editor
+.vscode/
+.idea/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Archivos temporales
+*.tmp
+*.temp
+
+
+
