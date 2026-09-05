@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clientes | Densa Niebla</title>
+  <style>
+    :root { --ink:#211a25; --muted:#776d7b; --line:#e9e0e7; --paper:#fffdfb; --accent:#a55b72; --accent-dark:#703b50; --ok:#24745c; --danger:#b34a4a; --shadow:0 18px 50px #29172714; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:linear-gradient(135deg,#f8f3f6,#fffdfb 45%,#f1e9ef); color:var(--ink); font-family:Inter,ui-sans-serif,system-ui,sans-serif; }
+    a { color:inherit; text-decoration:none; } button,input,select { font:inherit; }
+    .shell { max-width:1440px; margin:auto; padding:28px clamp(18px,4vw,64px) 70px; }
+    .topbar,.intro,.panel-header,.form-actions { display:flex; justify-content:space-between; align-items:center; gap:20px; }
+    .topbar { margin-bottom:38px; } .brand { color:var(--accent-dark); font:600 2rem/.8 Georgia,serif; letter-spacing:.04em; }
+    .brand small { display:block; margin-top:9px; color:var(--muted); font:700 .6rem/1 Inter,sans-serif; letter-spacing:.2em; text-transform:uppercase; }
+    .top-actions { display:flex; align-items:center; gap:12px; } .link { color:var(--muted); font-size:.85rem; font-weight:650; }
+    .eyebrow { margin:0 0 8px; color:var(--accent); font-size:.7rem; font-weight:800; letter-spacing:.18em; text-transform:uppercase; }
+    h1,h2,p { margin-top:0; } h1 { margin-bottom:10px; font:600 clamp(2.2rem,4vw,4rem)/.98 Georgia,serif; letter-spacing:-.03em; }
+    .intro { align-items:end; margin-bottom:28px; } .intro p:not(.eyebrow) { max-width:510px; margin:0; color:var(--muted); }
+    .layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(340px,.7fr); gap:24px; align-items:start; }
+    .panel { background:rgba(255,253,251,.9); border:1px solid #fff; border-radius:18px; box-shadow:var(--shadow); overflow:hidden; }
+    .panel-header { padding:22px 26px; border-bottom:1px solid var(--line); } .panel-header h2 { margin:0; font-size:1rem; }
+    .form-body { padding:26px; } .fields { display:grid; grid-template-columns:1fr 1fr; gap:16px; } .field { display:grid; gap:7px; margin-bottom:18px; }
+    .field.full { grid-column:1/-1; } label,.field-label { color:var(--muted); font-size:.72rem; font-weight:750; letter-spacing:.08em; text-transform:uppercase; }
+    input,select { width:100%; min-height:44px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); padding:10px 12px; outline:none; }
+    input:focus,select:focus { border-color:var(--accent); box-shadow:0 0 0 3px #a55b7220; }
+    .button { display:inline-flex; justify-content:center; align-items:center; min-height:42px; border:1px solid var(--accent); border-radius:10px; padding:10px 15px; color:var(--accent-dark); background:#fff; cursor:pointer; font-size:.82rem; font-weight:750; }
+    .button.primary { background:var(--accent-dark); border-color:var(--accent-dark); color:#fff; } .button.ghost { min-height:36px; padding:7px 11px; border-color:var(--line); color:var(--muted); }
+    .role-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .role-option { position:relative; display:flex; align-items:center; gap:12px; min-height:76px; padding:13px 14px; border:1px solid var(--line); border-radius:12px; background:#fff; color:var(--ink); cursor:pointer; font-size:.8rem; font-weight:700; letter-spacing:0; text-transform:none; transition:border-color .18s ease,background .18s ease,box-shadow .18s ease,transform .18s ease; }
+    .role-option:hover { border-color:#d6a7b8; transform:translateY(-1px); }
+    .role-option:has(input:checked) { border-color:var(--accent); background:#fff6f8; box-shadow:0 5px 14px #a55b7218; }
+    .role-option input { position:absolute; width:1px; height:1px; margin:-1px; opacity:0; clip:rect(0 0 0 0); }
+    .role-option input:focus-visible + .role-icon { outline:3px solid #a55b7240; outline-offset:4px; }
+    .role-icon { display:grid; flex:0 0 34px; place-items:center; width:34px; height:34px; border-radius:10px; background:#f5e8ee; color:var(--accent-dark); font-size:1rem; }
+    .role-copy { display:grid; gap:3px; }
+    .role-copy small { color:var(--muted); font-size:.68rem; font-weight:500; line-height:1.25; }
+    .role-hint { grid-column:1/-1; margin:1px 0 0; }
+    .helper { color:var(--muted); font-size:.72rem; } .notice,.demo-banner { margin-bottom:24px; padding:12px 16px; border-radius:10px; font-size:.82rem; }
+    .demo-banner { border:1px solid #e8c98d; background:#fff7df; color:#74551e; } .notice { display:none; background:#fbeeee; color:var(--danger); } .notice.show { display:block; }
+    .form-actions { justify-content:flex-end; padding-top:8px; } .list { overflow:hidden; } .list-scroll { overflow-x:auto; } table { width:100%; border-collapse:collapse; min-width:680px; }
+    th,td { padding:15px 22px; border-bottom:1px solid var(--line); text-align:left; font-size:.84rem; } th { color:var(--muted); font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; }
+    .badge { display:inline-flex; padding:5px 9px; border-radius:999px; background:#f5e8ee; color:var(--accent-dark); font-size:.68rem; font-weight:800; }
+    .role-list { display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; }
+    .role-list .badge { background:#f5e8ee; }
+    .empty { padding:30px; text-align:center; color:var(--muted); } @media(max-width:1050px){.layout{grid-template-columns:1fr}} @media(max-width:650px){.topbar,.intro{align-items:flex-start;flex-direction:column}.top-actions{width:100%;justify-content:space-between}.fields,.role-options{grid-template-columns:1fr}.field.full{grid-column:auto}.panel-header,.form-body{padding:20px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar"><a class="brand" href="/">DENSA NIEBLA<small>Centro de operaciones</small></a><nav class="top-actions"><a class="link" href="/ventas">Ventas</a><a class="button ghost" href="/">Inicio</a></nav></header>
+    {% if demo_mode %}<div class="demo-banner" role="status"><strong>Modo de demostración:</strong> la base de datos aún no está migrada. Los clientes visibles son ficticios.</div>{% endif %}
+    <section class="intro"><div><p class="eyebrow">Comercial / Clientes</p><h1>Conoce a quién<br>le vendes.</h1></div><p>Registra una persona o empresa una sola vez. Después podrá seleccionarse desde ventas, compras y cualquier otro documento comercial.</p></section>
+    <div id="notice" class="notice" role="alert"></div>
+    <div class="layout">
+      <section class="panel"><div class="panel-header"><h2>Nuevo cliente</h2><span class="helper">Rol: cliente</span></div><form id="customer-form" class="form-body" novalidate>
+        <div class="fields">
+          <div class="field"><label for="party_type">Tipo de persona</label><select id="party_type"><option value="NATURAL">Persona natural</option><option value="JURIDICA">Empresa</option></select></div>
+          <div class="field"><label for="document_type">Documento</label><select id="document_type">{% for document_type in document_types %}<option value="{{ document_type }}">{{ document_type }}</option>{% endfor %}</select></div>
+          <div class="field"><label for="document_number">Número</label><input id="document_number" required></div>
+          <div class="field"><label for="verification_digit">Dígito verificación</label><input id="verification_digit" type="number" min="0" max="9" placeholder="Solo NIT"></div>
+          <div class="field"><label for="legal_name">Nombre completo / razón social</label><input id="legal_name" required></div>
+          <div class="field"><label for="trade_name">Nombre comercial</label><input id="trade_name"></div>
+          <div class="field"><label for="email">Correo electrónico</label><input id="email" type="email"></div>
+          <div class="field"><label for="phone">Teléfono</label><input id="phone" type="tel"></div>
+          <div class="field"><label for="whatsapp">WhatsApp</label><input id="whatsapp" type="tel"></div>
+          <div class="field"><label for="payment_term_days">Plazo de pago</label><select id="payment_term_days"><option value="0">Contado</option><option value="15">15 días</option><option value="30">30 días</option><option value="45">45 días</option><option value="60">60 días</option></select></div>
+          <div class="field full"><span class="field-label">Perfil comercial</span><div class="role-options"><label class="role-option"><input type="checkbox" name="roles" value="CAFETERIA"><span class="role-icon" aria-hidden="true">◒</span><span class="role-copy">Cafetería<small>Compra para preparar y servir</small></span></label><label class="role-option"><input type="checkbox" name="roles" value="INTERMEDIARY"><span class="role-icon" aria-hidden="true">⇄</span><span class="role-copy">Distribuidor / intermediario<small>Compra para mover o revender</small></span></label><span class="helper role-hint">Puedes elegir uno, varios o ninguno. Todos quedan registrados como clientes.</span></div></div>
+        </div>
+        <div class="form-actions"><button class="button" type="reset">Limpiar</button><button class="button primary" type="submit">Guardar cliente</button></div>
+      </form></section>
+      <section class="panel list"><div class="panel-header"><h2>Clientes registrados</h2><span class="helper" id="customer-count">Cargando...</span></div><div class="list-scroll"><table><thead><tr><th>Cliente</th><th>Documento</th><th>Contacto</th><th>Pago</th></tr></thead><tbody id="customers-body"><tr><td class="empty" colspan="4">Cargando clientes...</td></tr></tbody></table></div></section>
+    </div>
+  </main>
+  <script>
+    const form = document.getElementById('customer-form'); const body = document.getElementById('customers-body'); const notice = document.getElementById('notice');
+    const escapeHtml = value => String(value || '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
+    async function loadCustomers() { const response = await fetch('/api/v1/customers'); const customers = await response.json(); document.getElementById('customer-count').textContent = `${customers.length} registrados`; body.innerHTML = customers.length ? customers.map(customer => `<tr><td><strong>${escapeHtml(customer.display_name)}</strong><br><span class="helper">${escapeHtml(customer.party_type === 'JURIDICA' ? 'Empresa' : 'Persona natural')}</span><div class="role-list">${(customer.roles || []).map(role => `<span class="badge">${escapeHtml(role === 'INTERMEDIARY' ? 'Distribuidor' : role === 'CAFETERIA' ? 'Cafetería' : 'Cliente')}</span>`).join('')}</div></td><td><span class="badge">${escapeHtml(customer.document)}</span></td><td>${escapeHtml(customer.email || 'Sin correo')}<br>${escapeHtml(customer.phone || 'Sin teléfono')}</td><td>${customer.payment_term_days ? `${customer.payment_term_days} días` : 'Contado'}</td></tr>`).join('') : '<tr><td class="empty" colspan="4">Todavía no hay clientes registrados.</td></tr>'; }
+    form.addEventListener('submit', async event => { event.preventDefault(); notice.classList.remove('show'); if (!form.reportValidity()) return; const payload = { party_type:document.getElementById('party_type').value, document_type:document.getElementById('document_type').value, document_number:document.getElementById('document_number').value, verification_digit:document.getElementById('verification_digit').value || null, legal_name:document.getElementById('legal_name').value, trade_name:document.getElementById('trade_name').value, email:document.getElementById('email').value, phone:document.getElementById('phone').value, whatsapp:document.getElementById('whatsapp').value, payment_term_days:document.getElementById('payment_term_days').value, roles:[...form.querySelectorAll('input[name="roles"]:checked')].map(input => input.value) }; const response = await fetch('/api/v1/customers', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) }); const data = await response.json(); if (!response.ok) { notice.textContent = data.error || 'No fue posible guardar el cliente.'; notice.classList.add('show'); return; } form.reset(); notice.textContent = `Cliente ${data.display_name} guardado correctamente.`; notice.style.background = '#e9f5ef'; notice.style.color = 'var(--ok)'; notice.classList.add('show'); loadCustomers(); });
+    loadCustomers();
+  </script>
+</body>
+</html>
