@@ -40,7 +40,9 @@ def login():
     form = LoginForm()
     
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data.lower()).first()
+        user = db.session.scalar(
+            db.select(User).where(User.email == form.email.data.lower())
+        )
         
         if user is None or not check_password_hash(user.password_hash, form.password.data):
             # Incrementar contador de intentos fallidos
