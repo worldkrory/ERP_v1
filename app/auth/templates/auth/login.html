@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Densa Niebla ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2D1B1B 0%, #3D2520 40%, #6F4E37 70%, #8B6F47 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Georgia', 'Garamond', serif;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Patrón de textura café */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(210, 180, 140, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(160, 82, 45, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        /* Efecto de niebla animado */
+        @keyframes drift {
+            0%, 100% { transform: translateX(0px); }
+            50% { transform: translateX(20px); }
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(210, 180, 140, 0.05) 0%, transparent 60%),
+                radial-gradient(circle at 70% 70%, rgba(180, 140, 100, 0.05) 0%, transparent 60%);
+            animation: drift 20s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .login-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 450px;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: rgba(255, 248, 240, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                0 0 1px rgba(255, 255, 255, 0.5) inset;
+            padding: 50px 40px;
+            border: 1px solid rgba(210, 180, 140, 0.3);
+            position: relative;
+        }
+
+        /* Decoración esquina superior */
+        .login-container::before {
+            content: '☕';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 40px;
+            opacity: 0.8;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #D2B48C;
+            padding-bottom: 25px;
+        }
+
+        .logo-text {
+            font-size: 16px;
+            letter-spacing: 2px;
+            color: #8B6F47;
+            font-weight: 300;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .login-header h1 {
+            font-size: 42px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6F4E37 0%, #A0522D 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+        }
+
+        .login-header p {
+            color: #8B7355;
+            font-size: 13px;
+            margin: 5px 0 0 0;
+            letter-spacing: 1px;
+            font-style: italic;
+        }
+
+        .brand-tagline {
+            font-size: 11px;
+            color: #A0826D;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-top: 12px;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #6F4E37;
+            margin-bottom: 8px;
+            display: block;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .form-control {
+            border: 2px solid #D2B48C;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            transition: all 0.3s ease;
+            font-family: 'Georgia', serif;
+        }
+
+        .form-control:focus {
+            border-color: #8B6F47;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(139, 111, 71, 0.1);
+            outline: none;
+        }
+
+        .form-control::placeholder {
+            color: #A0826D;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8B6F47 0%, #A0522D 100%);
+            border: none;
+            padding: 14px 30px;
+            font-weight: 700;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(139, 111, 71, 0.25);
+            font-family: 'Arial', sans-serif;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(139, 111, 71, 0.4);
+            background: linear-gradient(135deg, #A0522D 0%, #8B6F47 100%);
+        }
+
+        .btn-primary:active {
+            transform: translateY(-1px);
+        }
+
+        .alert {
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+            font-size: 13px;
+        }
+
+        .alert-danger {
+            background: rgba(220, 53, 69, 0.1);
+            color: #8B4545;
+            border-left-color: #DC3545;
+        }
+
+        .alert-warning {
+            background: rgba(255, 193, 7, 0.1);
+            color: #8B7355;
+            border-left-color: #FFC107;
+        }
+
+        .alert-success {
+            background: rgba(40, 167, 69, 0.1);
+            color: #6F7F4E;
+            border-left-color: #28A745;
+        }
+
+        .error-message {
+            color: #8B4545;
+            font-size: 12px;
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        .form-check {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #E8D7C3;
+        }
+
+        .form-check-input {
+            border: 2px solid #D2B48C;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 18px;
+            height: 18px;
+        }
+
+        .form-check-input:checked {
+            background: linear-gradient(135deg, #8B6F47 0%, #A0522D 100%);
+            border-color: #8B6F47;
+        }
+
+        .form-check-label {
+            font-size: 13px;
+            color: #8B7355;
+            cursor: pointer;
+            user-select: none;
+            margin-left: 8px;
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #E8D7C3;
+        }
+
+        .footer-text {
+            color: #A0826D;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .coffee-accent {
+            display: inline-block;
+            margin: 0 5px;
+            opacity: 0.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 40px 25px;
+            }
+
+            .login-header h1 {
+                font-size: 32px;
+            }
+
+            .login-header {
+                margin-bottom: 30px;
+                padding-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+        <div class="login-wrapper">
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo-text">Densa Niebla</div>
+            <h1>CAFÉ</h1>
+            <p>Gestión Integral de Lotes Especiales</p>
+            <div class="brand-tagline">Premium • Trazabilidad • Excelencia</div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'danger' else 'warning' if category == 'warning' else 'success' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" novalidate>
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                <label for="email" class="form-label">{{ form.email.label }}</label>
+                {% if form.email.errors %}
+                    {{ form.email(class="form-control is-invalid") }}
+                    <div class="error-message">
+                        {% for error in form.email.errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.email(class="form-control") }}
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">{{ form.password.label }}</label>
+                {% if form.password.errors %}
+                    {{ form.password(class="form-control is-invalid") }}
+                    <div class="error-message">
+                        {% for error in form.password.errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.password(class="form-control") }}
+                {% endif %}
+            </div>
+
+            <div class="form-check">
+                {{ form.csrf_token() }}
+                <input type="checkbox" class="form-check-input" id="remember" name="remember" value="1">
+                <label class="form-check-label" for="remember">
+                    Recuérdame en este dispositivo
+                </label>
+            </div>
+
+            <div class="d-grid gap-2 mt-4">
+                {{ form.submit(class="btn btn-primary btn-lg") }}
+            </div>
+        </form>
+
+        <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
+            <div class="form-footer">
+                <p class="footer-text">
+                    <span class="coffee-accent">☕</span>
+                    Sistema Seguro de Gestión de Café
+                    <span class="coffee-accent">☕</span>
+                </p>
+                <p style="color: #D2B48C; font-size: 10px; margin-top: 8px; letter-spacing: 1px;">
+                    © Café Densa Niebla | Café de Colombia | Todos los derechos reservados
+                </p>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

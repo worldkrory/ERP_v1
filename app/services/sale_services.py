@@ -327,9 +327,34 @@ def cancel_sale(
 	*,
 	reason: str,
 	created_by_id: int | None = None,
+	notify_telegram: bool = True,
+	cancelled_by_name: str | None = None,
 ) -> Sale:
+	"""Cancelar una venta y revertir sus efectos.
+	
+	Características:
+	- Solo cancela ventas en DRAFT o CONFIRMED
+	- Revierte automáticamente movimientos de inventario si está CONFIRMED
+	- Notifica a Telegram del evento
+	- Permite devoluciones futuras referenciando la venta original
+	
+	Args:
+		session: Sesión SQLAlchemy
+		sale: Venta a cancelar
+		reason: Razón de la cancelación
+		created_by_id: ID del usuario que cancela (para auditoría)
+		notify_telegram: Si enviar notificación a Telegram
+		cancelled_by_name: Nombre/email del usuario que cancela (para Telegram)
+		
+	Returns:
+		Sale: La venta cancelada
+		
+	Raises:
+		SaleError: Si la venta no puede ser cancelada
+	"""
 	if sale.status not in ("DRAFT", "CONFIRMED"):
 		raise SaleError("Solo se puede cancelar una venta abierta o confirmada.")
+	
 	if sale.status == "CONFIRMED":
 		from app.services.inventory_service import reverse_movement
 
@@ -337,11 +362,52 @@ def cancel_sale(
 			for allocation in item.batch_allocations:
 				if allocation.movement_id is not None:
 					reverse_movement(session, allocation.movement_id, created_by_id=created_by_id)
+	
 	sale.status = "CANCELLED"
 	sale.cancelled_at = datetime.now(timezone.utc)
 	sale.cancellation_reason = reason
 	session.flush()
+	
+	# Notificar a Telegram si está configurado
+	if notify_telegram:
+		try:
+			from app.services.telegram_service import notify_sale_cancelled, TelegramError
+			notify_sale_cancelled(
+				sale,
+				reason=reason,
+				cancelled_by=cancelled_by_name
+			)
+		except TelegramError:
+			# No fallar la cancelación si Telegram no funciona
+			import logging
+			logger = logging.getLogger(__name__)
+			logger.warning(
+				f"No se pudo notificar cancelación de venta {sale.sale_number} a Telegram"
+			)
+	
 	return sale
+
+
+def delete_sale(
+	session: Session,
+	sale: Sale,
+	*,
+	created_by_id: int | None = None,
+) -> None:
+	"""DEPRECADO: Usar cancel_sale() en su lugar.
+	
+	Esta función se mantiene por compatibilidad pero realiza una cancelación
+	en lugar de una eliminación física. Las ventas nunca se deben eliminar,
+	solo cancelar para mantener historial.
+	"""
+	# Simplemente cancelar sin notificación (mantiene compatibilidad)
+	cancel_sale(
+		session,
+		sale,
+		reason="Cancelado por API legacy",
+		created_by_id=created_by_id,
+		notify_telegram=False
+	)
 
 
 __all__ = [

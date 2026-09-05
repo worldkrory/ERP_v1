@@ -1,9 +1,10 @@
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, redirect, url_for
 import os
 from config import config_by_name
 from app.extensions import db, migrate, login_manager
 from app.parties import parties_admin_bp, parties_bp
 from app.sales import sales_admin_bp, sales_bp
+from app.auth import auth_bp
 
 from app import models
 
@@ -46,7 +47,12 @@ def create_app(config_name=None):
     
     @app.route('/')
     def index():
-        return "Densa Niebla ERP v.1 funcionando correctamente!"
+        """Ruta principal: redirige a login o al dashboard."""
+        from flask_login import current_user
+        
+        if current_user.is_authenticated:
+            return redirect(url_for("sales_admin.sales_admin_page"))
+        return redirect(url_for("auth.login"))
 
     @app.route('/microlote/bourbon-rosado')
     def bourbon_rosado():
@@ -63,6 +69,7 @@ def register_blueprints(app):
     auth, dashboard, parties, products, sales, inventory,
     production, finance, expenses, invoices.
     """
+    app.register_blueprint(auth_bp)
     app.register_blueprint(sales_bp)
     app.register_blueprint(sales_admin_bp)
     app.register_blueprint(parties_bp)

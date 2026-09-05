@@ -6,6 +6,7 @@ from decimal import Decimal
 from types import SimpleNamespace
 
 from flask import Blueprint, jsonify, render_template, request
+from flask_login import login_required, current_user
 from sqlalchemy import or_
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -16,10 +17,12 @@ from app.models.payment import Payment
 from app.models.sale import Sale, SaleItem
 from app.services.cloud_storage import CloudStorageError, upload_receipt
 from app.models.unit import UnitOfMeasure
+from app.auth.decorators import require_role, admin_only, audit_action
 from app.services.sale_services import (
     SaleError,
     add_sale_item,
     create_sale,
+    cancel_sale,
     resolve_sale_price,
 )
 from app.services.telegram_service import TelegramError, notify_sale, send_receipt
@@ -30,7 +33,16 @@ logger = logging.getLogger(__name__)
 
 
 @sales_bp.post("/sales")
+@login_required
+@require_role("VENTAS", "ADMIN")
+@audit_action("CREATE_SALE")
 def create_sale_route():
+    """Crear una nueva venta.
+    
+    Requiere:
+    - Autenticación
+    - Rol VENTAS o ADMIN
+    """
     payload = request.get_json(silent=True) or {}
     try:
         sale = create_sale(
@@ -80,7 +92,16 @@ def create_sale_route():
 
 
 @sales_bp.post("/payments/<int:payment_id>/receipt")
+@login_required
+@require_role("VENTAS", "CONTABILIDAD", "ADMIN")
+@audit_action("UPLOAD_PAYMENT_RECEIPT")
 def upload_payment_receipt(payment_id: int):
+    """Subir comprobante de pago.
+    
+    Requiere:
+    - Autenticación
+    - Rol VENTAS, CONTABILIDAD o ADMIN
+    """
     payment = db.session.get(Payment, payment_id)
     if payment is None:
         return jsonify({"error": "Pago no encontrado."}), 404
@@ -138,7 +159,15 @@ def upload_payment_receipt(payment_id: int):
 
 
 @sales_bp.post("/sales/<int:sale_id>/items")
+@login_required
+@require_role("VENTAS", "ADMIN")
 def add_sale_item_route(sale_id: int):
+    """Agregar un item a una venta.
+    
+    Requiere:
+    - Autenticación
+    - Rol VENTAS o ADMIN
+    """
     payload = request.get_json(silent=True) or {}
     sale = db.session.get(Sale, sale_id)
     if sale is None:
@@ -170,7 +199,15 @@ def add_sale_item_route(sale_id: int):
 
 
 @sales_bp.get("/sales")
+@login_required
+@require_role("VENTAS", "CONSULTA", "ADMIN")
 def list_sales():
+    """Listar todas las ventas.
+    
+    Requiere:
+    - Autenticación
+    - Rol VENTAS, CONSULTA o ADMIN
+    """
     try:
         sales = db.session.scalars(db.select(Sale).order_by(Sale.sale_date.desc())).all()
         return jsonify([_sale_payload(sale) for sale in sales])
@@ -180,7 +217,15 @@ def list_sales():
 
 
 @sales_bp.get("/sales/price-preview")
+@login_required
+@require_role("VENTAS", "ADMIN")
 def sale_price_preview():
+    """Obtener preview de precios para un producto y cliente.
+    
+    Requiere:
+    - Autenticación
+    - Rol VENTAS o ADMIN
+    """
     payload = request.args
     try:
         party = db.session.get(Party, int(payload["party_id"]))
@@ -214,7 +259,15 @@ def sale_price_preview():
 
 
 @sales_bp.put("/sales/<int:sale_id>")
+@login_required
+@require_role("VENTAS", "ADMIN")
 def update_sale_route(sale_id: int):
+    """Actualizar información de una venta.
+    
+    Requiere:
+    - Autenticación
+    - Rol VENTAS o ADMIN
+    """
     sale = db.session.get(Sale, sale_id)
     if sale is None:
         return jsonify({"error": "Venta no encontrada."}), 404
@@ -244,22 +297,88 @@ def update_sale_route(sale_id: int):
 
 
 @sales_bp.delete("/sales/<int:sale_id>")
-def delete_sale_route(sale_id: int):
+@login_required
+@require_role("ADMIN", "VENTAS")
+@audit_action("CANCEL_SALE")
+def cancel_sale_route(sale_id: int):
+    """Cancelar una venta.
+    
+    Características:
+    - Solo DRAFT o CONFIRMED
+    - Revierte automáticamente movimientos de inventario
+    - Mantiene histórico para devoluciones futuras
+    - Notifica a Telegram
+    - Permite auditoría completa
+    
+    Requiere:
+    - Autenticación
+    - Rol ADMIN o VENTAS
+    """
     sale = db.session.get(Sale, sale_id)
     if sale is None:
         return jsonify({"error": "Venta no encontrada."}), 404
 
+    payload = request.get_json(silent=True) or {}
+    reason = payload.get("reason", "Cancelado por el usuario")
+    
     try:
-        db.session.delete(sale)
+        sale_number = sale.sale_number
+        status_anterior = sale.status
+        
+        # Cancelar venta con notificación Telegram
+        cancel_sale(
+            db.session,
+            sale,
+            reason=reason,
+            created_by_id=current_user.id if current_user.is_authenticated else None,
+            notify_telegram=True,
+            cancelled_by_name=current_user.email if current_user.is_authenticated else "Sistema"
+        )
         db.session.commit()
-        return jsonify({"deleted": True, "id": sale_id})
+        
+        logger.info(
+            f"Venta {sale_number} cancelada por usuario {current_user.email}. "
+            f"Razón: {reason}",
+            extra={"user_id": current_user.id, "sale_id": sale_id}
+        )
+        
+        return jsonify({
+            "cancelled": True,
+            "id": sale_id,
+            "sale_number": sale_number,
+            "status_anterior": status_anterior,
+            "status_nuevo": "CANCELLED",
+            "razón": reason,
+            "mensaje": f"Venta {sale_number} cancelada exitosamente. "
+                      f"Puedes crear devoluciones referenciando esta venta."
+        }), 200
+        
+    except SaleError as exc:
+        db.session.rollback()
+        logger.warning(
+            f"Intento fallido de cancelar venta {sale_id}: {str(exc)}",
+            extra={"user_id": current_user.id}
+        )
+        return jsonify({"error": str(exc)}), 409
     except Exception as exc:
         db.session.rollback()
-        return jsonify({"error": str(exc)}), 400
+        logger.error(
+            f"Error inesperado al cancelar venta {sale_id}: {str(exc)}",
+            extra={"user_id": current_user.id}
+        )
+        return jsonify({"error": "Error al cancelar la venta"}), 500
 
 
 @sales_admin_bp.get("/ventas")
+@login_required
+@require_role("VENTAS", "ADMIN")
 def sales_admin_page():
+    """Panel de administración de ventas.
+    
+    Requiere:
+    - Autenticación
+    - Rol VENTAS o ADMIN
+    """
     today = date.today()
     demo_mode = False
     try:
@@ -316,6 +435,7 @@ def sales_admin_page():
         unit_catalog={unit.id: unit.display_name for unit in units},
         demo_mode=demo_mode,
         today=today.isoformat(),
+        current_user=current_user,
     )
 
 

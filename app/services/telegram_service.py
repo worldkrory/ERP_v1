@@ -56,3 +56,36 @@ def send_receipt(photo_url: str, caption: str) -> int:
         },
     )
     return int(result["message_id"])
+
+
+def notify_sale_cancelled(sale, reason: str, cancelled_by: str | None = None) -> int:
+    """Notificar cancelación de venta a Telegram.
+    
+    Args:
+        sale: Venta cancelada
+        reason: Razón de la cancelación
+        cancelled_by: Nombre/email del usuario que canceló
+        
+    Returns:
+        int: ID del mensaje en Telegram
+    """
+    user_info = f"\nCancelada por: {cancelled_by}" if cancelled_by else ""
+    
+    result = _call(
+        "sendMessage",
+        {
+            "chat_id": current_app.config["TELEGRAM_CHAT_ID"],
+            "text": (
+                f"⚠️ VENTA CANCELADA\n"
+                f"Venta: {sale.sale_number}\n"
+                f"Cliente: {sale.party.display_name}\n"
+                f"Total: {sale.currency} {sale.total:,.2f}\n"
+                f"Estado anterior: {sale.status}\n"
+                f"Razón: {reason}"
+                f"{user_info}\n"
+                f"Timestamp: {sale.cancelled_at.strftime('%Y-%m-%d %H:%M:%S') if sale.cancelled_at else 'N/A'}"
+            ),
+            "parse_mode": "HTML",
+        },
+    )
+    return int(result["message_id"])

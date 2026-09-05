@@ -4,6 +4,8 @@ from datetime import date
 from types import SimpleNamespace
 
 from flask import Blueprint, jsonify, render_template, request
+from flask_login import login_required, current_user
+from app.auth.decorators import require_role, admin_only, audit_action
 from sqlalchemy import or_
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -85,6 +87,8 @@ def create_customer():
 
 
 @parties_admin_bp.get("/clientes")
+@login_required
+@require_role("VENTAS", "ADMIN")
 def customers_admin_page():
     demo_mode = False
     try:
