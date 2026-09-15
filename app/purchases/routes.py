@@ -57,18 +57,31 @@ def create_supplier_route():
         document_type = str(payload.get("document_type") or "CC")
         document_number = str(payload.get("document_number") or "").strip()
         legal_name = str(payload.get("legal_name") or "").strip()
+        party_type = str(payload.get("party_type") or "NATURAL")
+
         if document_type not in DOCUMENT_TYPES or not document_number or not legal_name:
             raise ValueError("Tipo de documento, número y nombre son obligatorios.")
         if document_type == "NIT" and payload.get("verification_digit") in (None, ""):
             raise ValueError("El NIT necesita dígito de verificación.")
+            
+        if party_type == "NATURAL" and (not payload.get("first_name") or not payload.get("last_name")):
+            print("Se cumple!")
+            first_name = str(payload.get("legal_name").split(" ")[0] or "").strip()
+            last_name = str(payload.get("legal_name").split(" ")[1] or "").strip()
+        else:
+            first_name=str(payload.get("first_name") or "").strip() or None
+            last_name=str(payload.get("last_name") or "").strip() or None
+
+        
+        
         party = Party(
             party_type=str(payload.get("party_type") or "NATURAL"),
             document_type=document_type,
             document_number=document_number,
             verification_digit=(int(payload["verification_digit"]) if payload.get("verification_digit") not in (None, "") else None),
             legal_name=legal_name,
-            first_name=str(payload.get("first_name") or "").strip() or None,
-            last_name=str(payload.get("last_name") or "").strip() or None,
+            first_name = first_name,
+            last_name = last_name,
             email=str(payload.get("email") or "").strip() or None,
             phone=str(payload.get("phone") or "").strip() or None,
         )
@@ -79,7 +92,7 @@ def create_supplier_route():
         db.session.add(party)
         db.session.commit()
         return jsonify({"id": party.id, "name": party.display_name, "document": party.document_full}), 201
-    except SQLAlchemyError:
+    except SQLAlchemyError as e:
         db.session.rollback()
         return jsonify({"error": "No fue posible guardar el proveedor. Revisa que el documento no esté repetido."}), 400
     except (KeyError, TypeError, ValueError) as exc:
@@ -164,13 +177,17 @@ def create_unit_route():
         code = str(payload.get("code") or "").strip().upper()
         name = str(payload.get("name") or "").strip()
         dimension = str(payload.get("dimension") or "")
+        is_base_for_dimension = payload.get("is_base_for_dimension") or False
+        
         if not code or not name or dimension not in ("MASS", "COUNT", "VOLUME", "TIME"):
             raise ValueError("Código, nombre y dimensión son obligatorios y válidos.")
-        unit = UnitOfMeasure(code=code, name=name, dimension=dimension, decimal_places=int(payload.get("decimal_places", 3)))
+        unit = UnitOfMeasure(code=code, name=name, dimension=dimension, decimal_places=int(payload.get("decimal_places", 3)), is_base_for_dimension=is_base_for_dimension)
+        
         db.session.add(unit)
         db.session.commit()
         return jsonify({"id": unit.id, "code": unit.code, "name": unit.name, "dimension": unit.dimension}), 201
-    except SQLAlchemyError:
+    except SQLAlchemyError as e:
+        print("Revision:", e)
         db.session.rollback()
         return jsonify({"error": "No fue posible guardar la unidad. Revisa que el código no esté repetido."}), 400
     except (TypeError, ValueError) as exc:

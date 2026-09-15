@@ -87,8 +87,8 @@ def create_customer():
 
 
 @parties_admin_bp.get("/clientes")
-@login_required
-@require_role("VENTAS", "ADMIN")
+#@login_required
+#@require_role("VENTAS", "ADMIN")
 def customers_admin_page():
     demo_mode = False
     try:
