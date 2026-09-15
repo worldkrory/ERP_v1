@@ -33,7 +33,7 @@ def require_role(*roles):
                 return jsonify({"error": "Autenticación requerida"}), 401
             
             user_roles = current_user.role_codes
-            if not any(role in user_roles for role in roles):
+            if not current_user.is_superuser and not any(role in user_roles for role in roles):
                 return jsonify({
                     "error": f"Se requiere uno de los roles: {', '.join(roles)}"
                 }), 403
@@ -57,7 +57,7 @@ def require_all_roles(*roles):
                 return jsonify({"error": "Autenticación requerida"}), 401
             
             user_roles = current_user.role_codes
-            if not all(role in user_roles for role in roles):
+            if not current_user.is_superuser and not all(role in user_roles for role in roles):
                 return jsonify({
                     "error": f"Se requieren todos los roles: {', '.join(roles)}"
                 }), 403

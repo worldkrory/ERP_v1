@@ -4,7 +4,9 @@ from config import config_by_name
 from app.extensions import db, migrate, login_manager
 from app.parties import parties_admin_bp, parties_bp
 from app.sales import sales_admin_bp, sales_bp
+from app.purchases import purchases_admin_bp, purchases_bp
 from app.auth import auth_bp
+from app.seed import register_seed_commands
 
 from app import models
 
@@ -34,6 +36,7 @@ def create_app(config_name=None):
     from app import models  # noqa: F401
 
     register_blueprints(app)
+    register_seed_commands(app)
 
     @app.get("/health")
     def health():
@@ -74,4 +77,6 @@ def register_blueprints(app):
     app.register_blueprint(sales_admin_bp)
     app.register_blueprint(parties_bp)
     app.register_blueprint(parties_admin_bp)
+    app.register_blueprint(purchases_bp)
+    app.register_blueprint(purchases_admin_bp)
     return app
