@@ -7,6 +7,7 @@ from app.sales import sales_admin_bp, sales_bp
 from app.purchases import purchases_admin_bp, purchases_bp
 from app.auth import auth_bp
 from app.seed import register_seed_commands
+from app.production import production_bp
 
 from app import models
 
@@ -79,4 +80,5 @@ def register_blueprints(app):
     app.register_blueprint(parties_admin_bp)
     app.register_blueprint(purchases_bp)
     app.register_blueprint(purchases_admin_bp)
+    app.register_blueprint(production_bp)
     return app

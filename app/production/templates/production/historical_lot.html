@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reconstrucción histórica | Densa Niebla</title>
+  <style>
+    :root {
+      --ink:#211a25;
+      --muted:#776d7b;
+      --line:#e9e0e7;
+      --paper:#fffdfb;
+      --accent:#a55b72;
+      --accent-dark:#703b50;
+      --ok:#24745c;
+      --danger:#b34a4a;
+      --warning:#74551e;
+      --shadow:0 18px 50px #29172714;
+    }
+
+    * { box-sizing:border-box; }
+
+    body {
+      margin:0;
+      background:linear-gradient(135deg,#f8f3f6,#fffdfb 45%,#f1e9ef);
+      color:var(--ink);
+      font-family:Inter,ui-sans-serif,system-ui,sans-serif;
+    }
+
+    a { color:inherit; text-decoration:none; }
+    button,input { font:inherit; }
+
+    .shell {
+      max-width:1440px;
+      margin:auto;
+      padding:28px clamp(18px,4vw,64px) 70px;
+    }
+
+    .topbar,.intro,.panel-header,.form-actions,.row {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:20px;
+    }
+
+    .topbar { margin-bottom:38px; }
+
+    .brand {
+      color:var(--accent-dark);
+      font:600 2rem/.8 Georgia,serif;
+      letter-spacing:.04em;
+    }
+
+    .brand small {
+      display:block;
+      margin-top:9px;
+      color:var(--muted);
+      font:700 .6rem/1 Inter,sans-serif;
+      letter-spacing:.2em;
+      text-transform:uppercase;
+    }
+
+    .top-actions {
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .link {
+      color:var(--muted);
+      font-size:.85rem;
+      font-weight:650;
+    }
+
+    .eyebrow {
+      margin:0 0 8px;
+      color:var(--accent);
+      font-size:.7rem;
+      font-weight:800;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+    }
+
+    h1,h2,h3,p { margin-top:0; }
+
+    h1 {
+      margin-bottom:10px;
+      font:600 clamp(2.2rem,4vw,4rem)/.98 Georgia,serif;
+      letter-spacing:-.03em;
+    }
+
+    h2 {
+      margin:0;
+      font-size:1rem;
+    }
+
+    h3 {
+      margin:0;
+      font:600 1.1rem Georgia,serif;
+      color:var(--accent-dark);
+    }
+
+    .intro {
+      align-items:end;
+      margin-bottom:28px;
+    }
+
+    .intro p:not(.eyebrow) {
+      max-width:530px;
+      margin:0;
+      color:var(--muted);
+      line-height:1.55;
+    }
+
+    .layout {
+      display:grid;
+      grid-template-columns:minmax(0,1fr) minmax(310px,.38fr);
+      gap:24px;
+      align-items:start;
+    }
+
+    .panel {
+      margin-bottom:24px;
+      overflow:hidden;
+      background:rgba(255,253,251,.9);
+      border:1px solid #fff;
+      border-radius:18px;
+      box-shadow:var(--shadow);
+    }
+
+    .panel-header {
+      padding:22px 26px;
+      border-bottom:1px solid var(--line);
+    }
+
+    .form-body { padding:26px; }
+
+    .fields {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:0 16px;
+    }
+
+    .field {
+      display:grid;
+      gap:7px;
+      margin-bottom:18px;
+    }
+
+    .field.full { grid-column:1/-1; }
+
+    label {
+      color:var(--muted);
+      font-size:.72rem;
+      font-weight:750;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+
+    input {
+      width:100%;
+      min-height:44px;
+      padding:10px 12px;
+      color:var(--ink);
+      outline:none;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:10px;
+    }
+
+    input:focus {
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px #a55b7220;
+    }
+
+    input[readonly] {
+      color:var(--muted);
+      background:#faf6f8;
+    }
+
+    .helper {
+      color:var(--muted);
+      font-size:.72rem;
+      line-height:1.45;
+    }
+
+    .button {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:42px;
+      padding:10px 15px;
+      color:var(--accent-dark);
+      cursor:pointer;
+      background:#fff;
+      border:1px solid var(--accent);
+      border-radius:10px;
+      font-size:.82rem;
+      font-weight:750;
+    }
+
+    .button.primary {
+      color:#fff;
+      background:var(--accent-dark);
+      border-color:var(--accent-dark);
+    }
+
+    .button.ghost {
+      min-height:36px;
+      padding:7px 11px;
+      color:var(--muted);
+      border-color:var(--line);
+    }
+
+    .button:disabled {
+      cursor:not-allowed;
+      opacity:.6;
+    }
+
+    .notice,.info-banner {
+      margin-bottom:24px;
+      padding:13px 16px;
+      border-radius:10px;
+      font-size:.84rem;
+      line-height:1.45;
+    }
+
+    .notice {
+      display:none;
+      background:#fbeeee;
+      color:var(--danger);
+    }
+
+    .notice.show { display:block; }
+
+    .info-banner {
+      color:var(--warning);
+      background:#fff7df;
+      border:1px solid #e8c98d;
+    }
+
+    .summary {
+      position:sticky;
+      top:18px;
+      padding:22px;
+      background:linear-gradient(160deg,#fff,#fff7fa);
+      border:1px solid #e2ced6;
+      border-radius:16px;
+      box-shadow:0 12px 28px #2917270d;
+    }
+
+    .summary h2 {
+      margin-bottom:16px;
+      color:var(--accent-dark);
+      font:600 1.35rem Georgia,serif;
+    }
+
+    .summary-row {
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      padding:11px 0;
+      border-bottom:1px solid var(--line);
+      font-size:.82rem;
+    }
+
+    .summary-row span { color:var(--muted); }
+
+    .summary-row strong {
+      text-align:right;
+      white-space:nowrap;
+    }
+
+    .summary-total {
+      margin-top:8px;
+      border-top:2px solid var(--accent);
+    }
+
+    .summary-total strong {
+      color:var(--accent-dark);
+      font:600 1.3rem Georgia,serif;
+    }
+
+    .hidden { display:none; }
+
+    .result-grid {
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+      margin-bottom:20px;
+    }
+
+    .metric {
+      padding:16px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:12px;
+    }
+
+    .metric span {
+      display:block;
+      color:var(--muted);
+      font-size:.67rem;
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+
+    .metric strong {
+      display:block;
+      margin-top:7px;
+      color:var(--accent-dark);
+      font:600 1.25rem Georgia,serif;
+    }
+
+    .table-wrap {
+      overflow-x:auto;
+      border:1px solid var(--line);
+      border-radius:12px;
+    }
+
+    table {
+      width:100%;
+      min-width:650px;
+      border-collapse:collapse;
+      background:#fff;
+    }
+
+    th,td {
+      padding:14px 16px;
+      text-align:left;
+      border-bottom:1px solid var(--line);
+      font-size:.82rem;
+    }
+
+    th {
+      color:var(--muted);
+      font-size:.67rem;
+      letter-spacing:.1em;
+      text-transform:uppercase;
+    }
+
+    tbody tr:last-child td { border-bottom:0; }
+
+    .warning-list {
+      margin:0;
+      padding-left:19px;
+      color:var(--warning);
+      font-size:.82rem;
+      line-height:1.55;
+    }
+
+    .form-actions {
+      justify-content:flex-end;
+      padding-top:8px;
+    }
+
+    @media(max-width:1050px) {
+      .layout { grid-template-columns:1fr; }
+      .summary { position:static; }
+    }
+
+    @media(max-width:650px) {
+      .topbar,.intro {
+        align-items:flex-start;
+        flex-direction:column;
+      }
+
+      .top-actions {
+        width:100%;
+        justify-content:space-between;
+      }
+
+      .fields,.result-grid { grid-template-columns:1fr; }
+
+      .field.full { grid-column:auto; }
+
+      .panel-header,.form-body { padding:20px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="/">
+        DENSA NIEBLA
+        <small>Centro de operaciones</small>
+      </a>
+
+      <nav class="top-actions">
+        <a class="link" href="/compras">Compras</a>
+        <a class="button ghost" href="/">Inicio</a>
+      </nav>
+    </header>
+
+    <section class="intro">
+      <div>
+        <p class="eyebrow">Producción / Microlote histórico</p>
+        <h1>Lee la historia<br>del primer lote.</h1>
+      </div>
+
+      <p>
+        Esta simulación reconstruye el desempeño del Castillo lavado de
+        Guavatá: pergamino, maquila integral, empaque de 340 g y potencial
+        comercial. No modifica inventario ni crea documentos.
+      </p>
+    </section>
+
+    <div id="notice" class="notice" role="alert"></div>
+
+    <div class="info-banner">
+      <strong>Preview de solo lectura.</strong>
+      El resultado calcula costos, rendimiento y facturación potencial.
+      No crea órdenes de producción, lotes, movimientos de inventario,
+      ventas, facturas, pagos ni registros de costo.
+    </div>
+
+    <div class="layout">
+      <div>
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Origen y maquila integral</h2>
+            <span class="helper">Castillo lavado · Guavatá</span>
+          </div>
+
+          <form id="preview-form" class="form-body" novalidate>
+            <div class="fields">
+              <div class="field">
+                <label for="source_batch_id">ID lote origen</label>
+                <input id="source_batch_id" type="number" min="1"
+                  value="{{ defaults.source_batch_id }}" required>
+                <span class="helper">Lote de pergamino existente.</span>
+              </div>
+
+              <div class="field">
+                <label for="source_location_id">ID ubicación origen</label>
+                <input id="source_location_id" type="number" min="1"
+                  value="{{ defaults.source_location_id }}" required>
+                <span class="helper">INV_MAN: Bodega Manizales.</span>
+              </div>
+
+              <div class="field">
+                <label for="source_quantity_kg">Pergamino procesado (kg)</label>
+                <input id="source_quantity_kg" type="number" min="0.0001"
+                  step="0.0001" value="{{ defaults.source_quantity_kg }}" required>
+              </div>
+
+              <div class="field">
+                <label for="process_id">ID proceso</label>
+                <input id="process_id" type="number" min="1"
+                  value="{{ defaults.process_id }}" required>
+                <span class="helper">MAQUILA_INTEGRAL.</span>
+              </div>
+
+              <div class="field">
+                <label for="executor_party_id">ID maquilador</label>
+                <input id="executor_party_id" type="number" min="1"
+                  value="{{ defaults.executor_party_id }}" required>
+                <span class="helper">Aroma y Sabor.</span>
+              </div>
+
+              <div class="field">
+                <label for="output_location_id">ID ubicación resultado</label>
+                <input id="output_location_id" type="number" min="1"
+                  value="{{ defaults.output_location_id }}" required>
+                <span class="helper">Simulación concentrada en INV_MAN.</span>
+              </div>
+
+              <div class="field">
+                <label for="process_started_at">Inicio de proceso</label>
+                <input id="process_started_at" type="date"
+                  value="{{ defaults.process_started_at }}" required>
+              </div>
+
+              <div class="field">
+                <label for="process_received_at">Producto recibido</label>
+                <input id="process_received_at" type="date"
+                  value="{{ defaults.process_received_at }}" required>
+              </div>
+            </div>
+
+            <div class="panel" style="margin:8px 0 24px;box-shadow:none;border-color:var(--line)">
+              <div class="panel-header">
+                <h2>Resultado de empaque</h2>
+                <span class="helper">Bolsas de 340 g</span>
+              </div>
+
+              <div class="form-body">
+                <div class="fields">
+                  <div class="field">
+                    <label for="grain_product_id">ID producto en grano</label>
+                    <input id="grain_product_id" type="number" min="1"
+                      value="{{ defaults.grain_product_id }}" required>
+                  </div>
+
+                  <div class="field">
+                    <label for="grain_quantity">Bolsas en grano</label>
+                    <input id="grain_quantity" type="number" min="0" step="1"
+                      value="{{ defaults.grain_quantity }}" required>
+                  </div>
+
+                  <div class="field">
+                    <label for="ground_product_id">ID producto molido</label>
+                    <input id="ground_product_id" type="number" min="1"
+                      value="{{ defaults.ground_product_id }}" required>
+                  </div>
+
+                  <div class="field">
+                    <label for="ground_quantity">Bolsas molidas</label>
+                    <input id="ground_quantity" type="number" min="0" step="1"
+                      value="{{ defaults.ground_quantity }}" required>
+                  </div>
+
+                  <div class="field full">
+                    <label for="grams_per_bag">Peso neto por bolsa (g)</label>
+                    <input id="grams_per_bag" type="number" min="1" step="0.01"
+                      value="{{ defaults.grams_per_bag }}" required>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel" style="margin:8px 0 24px;box-shadow:none;border-color:var(--line)">
+              <div class="panel-header">
+                <h2>Costos y precio proyectado</h2>
+                <span class="helper">COP</span>
+              </div>
+
+              <div class="form-body">
+                <div class="fields">
+                  <div class="field">
+                    <label for="maquila_cost">Maquila integral</label>
+                    <input id="maquila_cost" type="number" min="0" step="0.01"
+                      value="{{ defaults.maquila_cost }}" required>
+                  </div>
+
+                  <div class="field">
+                    <label for="freight_cost">Transporte a Manizales</label>
+                    <input id="freight_cost" type="number" min="0" step="0.01"
+                      value="{{ defaults.freight_cost }}" required>
+                  </div>
+
+                  <div class="field">
+                    <label for="bags_purchase_quantity">Bolsas compradas</label>
+                    <input id="bags_purchase_quantity" type="number" min="1"
+                      step="1" value="{{ defaults.bags_purchase_quantity }}" required>
+                  </div>
+
+                  <div class="field">
+                    <label for="bags_purchase_cost">Costo total bolsas</label>
+                    <input id="bags_purchase_cost" type="number" min="0"
+                      step="0.01" value="{{ defaults.bags_purchase_cost }}" required>
+                  </div>
+
+                  <div class="field">
+                    <label for="labels_cost">Etiquetas</label>
+                    <input id="labels_cost" type="number" min="0" step="0.01"
+                      value="{{ defaults.labels_cost }}" required>
+                  </div>
+
+                  <div class="field">
+                    <label for="stickers_cost">Sticker lote / fecha</label>
+                    <input id="stickers_cost" type="number" min="0" step="0.01"
+                      value="{{ defaults.stickers_cost }}" required>
+                  </div>
+
+                  <div class="field full">
+                    <label for="unit_sale_price">Precio de venta por bolsa</label>
+                    <input id="unit_sale_price" type="number" min="0"
+                      step="0.01" value="{{ defaults.unit_sale_price }}" required>
+                    <span class="helper">
+                      Este precio sirve para calcular facturación y margen
+                      potencial. No crea ventas ni lista de precios.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="button" type="reset">Restablecer</button>
+              <button id="preview-button" class="button primary" type="submit">
+                Calcular preview
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section id="result-panel" class="panel hidden">
+          <div class="panel-header">
+            <h2>Resultado de la reconstrucción</h2>
+            <span id="result-status" class="helper">Preview de solo lectura</span>
+          </div>
+
+          <div class="form-body">
+            <div class="result-grid">
+              <article class="metric">
+                <span>Rendimiento neto</span>
+                <strong id="metric-yield">—</strong>
+              </article>
+
+              <article class="metric">
+                <span>Total empacado</span>
+                <strong id="metric-output">—</strong>
+              </article>
+
+              <article class="metric">
+                <span>Total bolsas</span>
+                <strong id="metric-bags">—</strong>
+              </article>
+
+              <article class="metric">
+                <span>Costo por bolsa</span>
+                <strong id="metric-cost-bag">—</strong>
+              </article>
+
+              <article class="metric">
+                <span>Facturación potencial</span>
+                <strong id="metric-revenue">—</strong>
+              </article>
+
+              <article class="metric">
+                <span>Margen bruto potencial</span>
+                <strong id="metric-margin">—</strong>
+              </article>
+            </div>
+
+            <h3 style="margin:0 0 12px">Resultado por presentación</h3>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Costo asignado</th>
+                    <th>Venta potencial</th>
+                    <th>Margen potencial</th>
+                  </tr>
+                </thead>
+                <tbody id="outputs-body"></tbody>
+              </table>
+            </div>
+
+            <div style="margin-top:22px">
+              <h3 style="margin:0 0 10px">Advertencias y pendientes</h3>
+              <ul id="warnings-list" class="warning-list"></ul>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="summary">
+        <p class="eyebrow">Vista previa</p>
+        <h2>Rendición estimada</h2>
+
+        <div class="summary-row">
+          <span>Costo del pergamino</span>
+          <strong id="summary-input-cost">$0</strong>
+        </div>
+
+        <div class="summary-row">
+          <span>Costos adicionales</span>
+          <strong id="summary-additional-cost">$0</strong>
+        </div>
+
+        <div class="summary-row summary-total">
+          <span>Costo total del lote</span>
+          <strong id="summary-total-cost">$0</strong>
+        </div>
+
+        <div class="summary-row">
+          <span>Precio por bolsa</span>
+          <strong id="summary-price">$0</strong>
+        </div>
+
+        <div class="summary-row">
+          <span>Facturación potencial</span>
+          <strong id="summary-revenue">$0</strong>
+        </div>
+
+        <div class="summary-row">
+          <span>Margen potencial</span>
+          <strong id="summary-margin">$0</strong>
+        </div>
+
+        <p class="helper" style="margin:17px 0 0">
+          La facturación potencial supone que todas las bolsas se venden y
+          cobran a precio completo. El recaudo real se determinará cuando
+          registremos ventas, pagos, descuentos, devoluciones y existencias.
+        </p>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const form = document.getElementById("preview-form");
+    const notice = document.getElementById("notice");
+    const previewButton = document.getElementById("preview-button");
+    const resultPanel = document.getElementById("result-panel");
+
+    const field = id => document.getElementById(id);
+
+    const money = value => new Intl.NumberFormat("es-CO", {
+      style: "currency",
+      currency: "COP",
+      maximumFractionDigits: 0,
+    }).format(Number(value || 0));
+
+    const decimal = value => {
+      const result = Number.parseFloat(value || 0);
+      return Number.isFinite(result) ? result : 0;
+    };
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>'"]/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "'": "&#39;",
+        "\"": "&quot;",
+      }[char]));
+    }
+
+    function showNotice(message, type = "error") {
+      notice.textContent = message;
+      notice.style.background = type === "success" ? "#e9f5ef" : "#fbeeee";
+      notice.style.color = type === "success" ? "var(--ok)" : "var(--danger)";
+      notice.classList.add("show");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function clearNotice() {
+      notice.classList.remove("show");
+    }
+
+    function getPayload() {
+      return {
+        source_batch_id: field("source_batch_id").value,
+        source_location_id: field("source_location_id").value,
+        source_quantity_kg: field("source_quantity_kg").value,
+        process_id: field("process_id").value,
+        executor_party_id: field("executor_party_id").value,
+        output_location_id: field("output_location_id").value,
+        process_started_at: field("process_started_at").value,
+        process_received_at: field("process_received_at").value,
+        grain_product_id: field("grain_product_id").value,
+        grain_quantity: field("grain_quantity").value,
+        ground_product_id: field("ground_product_id").value,
+        ground_quantity: field("ground_quantity").value,
+        grams_per_bag: field("grams_per_bag").value,
+        maquila_cost: field("maquila_cost").value,
+        freight_cost: field("freight_cost").value,
+        bags_purchase_quantity: field("bags_purchase_quantity").value,
+        bags_purchase_cost: field("bags_purchase_cost").value,
+        labels_cost: field("labels_cost").value,
+        stickers_cost: field("stickers_cost").value,
+        unit_sale_price: field("unit_sale_price").value,
+      };
+    }
+
+    function renderPreview(data) {
+      const production = data.production;
+      const costs = data.costs;
+      const projection = data.commercial_projection;
+
+      field("metric-yield").textContent = production.net_yield_display;
+      field("metric-output").textContent = `${decimal(production.net_output_kg).toLocaleString("es-CO", { maximumFractionDigits: 3 })} kg`;
+      field("metric-bags").textContent = production.total_bags;
+      field("metric-cost-bag").textContent = money(costs.cost_per_bag);
+      field("metric-revenue").textContent = money(projection.potential_revenue);
+      field("metric-margin").textContent = `${money(projection.potential_gross_margin)} · ${projection.potential_gross_margin_display}`;
+
+      field("summary-input-cost").textContent = money(costs.coffee_input_cost);
+      field("summary-additional-cost").textContent = money(costs.additional_cost);
+      field("summary-total-cost").textContent = money(costs.total_cost);
+      field("summary-price").textContent = money(projection.unit_sale_price);
+      field("summary-revenue").textContent = money(projection.potential_revenue);
+      field("summary-margin").textContent = `${money(projection.potential_gross_margin)} (${projection.potential_gross_margin_display})`;
+
+      field("outputs-body").innerHTML = data.outputs.map(output => `
+        <tr>
+          <td>
+            <strong>${escapeHtml(output.product_name)}</strong><br>
+            <span class="helper">${escapeHtml(output.sku)} · ${escapeHtml(output.presentation)}</span>
+          </td>
+          <td>${escapeHtml(output.quantity)} und</td>
+          <td>${money(output.allocated_cost)}</td>
+          <td>${money(output.potential_revenue)}</td>
+          <td>${money(output.potential_gross_margin)}</td>
+        </tr>
+      `).join("");
+
+      field("warnings-list").innerHTML = data.warnings
+        .map(message => `<li>${escapeHtml(message)}</li>`)
+        .join("");
+
+      resultPanel.classList.remove("hidden");
+      resultPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      clearNotice();
+
+      if (!form.reportValidity()) {
+        return;
+      }
+
+      previewButton.disabled = true;
+      previewButton.textContent = "Calculando...";
+
+      try {
+        const response = await fetch(
+          "/api/v1/production/historical-microlot/preview",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(getPayload()),
+          }
+        );
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(
+            data.error || "No fue posible generar el preview histórico."
+          );
+        }
+
+        renderPreview(data);
+        showNotice(
+          "Preview generado correctamente. No se modificó la base de datos.",
+          "success"
+        );
+      } catch (error) {
+        showNotice(error.message);
+      } finally {
+        previewButton.disabled = false;
+        previewButton.textContent = "Calcular preview";
+      }
+    });
+
+    form.addEventListener("reset", () => {
+      setTimeout(() => {
+        clearNotice();
+        resultPanel.classList.add("hidden");
+      }, 0);
+    });
+  </script>
+</body>
+</html>

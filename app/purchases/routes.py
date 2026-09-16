@@ -116,7 +116,8 @@ def create_location_route():
         db.session.add(location)
         db.session.commit()
         return jsonify({"id": location.id, "code": location.code, "name": location.name}), 201
-    except SQLAlchemyError:
+    except SQLAlchemyError as e:
+        print("Revisión: ", e)
         db.session.rollback()
         return jsonify({"error": "No fue posible guardar la ubicación. Revisa que el código no esté repetido."}), 400
     except (TypeError, ValueError) as exc:
