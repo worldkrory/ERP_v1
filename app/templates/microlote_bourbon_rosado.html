@@ -45,13 +45,80 @@
 </section>
 
 <section id="historia" class="story">
-  <div class="photo"><span>DENSA NIEBLA</span><small>Fotografía de la finca / microlote</small></div>
+  <div class="story-media">
+    <video
+      class="story-video"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="none"
+      loading="lazy"
+      poster="/static/img/bourbon-rosado-guavata-poster.png"
+      aria-label="Paisaje y proceso del microlote Bourbon Rosado de Densa Niebla"
+    >
+      <source
+        src="/static/video/bourbon-rosado-guavata.webm"
+        type="video/webm"
+      >
+      <source
+        src="/static/video/bourbon-rosado-guavata.mp4"
+        type="video/mp4"
+      >
+      Tu navegador no puede reproducir este video.
+    </video>
+
+    <div class="story-fog" aria-hidden="true"></div>
+
+    <div class="story-media-copy">
+      <span class="story-brand">DENSA NIEBLA</span>
+      <span class="story-location">Guavatá · Santander · Colombia</span>
+    </div>
+
+    <button
+      class="sound-toggle"
+      type="button"
+      aria-label="Activar sonido del video"
+      aria-pressed="false"
+    >
+      <span class="sound-icon" aria-hidden="true">◖</span>
+      <span class="sound-label">Escuchar ambiente</span>
+    </button>
+  </div>
+
   <div class="copy">
     <p class="eyebrow">LA HISTORIA</p>
-    <h2>No queríamos que solo probaras el café. Queríamos que conocieras de dónde viene.</h2>
-    <p>Este Bourbon Rosado nace en las montañas de Guavatá, Santander, en una finca rodeada por el paisaje que inspira a Densa Niebla.</p>
-    <p>Cada lote tiene un origen, un proceso y unas manos detrás. Por eso esta página existe: para que puedas seguir la historia del café que llegó a tu taza.</p>
-    <a class="textlink" href="https://www.instagram.com/cafedensaniebla/" target="_blank" rel="noopener">Ver la historia en Instagram ↗</a>
+
+    <h2>
+      No queríamos que solo probaras el café.
+      Queríamos que conocieras de dónde viene.
+    </h2>
+
+    <p>
+      Este Bourbon Rosado nace en las montañas de Guavatá, Santander,
+      en una finca rodeada por el paisaje que inspira a Densa Niebla.
+    </p>
+
+    <p>
+      Cada lote tiene un origen, un proceso y unas manos detrás.
+      Por eso esta página existe: para que puedas seguir la historia
+      del café que llegó a tu taza.
+    </p>
+
+    <div class="story-details" aria-label="Datos principales del microlote">
+      <span>Origen <strong>Guavatá</strong></span>
+      <span>Variedad <strong>Bourbon Rosado</strong></span>
+      <span>Proceso <strong>Según lote</strong></span>
+    </div>
+
+    <a
+      class="textlink"
+      href="https://www.instagram.com/cafedensaniebla/"
+      target="_blank"
+      rel="noopener"
+    >
+      Ver la historia en Instagram ↗
+    </a>
   </div>
 </section>
 
@@ -81,3 +148,41 @@
 <footer><strong>DENSA NIEBLA</strong><span>Café de finca · 100% colombiano</span><a href="https://www.instagram.com/cafedensaniebla/" target="_blank" rel="noopener">@cafedensaniebla ↗</a></footer>
 </body>
 </html>
+
+<script>
+  const storyVideo = document.querySelector(".story-video");
+  const soundToggle = document.querySelector(".sound-toggle");
+  const soundLabel = document.querySelector(".sound-label");
+
+  if (storyVideo && soundToggle && soundLabel) {
+    soundToggle.addEventListener("click", async () => {
+      storyVideo.muted = !storyVideo.muted;
+
+      if (!storyVideo.muted) {
+        try {
+          await storyVideo.play();
+        } catch (error) {
+          storyVideo.muted = true;
+        }
+      }
+
+      const isMuted = storyVideo.muted;
+
+      soundToggle.setAttribute(
+        "aria-label",
+        isMuted
+          ? "Activar sonido del video"
+          : "Silenciar sonido del video"
+      );
+
+      soundToggle.setAttribute(
+        "aria-pressed",
+        String(!isMuted)
+      );
+
+      soundLabel.textContent = isMuted
+        ? "Escuchar ambiente"
+        : "Silenciar ambiente";
+    });
+  }
+</script>
