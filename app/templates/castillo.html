@@ -339,6 +339,657 @@
   font-size: 1rem;
   line-height: 1;
 }
+
+.sensorial-section {
+  position: relative;
+  overflow: hidden;
+  color: var(--paper);
+  background:
+    radial-gradient(circle at 76% 20%, rgba(216, 183, 99, 0.18), transparent 27rem),
+    radial-gradient(circle at 10% 88%, rgba(216, 183, 99, 0.08), transparent 30rem),
+    #0d0e0c;
+}
+
+.sensorial-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.32;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(216, 183, 99, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(216, 183, 99, 0.07) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
+}
+
+.sensorial-section .block {
+  position: relative;
+  z-index: 1;
+}
+
+.sensorial-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: clamp(2rem, 7vw, 6rem);
+  align-items: end;
+}
+
+.sensorial-heading h2 {
+  max-width: 720px;
+  color: var(--gold-bright);
+}
+
+.score-card {
+  padding: 1.6rem 1.8rem;
+  border: 1px solid var(--line);
+  background: rgba(10, 11, 9, 0.58);
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.22);
+}
+
+.score-label,
+.score-caption,
+.micro-label {
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.score-label,
+.micro-label {
+  color: var(--gold);
+}
+
+.score-caption {
+  margin-top: 0.4rem;
+  color: var(--muted);
+}
+
+.score-number {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  margin-top: 0.35rem;
+  color: var(--gold-bright);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  line-height: 1;
+}
+
+.score-number span {
+  font-size: clamp(4.5rem, 8vw, 6.7rem);
+  letter-spacing: -0.07em;
+}
+
+.score-number small {
+  font-family: Montserrat, Arial, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.sensory-intro {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-top: 3.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.sensory-intro p {
+  max-width: 700px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.08rem;
+  line-height: 1.8;
+}
+
+.sensory-start {
+  flex: 0 0 auto;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--gold);
+  color: var(--gold-bright);
+  background: transparent;
+  cursor: pointer;
+  font-family: Montserrat, Arial, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  transition: 0.25s ease;
+}
+
+.sensory-start:hover,
+.sensory-start:focus-visible {
+  color: var(--ink);
+  background: var(--gold-bright);
+  outline: none;
+}
+
+.sensory-start span {
+  display: inline-block;
+  margin-left: 0.55rem;
+  font-size: 1.1rem;
+  transition: transform 0.25s ease;
+}
+
+.sensory-start:hover span {
+  transform: translateY(3px);
+}
+
+.temperature-experience {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.82fr) minmax(0, 1.18fr);
+  min-height: 470px;
+  margin-top: 3rem;
+  border: 1px solid var(--line);
+  background: rgba(7, 8, 7, 0.5);
+}
+
+.temperature-visual {
+  position: relative;
+  display: grid;
+  min-height: 470px;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 65%, rgba(217, 133, 54, 0.34), transparent 8rem),
+    linear-gradient(145deg, #19120e, #0b0c0a 67%);
+  transition: background 0.5s ease;
+}
+
+.temperature-visual.warm {
+  background:
+    radial-gradient(circle at 50% 65%, rgba(196, 160, 86, 0.22), transparent 8rem),
+    linear-gradient(145deg, #16140e, #0b0c0a 67%);
+}
+
+.temperature-visual.cold {
+  background:
+    radial-gradient(circle at 50% 65%, rgba(129, 157, 162, 0.24), transparent 8rem),
+    linear-gradient(145deg, #0d1719, #080a0a 67%);
+}
+
+.temperature-visual::before {
+  content: "";
+  position: absolute;
+  width: 390px;
+  height: 390px;
+  border: 1px solid rgba(216, 183, 99, 0.24);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 45px rgba(216, 183, 99, 0.035),
+    0 0 0 90px rgba(216, 183, 99, 0.025);
+}
+
+.cup {
+  position: relative;
+  z-index: 1;
+  width: 160px;
+  height: 155px;
+  transform: translateY(22px);
+}
+
+.cup-rim {
+  position: absolute;
+  top: 0;
+  left: 12px;
+  width: 136px;
+  height: 39px;
+  border: 4px solid var(--gold-bright);
+  border-radius: 50%;
+  background: #17110d;
+  box-shadow: inset 0 0 0 7px rgba(85, 48, 22, 0.95);
+}
+
+.cup-body {
+  position: absolute;
+  top: 19px;
+  left: 20px;
+  width: 120px;
+  height: 105px;
+  border: 3px solid var(--gold-bright);
+  border-top: 0;
+  border-radius: 0 0 46px 46px;
+  background: linear-gradient(90deg, #0c0d0b, #3a2c1d 52%, #11120f);
+}
+
+.cup-handle {
+  position: absolute;
+  top: 42px;
+  right: 0;
+  width: 48px;
+  height: 59px;
+  border: 3px solid var(--gold-bright);
+  border-left: 0;
+  border-radius: 0 38px 38px 0;
+}
+
+.steam {
+  position: absolute;
+  z-index: 2;
+  top: -65px;
+  width: 21px;
+  height: 64px;
+  border-left: 2px solid var(--gold-bright);
+  border-radius: 55%;
+  opacity: 0.65;
+  animation: steam-rise 3s ease-in-out infinite;
+}
+
+.steam-one {
+  left: 46px;
+}
+
+.steam-two {
+  left: 78px;
+  animation-delay: 0.7s;
+}
+
+.steam-three {
+  left: 108px;
+  animation-delay: 1.35s;
+}
+
+.temperature-visual.warm .steam {
+  opacity: 0.28;
+  animation-duration: 4.2s;
+}
+
+.temperature-visual.cold .steam {
+  opacity: 0;
+  animation: none;
+}
+
+.temperature-degree {
+  position: absolute;
+  bottom: 2.2rem;
+  color: var(--gold);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+@keyframes steam-rise {
+  0%, 100% {
+    transform: translateY(10px) rotate(-8deg);
+    opacity: 0;
+  }
+
+  35%, 70% {
+    opacity: 0.72;
+  }
+
+  50% {
+    transform: translateY(-12px) rotate(8deg);
+  }
+}
+
+.temperature-content {
+  padding: clamp(2rem, 6vw, 5rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.temperature-controls {
+  display: flex;
+  gap: 0.6rem;
+  margin: 1.15rem 0 3rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.temperature-button {
+  position: relative;
+  padding: 0.8rem 0.2rem;
+  border: 0;
+  color: #99958b;
+  background: transparent;
+  cursor: pointer;
+  font-family: Montserrat, Arial, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.temperature-button::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: transparent;
+  transition: 0.25s ease;
+}
+
+.temperature-button:hover,
+.temperature-button:focus-visible,
+.temperature-button.is-active {
+  color: var(--gold-bright);
+  outline: none;
+}
+
+.temperature-button.is-active::after {
+  background: var(--gold-bright);
+}
+
+.temperature-panel {
+  max-width: 600px;
+  animation: panel-in 0.35s ease both;
+}
+
+.temperature-index,
+.flavor-detail-number {
+  color: var(--gold);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.temperature-panel h3,
+.flavor-detail h3 {
+  margin: 0.65rem 0 1rem;
+  color: var(--gold-bright);
+  font-size: clamp(2.4rem, 4vw, 4.3rem);
+  font-weight: 500;
+  letter-spacing: -0.05em;
+}
+
+.temperature-panel p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.03rem;
+}
+
+.temperature-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1.8rem;
+}
+
+.temperature-tags span {
+  padding: 0.43rem 0.65rem;
+  border: 1px solid rgba(216, 183, 99, 0.37);
+  color: var(--paper);
+  font-size: 0.63rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.flavor-map {
+  margin-top: 4rem;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  border: 1px solid var(--line);
+  background: rgba(14, 15, 13, 0.66);
+}
+
+.flavor-map-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.flavor-map-header p:last-child {
+  max-width: 410px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.flavor-orbit {
+  position: relative;
+  width: min(100%, 650px);
+  height: 430px;
+  margin: 2.2rem auto 1.2rem;
+}
+
+.flavor-orbit::before,
+.flavor-orbit::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border: 1px solid rgba(216, 183, 99, 0.22);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.flavor-orbit::before {
+  width: 390px;
+  height: 390px;
+}
+
+.flavor-orbit::after {
+  width: 250px;
+  height: 250px;
+}
+
+.flavor-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  display: grid;
+  width: 132px;
+  height: 132px;
+  place-content: center;
+  border: 1px solid var(--gold);
+  border-radius: 50%;
+  color: var(--gold-bright);
+  background: #11120f;
+  text-align: center;
+  transform: translate(-50%, -50%);
+}
+
+.flavor-core span {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 2.15rem;
+  line-height: 0.85;
+}
+
+.flavor-core small {
+  margin-top: 0.45rem;
+  color: var(--paper);
+  font-size: 0.57rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.flavor-point {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  width: 116px;
+  height: 116px;
+  place-items: center;
+  padding: 0.5rem;
+  border: 1px solid rgba(216, 183, 99, 0.55);
+  border-radius: 50%;
+  color: var(--paper);
+  background: #151612;
+  cursor: pointer;
+  font-family: Montserrat, Arial, sans-serif;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.35;
+  text-align: center;
+  text-transform: uppercase;
+  transition: 0.25s ease;
+}
+
+.flavor-point:hover,
+.flavor-point:focus-visible,
+.flavor-point.is-selected {
+  border-color: var(--gold-bright);
+  color: #151612;
+  background: var(--gold-bright);
+  outline: none;
+  transform: scale(1.08);
+}
+
+.flavor-citrus {
+  top: 8px;
+  left: calc(50% - 58px);
+}
+
+.flavor-sugar {
+  top: 157px;
+  right: 20px;
+}
+
+.flavor-acidity {
+  bottom: 10px;
+  left: calc(50% - 58px);
+}
+
+.flavor-body {
+  top: 157px;
+  left: 20px;
+}
+
+.flavor-detail {
+  display: grid;
+  grid-template-columns: 55px minmax(0, 1fr);
+  gap: 1.2rem;
+  max-width: 780px;
+  margin: 0 auto;
+  padding-top: 1.8rem;
+  border-top: 1px solid var(--line);
+  animation: panel-in 0.35s ease both;
+}
+
+.flavor-detail .micro-label {
+  margin: 0;
+}
+
+.flavor-detail h3 {
+  margin-top: 0.45rem;
+  font-size: clamp(2rem, 3vw, 3.25rem);
+}
+
+.flavor-detail p:last-child {
+  margin: 0;
+  color: var(--muted);
+}
+
+.cupping-disclaimer {
+  display: flex;
+  gap: 0.8rem;
+  max-width: 860px;
+  margin: 3rem auto 0;
+  padding: 1rem 1.15rem;
+  border-left: 2px solid var(--gold);
+  color: #aaa599;
+  background: rgba(216, 183, 99, 0.06);
+  font-size: 0.78rem;
+  line-height: 1.65;
+}
+
+.cupping-disclaimer span {
+  color: var(--gold);
+}
+
+.cupping-disclaimer p {
+  margin: 0;
+}
+
+.cupping-disclaimer strong {
+  color: var(--gold-bright);
+}
+
+@media (max-width: 760px) {
+  .sensorial-heading,
+  .temperature-experience {
+    grid-template-columns: 1fr;
+  }
+
+  .score-card {
+    max-width: 280px;
+  }
+
+  .sensory-intro,
+  .flavor-map-header {
+    display: block;
+  }
+
+  .sensory-start {
+    margin-top: 1.5rem;
+  }
+
+  .temperature-visual,
+  .temperature-experience {
+    min-height: 340px;
+  }
+
+  .temperature-content {
+    padding: 2rem 1.5rem 3rem;
+  }
+
+  .flavor-orbit {
+    height: 370px;
+    transform: scale(0.86);
+    transform-origin: top center;
+    margin-bottom: -38px;
+  }
+
+  .flavor-detail {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 410px) {
+  .temperature-controls {
+    gap: 0.2rem;
+    justify-content: space-between;
+  }
+
+  .temperature-button {
+    font-size: 0.61rem;
+  }
+
+  .flavor-orbit {
+    transform: scale(0.68);
+    margin-bottom: -125px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .steam,
+  .temperature-panel,
+  .flavor-detail {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
   </style>
 </head>
 <body>
@@ -439,6 +1090,198 @@
       </div>
     </section>
 
+    <section id="perfil-sensorial" class="sensorial-section">
+      <div class="block">
+        <div class="sensorial-heading">
+          <div>
+            <p class="section-kicker">Perfil sensorial</p>
+            <h2>Un origen para descubrir<br />a cada temperatura.</h2>
+          </div>
+
+          <div class="score-card" aria-label="Puntaje de catación: 84.25">
+            <span class="score-label">Puntaje de perfil</span>
+
+            <div class="score-number">
+              <span id="scoreValue">0.00</span>
+              <small>/ 100</small>
+            </div>
+
+            <span class="score-caption">Evaluación sensorial</span>
+          </div>
+        </div>
+
+        <div class="sensory-intro">
+          <p>
+            Este lote revela cítricos amarillos, azúcar morena y una dulzura
+            balanceada. Más que una nota fija, es una taza que evoluciona mientras
+            la disfrutas.
+          </p>
+
+          <button
+            id="startSensoryExperience"
+            class="sensory-start"
+            type="button"
+            aria-controls="temperatureExperience"
+          >
+            Explorar la taza
+            <span aria-hidden="true">↓</span>
+          </button>
+        </div>
+
+        <div id="temperatureExperience" class="temperature-experience">
+          <div
+            class="temperature-visual hot"
+            id="temperatureVisual"
+            aria-hidden="true"
+          >
+            <div class="cup">
+              <span class="steam steam-one"></span>
+              <span class="steam steam-two"></span>
+              <span class="steam steam-three"></span>
+              <div class="cup-rim"></div>
+              <div class="cup-body"></div>
+              <div class="cup-handle"></div>
+            </div>
+
+            <span id="temperatureDegree" class="temperature-degree">Caliente</span>
+          </div>
+
+          <div class="temperature-content">
+            <p class="micro-label">Evolución de la taza</p>
+
+            <div
+              class="temperature-controls"
+              role="tablist"
+              aria-label="Seleccionar temperatura de la bebida"
+            >
+              <button
+                class="temperature-button is-active"
+                type="button"
+                role="tab"
+                aria-selected="true"
+                aria-controls="temperaturePanel"
+                data-temperature="hot"
+              >
+                Caliente
+              </button>
+
+              <button
+                class="temperature-button"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                aria-controls="temperaturePanel"
+                data-temperature="warm"
+              >
+                Tibio
+              </button>
+
+              <button
+                class="temperature-button"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                aria-controls="temperaturePanel"
+                data-temperature="cold"
+              >
+                Frío
+              </button>
+            </div>
+
+            <article
+              id="temperaturePanel"
+              class="temperature-panel"
+              role="tabpanel"
+              aria-live="polite"
+            >
+              <span id="temperatureIndex" class="temperature-index">01</span>
+
+              <h3 id="temperatureTitle">Jugoso desde el primer sorbo.</h3>
+
+              <p id="temperatureText">
+                En caliente, la taza se percibe jugosa y viva. La dulzura de azúcar
+                morena acompaña una acidez suave y agradable.
+              </p>
+
+              <div id="temperatureTags" class="temperature-tags">
+                <span>Jugoso</span>
+                <span>Azúcar morena</span>
+                <span>Cítricos amarillos</span>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div class="flavor-map">
+          <div class="flavor-map-header">
+            <p class="micro-label">Mapa de percepción</p>
+            <p>Presiona cada atributo para leer cómo apareció en la evaluación.</p>
+          </div>
+
+          <div class="flavor-orbit" role="group" aria-label="Atributos sensoriales">
+            <button
+              class="flavor-point flavor-citrus is-selected"
+              type="button"
+              data-flavor="citrus"
+            >
+              <span>Cítricos<br />amarillos</span>
+            </button>
+
+            <button
+              class="flavor-point flavor-sugar"
+              type="button"
+              data-flavor="sugar"
+            >
+              <span>Azúcar<br />morena</span>
+            </button>
+
+            <button
+              class="flavor-point flavor-acidity"
+              type="button"
+              data-flavor="acidity"
+            >
+              <span>Acidez</span>
+            </button>
+
+            <button
+              class="flavor-point flavor-body"
+              type="button"
+              data-flavor="body"
+            >
+              <span>Sensación<br />en boca</span>
+            </button>
+
+            <div class="flavor-core">
+              <span>Guavatá</span>
+              <small>Santander</small>
+            </div>
+          </div>
+
+          <div id="flavorDetail" class="flavor-detail" aria-live="polite">
+            <span class="flavor-detail-number">01</span>
+
+            <div>
+              <p class="micro-label">Lectura sensorial</p>
+              <h3>Cítricos amarillos</h3>
+              <p>
+                El perfil registró una expresión cítrica amarilla que aporta
+                frescura y acompaña la dulzura de la taza.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="cupping-disclaimer">
+          <span aria-hidden="true">✦</span>
+          <p>
+            Puntaje de perfil: <strong>84.25</strong>. Evaluación realizada el 5 de
+            agosto de 2026. La experiencia sensorial puede variar según molienda,
+            receta, agua y temperatura de servicio.
+          </p>
+        </div>
+      </div>
+    </section>
+
     <section class="experience">
       <div class="block experience-grid">
         <div>
@@ -495,6 +1338,196 @@
 
       soundToggle.setAttribute("aria-label", "Activar sonido del video");
       soundToggle.setAttribute("aria-pressed", "false");
+    }
+  });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const scoreValue = document.getElementById("scoreValue");
+    const startButton = document.getElementById("startSensoryExperience");
+    const experience = document.getElementById("temperatureExperience");
+    const visual = document.getElementById("temperatureVisual");
+    const degree = document.getElementById("temperatureDegree");
+    const temperatureTitle = document.getElementById("temperatureTitle");
+    const temperatureText = document.getElementById("temperatureText");
+    const temperatureIndex = document.getElementById("temperatureIndex");
+    const temperatureTags = document.getElementById("temperatureTags");
+    const temperatureButtons = document.querySelectorAll(".temperature-button");
+    const flavorButtons = document.querySelectorAll(".flavor-point");
+    const flavorDetail = document.getElementById("flavorDetail");
+
+    const temperatures = {
+      hot: {
+        index: "01",
+        label: "Caliente",
+        title: "Jugoso desde el primer sorbo.",
+        text: "En caliente, la taza se percibe jugosa y viva. La dulzura de azúcar morena acompaña una acidez suave y agradable.",
+        tags: ["Jugoso", "Azúcar morena", "Cítricos amarillos"]
+      },
+      warm: {
+        index: "02",
+        label: "Tibio",
+        title: "Una pausa más seca y contemplativa.",
+        text: "Al bajar la temperatura, la sensación en boca se percibe más seca. Es una transición que invita a observar la taza con más atención.",
+        tags: ["Evolución", "Sensación seca", "Balance"]
+      },
+      cold: {
+        index: "03",
+        label: "Frío",
+        title: "La jugosidad regresa.",
+        text: "Cuando la taza se enfría, vuelve una percepción jugosa. El café recupera viveza y revela otra forma de disfrutar el mismo origen.",
+        tags: ["Jugoso", "Final limpio", "Origen"]
+      }
+    };
+
+    const flavors = {
+      citrus: {
+        number: "01",
+        title: "Cítricos amarillos",
+        text: "El perfil registró una expresión de cítricos amarillos que aporta frescura y acompaña la dulzura de la taza."
+      },
+      sugar: {
+        number: "02",
+        title: "Azúcar morena",
+        text: "La dulzura se describió como azúcar morena: una sensación cálida, agradable y balanceada."
+      },
+      acidity: {
+        number: "03",
+        title: "Acidez agradable",
+        text: "La acidez fue percibida como un poco baja, pero agradable. Su función es equilibrar la taza sin imponerse."
+      },
+      body: {
+        number: "04",
+        title: "Una textura que evoluciona",
+        text: "La sensación en boca cambia con la temperatura: jugosa en caliente, más seca al estar tibia y nuevamente jugosa en frío."
+      }
+    };
+
+    let scoreAnimated = false;
+
+    function animateScore() {
+      if (scoreAnimated || !scoreValue) return;
+
+      scoreAnimated = true;
+
+      const target = 84.25;
+      const duration = 1500;
+      const start = performance.now();
+
+      function updateScore(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const value = (target * eased).toFixed(2);
+
+        scoreValue.textContent = value;
+
+        if (progress < 1) {
+          window.requestAnimationFrame(updateScore);
+        }
+      }
+
+      window.requestAnimationFrame(updateScore);
+    }
+
+    function setTemperature(key) {
+      const data = temperatures[key];
+
+      if (!data || !visual) return;
+
+      visual.classList.remove("hot", "warm", "cold");
+      visual.classList.add(key);
+
+      degree.textContent = data.label;
+      temperatureIndex.textContent = data.index;
+      temperatureTitle.textContent = data.title;
+      temperatureText.textContent = data.text;
+
+      temperatureTags.innerHTML = data.tags
+        .map((tag) => `<span>${tag}</span>`)
+        .join("");
+
+      temperatureTitle.parentElement.style.animation = "none";
+      void temperatureTitle.parentElement.offsetWidth;
+      temperatureTitle.parentElement.style.animation = "";
+
+      temperatureButtons.forEach((button) => {
+        const isActive = button.dataset.temperature === key;
+
+        button.classList.toggle("is-active", isActive);
+        button.setAttribute("aria-selected", String(isActive));
+      });
+    }
+
+    function setFlavor(key) {
+      const data = flavors[key];
+
+      if (!data || !flavorDetail) return;
+
+      flavorButtons.forEach((button) => {
+        button.classList.toggle(
+          "is-selected",
+          button.dataset.flavor === key
+        );
+      });
+
+      flavorDetail.innerHTML = `
+        <span class="flavor-detail-number">${data.number}</span>
+        <div>
+          <p class="micro-label">Lectura sensorial</p>
+          <h3>${data.title}</h3>
+          <p>${data.text}</p>
+        </div>
+      `;
+
+      flavorDetail.style.animation = "none";
+      void flavorDetail.offsetWidth;
+      flavorDetail.style.animation = "";
+    }
+
+    if (startButton && experience) {
+      startButton.addEventListener("click", () => {
+        animateScore();
+
+        experience.scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        });
+
+        window.setTimeout(() => {
+          setTemperature("hot");
+        }, 450);
+      });
+    }
+
+    temperatureButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        setTemperature(button.dataset.temperature);
+      });
+    });
+
+    flavorButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        setFlavor(button.dataset.flavor);
+      });
+    });
+
+    if ("IntersectionObserver" in window && scoreValue) {
+      const scoreObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              animateScore();
+              scoreObserver.disconnect();
+            }
+          });
+        },
+        { threshold: 0.45 }
+      );
+
+      scoreObserver.observe(scoreValue);
+    } else {
+      animateScore();
     }
   });
 </script>
