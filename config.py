@@ -51,6 +51,11 @@ class Config:
     CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET")
     CLOUDINARY_FOLDER = os.getenv("CLOUDINARY_FOLDER", "densa-niebla/comprobantes")
 
+    WEB_EVENT_HASH_SECRET = os.getenv("WEB_EVENT_HASH_SECRET")
+    TRUST_PROXY_HEADERS = (
+    os.getenv("TRUST_PROXY_HEADERS", "false").strip().lower() == "true"
+)
+
     @classmethod
     def init_app(cls, app):
         app.config["SQLALCHEMY_DATABASE_URI"] = get_database_url(*cls.DATABASE_URL_VARS)
