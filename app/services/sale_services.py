@@ -363,6 +363,7 @@ def cancel_sale(
 				if allocation.movement_id is not None:
 					reverse_movement(session, allocation.movement_id, created_by_id=created_by_id)
 	
+	previous_status = sale.status
 	sale.status = "CANCELLED"
 	sale.cancelled_at = datetime.now(timezone.utc)
 	sale.cancellation_reason = reason
@@ -375,7 +376,8 @@ def cancel_sale(
 			notify_sale_cancelled(
 				sale,
 				reason=reason,
-				cancelled_by=cancelled_by_name
+				cancelled_by=cancelled_by_name,
+				previous_status=previous_status,
 			)
 		except TelegramError:
 			# No fallar la cancelación si Telegram no funciona

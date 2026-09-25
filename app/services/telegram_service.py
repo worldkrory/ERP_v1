@@ -13,6 +13,7 @@ class TelegramError(RuntimeError):
 
 
 def _call(method: str, payload: dict) -> dict:
+    
     token = current_app.config.get("TELEGRAM_BOT_TOKEN")
     if not token or not current_app.config.get("TELEGRAM_CHAT_ID"):
         raise TelegramError("Telegram no está configurado.")
@@ -27,6 +28,31 @@ def _call(method: str, payload: dict) -> dict:
     if not result.get("ok"):
         raise TelegramError("Telegram rechazó la notificación.")
     return result["result"]
+
+def send_message(
+    text: str,
+    *,
+    parse_mode: str | None = None,
+    disable_web_page_preview: bool = True,
+) -> int:
+    """Enviar un mensaje de texto genérico al chat operativo.
+
+    Esta función permite reutilizar el bot para eventos de ventas,
+    visitas web, formularios, clics de WhatsApp u otros avisos.
+    """
+
+    payload = {
+        "chat_id": current_app.config["TELEGRAM_CHAT_ID"],
+        "text": text,
+        "disable_web_page_preview": disable_web_page_preview,
+    }
+
+    if parse_mode is not None:
+        payload["parse_mode"] = parse_mode
+
+    result = _call("sendMessage", payload)
+
+    return int(result["message_id"])
 
 
 def notify_sale(sale) -> int:
@@ -58,7 +84,12 @@ def send_receipt(photo_url: str, caption: str) -> int:
     return int(result["message_id"])
 
 
-def notify_sale_cancelled(sale, reason: str, cancelled_by: str | None = None) -> int:
+def notify_sale_cancelled(
+    sale,
+    reason: str,
+    cancelled_by: str | None = None,
+    previous_status: str | None = None,
+) -> int:
     """Notificar cancelación de venta a Telegram.
     
     Args:
@@ -70,6 +101,7 @@ def notify_sale_cancelled(sale, reason: str, cancelled_by: str | None = None) ->
         int: ID del mensaje en Telegram
     """
     user_info = f"\nCancelada por: {cancelled_by}" if cancelled_by else ""
+
     
     result = _call(
         "sendMessage",
@@ -80,7 +112,7 @@ def notify_sale_cancelled(sale, reason: str, cancelled_by: str | None = None) ->
                 f"Venta: {sale.sale_number}\n"
                 f"Cliente: {sale.party.display_name}\n"
                 f"Total: {sale.currency} {sale.total:,.2f}\n"
-                f"Estado anterior: {sale.status}\n"
+                f"Estado anterior: {previous_status or 'N/A'}\n"
                 f"Razón: {reason}"
                 f"{user_info}\n"
                 f"Timestamp: {sale.cancelled_at.strftime('%Y-%m-%d %H:%M:%S') if sale.cancelled_at else 'N/A'}"

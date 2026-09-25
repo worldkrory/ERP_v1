@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, redirect, url_for
+from flask import Flask, jsonify, render_template, redirect, url_for, request
 import os
 from config import config_by_name
 from app.extensions import db, migrate, login_manager
@@ -9,7 +9,14 @@ from app.auth import auth_bp
 from app.seed import register_seed_commands
 from app.production import production_bp
 
+
 from app import models
+
+from app.services.web_visit_service import (
+    build_web_visit_event,
+    notify_web_visit_safely,
+    should_notify_visit,
+)
 
 
 
@@ -60,7 +67,32 @@ def create_app(config_name=None):
 
     @app.route('/microlote/bourbon-rosado')
     def bourbon_rosado():
+
+        event = build_web_visit_event(
+        request,
+        page_name="Microlote Bourbon Rosado · Guavatá, Santander",
+        )
+
+        if should_notify_visit(event):
+            notify_web_visit_safely(event)
+
+
         return render_template('microlote_bourbon_rosado.html')
+
+
+
+    @app.route('/microlote/castillo')
+    def castillo():
+
+        event = build_web_visit_event(
+        request,
+        page_name="Origen Castillo · Guavatá, Santander",
+        )
+
+        if should_notify_visit(event):
+            notify_web_visit_safely(event)
+
+        return render_template('castillo.html')
 
     
     

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Origen Castillo de Densa Niebla: café de finca colombiano, cultivado en Guavatá, Santander." />
+  <title>Origen Castillo | Densa Niebla</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #10100f;
+      --smoke: #1a1a18;
+      --paper: #f4efe5;
+      --gold: #d8b763;
+      --gold-bright: #f0d38d;
+      --muted: #c9c1b0;
+      --line: rgba(216, 183, 99, .42);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--paper);
+      background: var(--ink);
+      font-family: Montserrat, Arial, sans-serif;
+      line-height: 1.65;
+    }
+
+    .hero {
+      min-height: 100svh;
+      position: relative;
+      isolation: isolate;
+      display: grid;
+      align-items: end;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 70% 18%, rgba(181, 137, 58, .20), transparent 31rem),
+        radial-gradient(circle at 20% 80%, rgba(255, 255, 255, .06), transparent 27rem),
+        linear-gradient(135deg, #080908, #1c1d1a 52%, #0b0b0a);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      inset: 0;
+      opacity: .18;
+      background-image: url('../static/img/BOLSA_ADS.jpg');
+      background-position: 84% center;
+      background-size: cover;
+      mix-blend-mode: screen;
+      filter: contrast(1.12) grayscale(1);
+      transform: scale(1.04);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(8, 9, 8, .94) 0%, rgba(8, 9, 8, .78) 46%, rgba(8, 9, 8, .22) 100%), linear-gradient(0deg, rgba(8, 9, 8, .94), transparent 52%);
+    }
+
+    .nav {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.5rem clamp(1.25rem, 5vw, 5rem);
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      font-size: .68rem;
+    }
+
+    .brand { color: var(--paper); text-decoration: none; font-weight: 700; }
+    .nav a:not(.brand) { color: var(--gold-bright); text-decoration: none; }
+
+    .hero-content {
+      width: min(1200px, 100%);
+      padding: 4rem clamp(1.25rem, 8vw, 8rem) 5rem;
+    }
+
+    .eyebrow, .section-kicker {
+      margin: 0 0 1rem;
+      color: var(--gold-bright);
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 { font-family: "Cormorant Garamond", Georgia, serif; line-height: .93; }
+    h1 {
+      max-width: 900px;
+      margin: 0;
+      font-size: clamp(5.3rem, 15vw, 12rem);
+      font-weight: 500;
+      letter-spacing: -.065em;
+      text-transform: uppercase;
+      color: var(--gold-bright);
+      text-shadow: 0 2px 22px rgba(216, 183, 99, .22);
+    }
+
+    .origin {
+      max-width: 670px;
+      margin: 1.35rem 0 0;
+      font-size: clamp(1.05rem, 2vw, 1.35rem);
+      color: var(--paper);
+    }
+
+    .origin strong { color: var(--gold-bright); font-weight: 600; }
+
+    .quick-specs {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin: 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: rgba(7, 8, 7, .72);
+      backdrop-filter: blur(8px);
+    }
+
+    .quick-specs div { padding: 1.7rem clamp(1rem, 3vw, 3rem); border-right: 1px solid var(--line); }
+    .quick-specs div:last-child { border-right: 0; }
+    .quick-specs dt { margin-bottom: .35rem; color: var(--gold); font-size: .68rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .quick-specs dd { margin: 0; font-size: .93rem; color: var(--paper); }
+
+    .content { background: var(--paper); color: var(--smoke); }
+    .block { width: min(1120px, calc(100% - 2.5rem)); margin: 0 auto; padding: clamp(4.5rem, 10vw, 8rem) 0; }
+
+    .intro-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(280px, .95fr); gap: clamp(2.5rem, 8vw, 8rem); align-items: start; }
+    .section-kicker { color: #806122; }
+    h2 { max-width: 680px; margin: 0; font-size: clamp(3.1rem, 7vw, 6.5rem); font-weight: 500; letter-spacing: -.055em; }
+    .lead { margin: 0; font-size: 1.08rem; line-height: 1.85; color: #3c3a35; }
+    .lead + .lead { margin-top: 1rem; }
+
+    .dark { color: var(--paper); background: #131412; }
+    .dark .section-kicker { color: var(--gold); }
+    .dark h2 { color: var(--gold-bright); }
+
+    .story { display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(2.5rem, 9vw, 8rem); }
+    .story-copy { max-width: 560px; }
+    .story-copy p { color: var(--muted); font-size: 1.04rem; }
+
+    .origin-mark {
+      min-height: 360px;
+      padding: 2.25rem;
+      position: relative;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: linear-gradient(150deg, rgba(216, 183, 99, .16), rgba(216, 183, 99, .015) 55%), #0c0d0b;
+    }
+    .origin-mark::before {
+      content: "";
+      position: absolute;
+      inset: -30%;
+      opacity: .48;
+      background: repeating-radial-gradient(ellipse at 50% 110%, transparent 0 19px, rgba(216, 183, 99, .3) 20px 22px, transparent 23px 38px);
+      transform: rotate(-12deg);
+    }
+    .origin-mark span { position: relative; max-width: 320px; text-align: center; font-family: "Cormorant Garamond", Georgia, serif; color: var(--gold-bright); font-size: clamp(3.2rem, 7vw, 5.4rem); line-height: .85; letter-spacing: -.05em; }
+    .origin-mark small { display: block; margin-top: 1rem; color: var(--paper); font-family: Montserrat, sans-serif; font-size: .67rem; font-weight: 700; letter-spacing: .16em; line-height: 1.5; text-transform: uppercase; }
+
+    .experience { background: #e5dccb; }
+    .experience h2 { max-width: 590px; }
+    .experience-grid { color: #a57e2f; display: grid; grid-template-columns: 1.05fr .95fr; gap: clamp(2.5rem, 8vw, 7rem); align-items: end; }
+    .notes { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 2.5rem; border-top: 1px solid rgba(55, 45, 22, .3); }
+    .note { padding: 1.35rem 1rem 0 0; border-right: 1px solid rgba(55, 45, 22, .3); }
+    .note + .note { padding-left: 1rem; }
+    .note:last-child { border: 0; }
+    .note b { display: block; color: #6e531d; font-size: .67rem; letter-spacing: .12em; text-transform: uppercase; }
+    .note span { display: block; margin-top: .4rem; font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.6rem; line-height: 1; }
+    .brew { padding: 2rem; border: 1px solid rgba(55, 45, 22, .35); }
+    .brew h3 { margin: 0 0 1rem; font-size: 2.35rem; font-weight: 500; }
+    .brew p { margin: 0; color: #4a463c; }
+
+    .trace { text-align: center; }
+    .trace h2 { margin: auto; }
+    .trace p { max-width: 660px; margin: 1.7rem auto 2.4rem; color: var(--muted); }
+    .button { display: inline-block; padding: 1rem 1.45rem; border: 1px solid var(--gold); color: var(--gold-bright); text-decoration: none; font-size: .72rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; transition: .25s ease; }
+    .button:hover { color: var(--ink); background: var(--gold-bright); }
+
+    footer { padding: 2rem 1.25rem; text-align: center; color: #8f8c84; background: #090a09; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
+
+    @media (max-width: 760px) {
+      .hero { min-height: 830px; }
+      .hero::before { background-position: 70% center; opacity: .13; }
+      .quick-specs { grid-template-columns: repeat(2, 1fr); }
+      .quick-specs div:nth-child(2) { border-right: 0; }
+      .quick-specs div:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+      .intro-grid, .story, .experience-grid { grid-template-columns: 1fr; }
+      .origin-mark { min-height: 300px; }
+    }
+
+    @media (max-width: 420px) {
+      .nav { padding: 1.25rem; }
+      .nav a:not(.brand) { display: none; }
+      h1 { font-size: 4.6rem; }
+      .notes { grid-template-columns: 1fr; }
+      .note, .note + .note { padding: 1rem 0; border-right: 0; border-bottom: 1px solid rgba(55, 45, 22, .3); }
+      .note:last-child { border-bottom: 0; }
+    }
+
+    .story-video-section {
+  overflow: hidden;
+}
+
+  .story-video-layout {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: clamp(2.5rem, 9vw, 8rem);
+    align-items: center;
+  }
+
+  .video-frame {
+    position: relative;
+    min-height: 430px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: #0c0d0b;
+    isolation: isolate;
+  }
+
+  .video-frame::before {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      rgba(7, 8, 7, 0.04) 25%,
+      rgba(7, 8, 7, 0.88) 100%
+    );
+  }
+
+  .origin-video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 430px;
+    object-fit: cover;
+    object-position: center;
+    filter: contrast(1.05) saturate(0.88) brightness(0.84);
+    transform: scale(1.015);
+  }
+
+  .video-overlay {
+    position: absolute;
+    z-index: 2;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 2rem;
+    color: var(--paper);
+  }
+
+  .video-overlay p {
+    margin: 0;
+    color: var(--gold-bright);
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: clamp(2.4rem, 4vw, 3.7rem);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+  }
+
+  .video-overlay span {
+    display: block;
+    margin-top: 0.75rem;
+    color: var(--paper);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 760px) {
+    .story-video-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .video-frame,
+    .origin-video {
+      min-height: 340px;
+    }
+
+    .video-overlay {
+      padding: 1.5rem;
+    }
+  }
+
+  .sound-toggle {
+  position: absolute;
+  z-index: 3;
+  top: 1rem;
+  right: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.72rem 0.9rem;
+  border: 1px solid rgba(240, 211, 141, 0.7);
+  border-radius: 999px;
+  color: var(--paper);
+  background: rgba(8, 9, 8, 0.58);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  font-family: Montserrat, Arial, sans-serif;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.sound-toggle:hover {
+  color: #10100f;
+  background: var(--gold-bright);
+  transform: translateY(-2px);
+}
+
+.sound-toggle:focus-visible {
+  outline: 2px solid var(--gold-bright);
+  outline-offset: 3px;
+}
+
+.sound-icon {
+  display: grid;
+  width: 1rem;
+  height: 1rem;
+  place-items: center;
+  font-size: 1rem;
+  line-height: 1;
+}
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <nav class="nav" aria-label="Navegación principal">
+      <a class="brand" href="https://densaniebla.com">Densa Niebla</a>
+      <a href="#origen">Conocer el origen ↓</a>
+    </nav>
+    <div class="hero-content">
+      <p class="eyebrow">Café de finca · Colombia</p>
+      <h1>Origen<br />Castillo</h1>
+      <p class="origin">No es solo una variedad: es <strong>Guavatá, Santander</strong>, montaña, neblina y el trabajo paciente detrás de cada taza.</p>
+    </div>
+  </header>
+
+  <dl class="quick-specs" aria-label="Ficha del café">
+    <div><dt>Origen</dt><dd>Guavatá, Santander</dd></div>
+    <div><dt>Altitud</dt><dd>1.900 msnm</dd></div>
+    <div><dt>Proceso</dt><dd>Lavado</dd></div>
+    <div><dt>Tueste</dt><dd>Medio</dd></div>
+  </dl>
+
+  <main>
+    <section id="origen" class="content">
+      <div class="block intro-grid">
+        <div>
+          <p class="section-kicker">El lote</p>
+          <h2>Un café que habla primero de su tierra.</h2>
+        </div>
+        <div>
+          <p class="lead">Este café nace en Guavatá, Santander, a 1.900 metros sobre el nivel del mar. Aquí la altura, el clima y las manos que cultivan construyen un perfil honesto, limpio y profundamente colombiano.</p>
+          <p class="lead">Castillo es la variedad que acompaña el viaje; el verdadero protagonista es el origen. Cada grano reúne la finca, el paisaje y una forma de trabajar el café con respeto por su historia.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="dark story-video-section">
+      <div class="block story-video-layout">
+        <div class="story-copy">
+          <p class="section-kicker">La identidad</p>
+
+          <h2>Entre montaña, niebla y paciencia.</h2>
+
+          <p>
+            Densa Niebla nace de un vínculo directo con el territorio.
+            No buscamos esconder el café detrás de una etiqueta: buscamos
+            que la taza sea una puerta a la finca, a los surcos y a las
+            personas que hacen posible este origen.
+          </p>
+
+          <p>
+            El secado al sol y el proceso lavado preservan claridad,
+            dulzor y una expresión transparente del lugar donde fue cultivado.
+          </p>
+        </div>
+
+        <div
+          class="video-frame"
+          aria-label="Video del origen del café en Guavatá, Santander"
+        >
+
+          <div class="video-overlay">
+            <p>Guavatá, Santander</p>
+            <span>1.900 msnm · Origen Castillo</span>
+          </div>
+
+          <video
+            id="origenCastilloVideo"
+            class="origin-video"
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="metadata"
+            poster="{{ url_for('static', filename='img/bourbon-rosado-guavata-poster.png') }}"
+          >
+            <source
+              src="{{ url_for('static', filename='img/AD_WEB.mp4') }}"
+              type="video/mp4"
+            />
+
+            Tu navegador no admite la reproducción de video.
+          </video>
+
+          <button
+            id="soundToggle"
+            class="sound-toggle"
+            type="button"
+            aria-label="Activar sonido del video"
+            aria-pressed="false"
+          >
+            <span class="sound-icon" aria-hidden="true">◌</span>
+            <span class="sound-label">Activar sonido</span>
+          </button>
+
+          
+        </div>
+      </div>
+    </section>
+
+    <section class="experience">
+      <div class="block experience-grid">
+        <div>
+          <p class="section-kicker">En la taza</p>
+          <h2>Claridad para volver al origen.</h2>
+          <div class="notes" aria-label="Perfil de taza">
+            <div class="note"><b>Carácter</b><span>Dulzor limpio</span></div>
+            <div class="note"><b>Textura</b><span>Balanceada</span></div>
+            <div class="note"><b>Final</b><span>Suave y persistente</span></div>
+          </div>
+        </div>
+        <aside class="brew">
+          <h3>Para disfrutarlo</h3>
+          <p>Prepáralo con agua entre 90 y 94 °C. En filtrados, empieza con una proporción de 1:16; en espresso, úsalo como punto de partida y ajusta a tu molienda y receta favorita.</p>
+        </aside>
+      </div>
+    </section>
+
+    <section class="dark trace">
+      <div class="block">
+        <p class="section-kicker">Trazabilidad</p>
+        <h2>La historia no termina en la bolsa.</h2>
+        <p>Sigue el día a día de la finca, los procesos y los momentos que le dan sentido a Densa Niebla. Queremos que conozcas el recorrido de este café, desde Guavatá hasta tu taza.</p>
+        <a class="button" href="https://www.instagram.com/cafedensaniebla/" target="_blank" rel="noopener noreferrer">Ver el origen en Instagram</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>© Densa Niebla · Café de finca 100% colombiano</footer>
+</body>
+</html>
+
+<script>
+  const video = document.getElementById("origenCastilloVideo");
+  const soundToggle = document.getElementById("soundToggle");
+  const soundLabel = soundToggle.querySelector(".sound-label");
+  const soundIcon = soundToggle.querySelector(".sound-icon");
+
+  soundToggle.addEventListener("click", () => {
+    video.muted = !video.muted;
+
+    if (!video.muted) {
+      video.volume = 0.85;
+      video.play();
+
+      soundLabel.textContent = "Silenciar";
+      soundIcon.textContent = "🔊";
+
+      soundToggle.setAttribute("aria-label", "Silenciar video");
+      soundToggle.setAttribute("aria-pressed", "true");
+    } else {
+      soundLabel.textContent = "Activar sonido";
+      soundIcon.textContent = "🔇";
+
+      soundToggle.setAttribute("aria-label", "Activar sonido del video");
+      soundToggle.setAttribute("aria-pressed", "false");
+    }
+  });
+</script>
