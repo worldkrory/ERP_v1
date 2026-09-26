@@ -990,6 +990,270 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+.next-cup-footer {
+  color: var(--paper);
+  background: #0a0b09;
+}
+
+.next-cup-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.85fr);
+  min-height: 400px;
+  border-top: 1px solid var(--line);
+}
+
+.next-cup-copy {
+  padding: clamp(3.5rem, 7vw, 6rem) clamp(1.25rem, 8vw, 8rem);
+  background:
+    radial-gradient(
+      circle at 18% 84%,
+      rgba(216, 183, 99, 0.13),
+      transparent 22rem
+    ),
+    #10110e;
+}
+
+.next-cup-eyebrow,
+.footer-nav-label {
+  display: block;
+  margin: 0 0 0.9rem;
+  color: var(--gold);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.next-cup-copy h2 {
+  max-width: 650px;
+  margin: 0;
+  color: var(--gold-bright);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(3.3rem, 6vw, 6rem);
+  font-weight: 500;
+  letter-spacing: -0.065em;
+  line-height: 0.86;
+}
+
+.next-cup-copy > p:not(.next-cup-eyebrow) {
+  max-width: 490px;
+  margin: 1.5rem 0 0;
+  color: var(--muted);
+  font-size: 0.94rem;
+  line-height: 1.8;
+}
+
+.next-cup-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 1.7rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--gold);
+  color: var(--gold-bright);
+  font-size: 0.69rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: gap 0.22s ease, color 0.22s ease;
+}
+
+.next-cup-cta:hover,
+.next-cup-cta:focus-visible {
+  gap: 1rem;
+  color: var(--paper);
+  outline: none;
+}
+
+.next-cup-cta span {
+  font-size: 1.2rem;
+  line-height: 0;
+}
+
+.next-cup-card {
+  position: relative;
+  display: flex;
+  min-height: 400px;
+  align-items: end;
+  overflow: hidden;
+  padding: clamp(2rem, 4vw, 3.7rem);
+  border-left: 1px solid var(--line);
+  color: var(--paper);
+  background:
+    linear-gradient(145deg, rgba(216, 183, 99, 0.18), transparent 52%),
+    #12130f;
+  text-decoration: none;
+  transition: background 0.35s ease;
+}
+
+.next-cup-card::before,
+.next-cup-card::after {
+  content: "";
+  position: absolute;
+  border: 1px solid rgba(216, 183, 99, 0.34);
+  border-radius: 50%;
+  pointer-events: none;
+  transition: transform 0.65s ease;
+}
+
+.next-cup-card::before {
+  top: -135px;
+  right: -125px;
+  width: 420px;
+  height: 420px;
+}
+
+.next-cup-card::after {
+  right: 9%;
+  bottom: -165px;
+  width: 315px;
+  height: 315px;
+}
+
+.next-cup-card:hover,
+.next-cup-card:focus-visible {
+  background:
+    linear-gradient(145deg, rgba(216, 183, 99, 0.28), transparent 58%),
+    #171812;
+  outline: none;
+}
+
+.next-cup-card:hover::before,
+.next-cup-card:focus-visible::before {
+  transform: translate(-35px, 36px);
+}
+
+.next-cup-card:hover::after,
+.next-cup-card:focus-visible::after {
+  transform: translate(22px, -30px);
+}
+
+.next-cup-card-number {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  color: var(--gold);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.next-cup-card-content {
+  position: relative;
+  z-index: 1;
+}
+
+.next-cup-card-content p {
+  margin: 0 0 0.75rem;
+  color: var(--gold);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.next-cup-card-content h3 {
+  margin: 0;
+  color: var(--gold-bright);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(4.3rem, 8vw, 7rem);
+  font-weight: 500;
+  letter-spacing: -0.07em;
+  line-height: 0.73;
+}
+
+.next-cup-card-content > span {
+  display: block;
+  margin-top: 1.8rem;
+  color: var(--paper);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.footer-navigation {
+  display: grid;
+  grid-template-columns: 1.2fr auto auto;
+  gap: 2.5rem;
+  align-items: center;
+  padding: 1.25rem clamp(1.25rem, 6vw, 5rem);
+  border-top: 1px solid var(--line);
+  background: #070806;
+}
+
+.footer-navigation nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.25rem;
+}
+
+.footer-nav-label {
+  margin: 0;
+  color: #817d71;
+}
+
+.footer-microlote-link,
+.footer-social-links a {
+  color: #a7a398;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 0.2s ease;
+}
+
+.footer-microlote-link:hover,
+.footer-microlote-link:focus-visible,
+.footer-social-links a:hover,
+.footer-social-links a:focus-visible {
+  color: var(--gold-bright);
+  outline: none;
+}
+
+.footer-microlote-link.is-current {
+  color: var(--gold);
+  pointer-events: none;
+}
+
+.footer-social-links {
+  display: flex;
+  gap: 1.15rem;
+}
+
+.footer-legal {
+  color: #77756d;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+@media (max-width: 760px) {
+  .next-cup-main {
+    grid-template-columns: 1fr;
+  }
+
+  .next-cup-card {
+    min-height: 330px;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .footer-navigation {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .footer-legal {
+    text-align: left;
+  }
+}
   </style>
 </head>
 <body>
@@ -1310,7 +1574,89 @@
     </section>
   </main>
 
-  <footer>© Densa Niebla · Café de finca 100% colombiano</footer>
+  <footer class="next-cup-footer">
+  <div class="next-cup-main">
+    <div class="next-cup-copy">
+      <p class="next-cup-eyebrow">Siguiente taza</p>
+
+      <h2>
+        El mismo paisaje.<br />
+        Otra forma de sentirlo.
+      </h2>
+
+      <p>
+        Bourbon Rosado abre una nueva conversación con Guavatá:
+        un microlote para descubrir qué ocurre cuando el origen cambia
+        de expresión.
+      </p>
+
+      <a
+        class="next-cup-cta"
+        href="{{ url_for('bourbon_rosado') }}"
+      >
+        Conocer Bourbon Rosado
+        <span aria-hidden="true">→</span>
+      </a>
+    </div>
+
+    <a
+      class="next-cup-card"
+      href="{{ url_for('bourbon_rosado') }}"
+      aria-label="Ir al microlote Bourbon Rosado"
+    >
+      <span class="next-cup-card-number">02</span>
+
+      <div class="next-cup-card-content">
+        <p>Microlote</p>
+        <h3>Bourbon<br />Rosado</h3>
+        <span>Descubrir el siguiente origen ↗</span>
+      </div>
+    </a>
+  </div>
+
+  <div class="footer-navigation">
+    <nav aria-label="Navegación entre microlotes">
+      <span class="footer-nav-label">Microlotes</span>
+
+      <a
+        class="footer-microlote-link is-current"
+        href="{{ url_for('castillo') }}"
+        aria-current="page"
+      >
+        01 · Castillo
+      </a>
+
+      <a
+        class="footer-microlote-link"
+        href="{{ url_for('bourbon_rosado') }}"
+      >
+        02 · Bourbon Rosado
+      </a>
+    </nav>
+
+    <div class="footer-social-links">
+      <a
+        href="https://www.instagram.com/cafedensaniebla/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Instagram
+      </a>
+
+      <a
+        href="https://wa.me/573103893393"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        WhatsApp
+      </a>
+    </div>
+
+    <span class="footer-legal">
+      © 2026 Densa Niebla · Café de finca colombiano
+    </span>
+  </div>
+</footer>
 </body>
 </html>
 
