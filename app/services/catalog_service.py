@@ -288,7 +288,7 @@ def _variant_from_product(product: Product, day: date) -> dict[str, Any]:
         "id": product.id,
         "sku": product.sku,
         "label": (
-            f"{presentation} · {weight_g.normalize()} g"
+            f"{presentation} · {format(weight_g, 'f').rstrip('0').rstrip('.')} g"
             if weight_g is not None
             else presentation
         ),
