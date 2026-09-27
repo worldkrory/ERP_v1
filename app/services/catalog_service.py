@@ -100,7 +100,7 @@ PUBLIC_COFFEES: dict[str, PublicCoffeeDefinition] = {
             "Un microlote nacido entre montaña, neblina y manos "
             "que conocen la tierra."
         ),
-        product_ids=(),
+        product_ids=(34, 35),
         hero_image="img/products/bourbon-rosado/bolsa-frontal.jpg",
         gallery=(
             {
@@ -116,9 +116,9 @@ PUBLIC_COFFEES: dict[str, PublicCoffeeDefinition] = {
         },
         coffee={
             "variety": "Bourbon Rosado",
-            "process": None,
+            "process": "Lavado",
             "drying": None,
-            "roast": None,
+            "roast": "Medio Ligero",
         },
         profile={
             "score": None,
