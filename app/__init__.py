@@ -8,6 +8,7 @@ from app.purchases import purchases_admin_bp, purchases_bp
 from app.auth import auth_bp
 from app.seed import register_seed_commands
 from app.production import production_bp
+from app.storefront import storefront_bp
 
 
 from app import models
@@ -45,6 +46,15 @@ def create_app(config_name=None):
 
     register_blueprints(app)
     register_seed_commands(app)
+
+    @app.template_filter("cop")
+    def format_cop(value):
+        """Formatear valores monetarios para Colombia."""
+
+        if value is None:
+            return "Consultar"
+
+        return f"$ {value:,.0f}".replace(",", ".")
 
     @app.get("/health")
     def health():
@@ -113,4 +123,5 @@ def register_blueprints(app):
     app.register_blueprint(purchases_bp)
     app.register_blueprint(purchases_admin_bp)
     app.register_blueprint(production_bp)
+    app.register_blueprint(storefront_bp)
     return app

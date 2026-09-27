@@ -28,6 +28,24 @@ def get_database_url(*var_names):
         + ", ".join(var_names)
     )
 
+def csv_ints(value: str | None) -> tuple[int, ...]:
+    """Convertir una variable CSV de IDs en tupla de enteros.
+
+    Ejemplo:
+    STOREFRONT_STOCK_LOCATION_IDS=22,23
+    se convierte en:
+    (22, 23)
+    """
+
+    if not value:
+        return ()
+
+    return tuple(
+        int(item.strip())
+        for item in value.split(",")
+        if item.strip()
+    )
+
 
 class Config:
     
@@ -50,6 +68,22 @@ class Config:
     CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY")
     CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET")
     CLOUDINARY_FOLDER = os.getenv("CLOUDINARY_FOLDER", "densa-niebla/comprobantes")
+
+    # Configuración específica para la tienda pública.
+    # No contiene precios ni stock: solo define qué ubicaciones son despachables.
+    STOREFRONT_STOCK_LOCATION_IDS = csv_ints(
+        os.getenv("STOREFRONT_STOCK_LOCATION_IDS")
+    )
+
+    # Mientras no exista canal WEB en el enum de PriceList, RETAIL será la tarifa pública.
+    STOREFRONT_PRICE_CHANNEL = os.getenv(
+        "STOREFRONT_PRICE_CHANNEL",
+        "RETAIL",
+    ).strip().upper()
+
+    STOREFRONT_FREE_SHIPPING_THRESHOLD_COP = int(
+        os.getenv("STOREFRONT_FREE_SHIPPING_THRESHOLD_COP", "120000")
+    )
 
     WEB_EVENT_HASH_SECRET = os.getenv("WEB_EVENT_HASH_SECRET")
     TRUST_PROXY_HEADERS = (

@@ -1,0 +1,141 @@
+{% extends "storefront/base_store.html" %}
+
+{% block title %}Mi taza | Densa Niebla{% endblock %}
+
+{% block meta_description %}
+  Revisa los cafés seleccionados en tu taza Densa Niebla.
+{% endblock %}
+
+{% block content %}
+<section class="cart-page">
+  <div class="cart-heading">
+    <div>
+      <p class="eyebrow">Tu selección</p>
+      <h1>Mi taza.</h1>
+    </div>
+
+    <a class="text-link" href="{{ url_for('storefront.collection') }}">
+      Seguir explorando →
+    </a>
+  </div>
+
+  {% if cart["items"] %}
+    <div class="cart-layout">
+      <div class="cart-items">
+        {% for item in cart["items"] %}
+          <article class="cart-item">
+            <img
+              src="{{ url_for('static', filename=item.coffee.hero_image) }}"
+              alt="{{ item.coffee.gallery[0].alt }}"
+            >
+
+            <div class="cart-item-info">
+              <p>{{ item.coffee.subtitle }}</p>
+
+              <h2>{{ item.coffee.name }}</h2>
+
+              <span>{{ item.variant.label }}</span>
+
+              <strong>{{ item.unit_price|cop }}</strong>
+            </div>
+
+            <div class="cart-item-actions">
+              <form
+                method="post"
+                action="{{ url_for('storefront.update_item_quantity', product_id=item.product_id) }}"
+              >
+                <label>
+                  <span class="sr-only">
+                    Cantidad de {{ item.coffee.name }}
+                  </span>
+
+                  <input
+                    type="number"
+                    name="quantity"
+                    min="1"
+                    max="{{ item.variant.available_units }}"
+                    value="{{ item.quantity }}"
+                    inputmode="numeric"
+                  >
+                </label>
+
+                <button class="small-button" type="submit">
+                  Actualizar
+                </button>
+              </form>
+
+              <form
+                method="post"
+                action="{{ url_for('storefront.remove_item', product_id=item.product_id) }}"
+              >
+                <button class="remove-button" type="submit">
+                  Retirar
+                </button>
+              </form>
+
+              <strong class="cart-line-total">
+                {{ item.line_total|cop }}
+              </strong>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+
+      <aside class="cart-summary">
+        <p class="eyebrow">Resumen</p>
+
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <strong>{{ cart["subtotal"]|cop }}</strong>
+        </div>
+
+        {% if cart["qualifies_for_free_shipping"] %}
+        <p class="shipping-progress is-complete">
+            Tu pedido alcanza el umbral de envío gratis.
+        </p>
+        {% else %}
+        <p class="shipping-progress">
+            Te faltan {{ cart["remaining_for_free_shipping"]|cop }}
+            para alcanzar el umbral de envío gratis.
+        </p>
+        {% endif %}
+
+        <p class="cart-note">
+          El precio y la disponibilidad se validarán nuevamente antes de
+          confirmar tu pedido.
+        </p>
+
+        <a
+          class="primary-button cart-checkout-button"
+          href="#checkout-soon"
+        >
+          Continuar con mi pedido
+        </a>
+
+        <p id="checkout-soon" class="checkout-coming">
+          El checkout de Densa Niebla estará disponible en la siguiente
+          fase. Por ahora, tu selección permanece guardada en esta sesión.
+        </p>
+      </aside>
+    </div>
+  {% else %}
+    <div class="empty-cart">
+      <p class="eyebrow">Aún no hay café aquí</p>
+
+      <h2>Tu próxima taza<br>empieza en el origen.</h2>
+
+      <p>
+        Explora la colección y selecciona la presentación que quieras
+        llevar contigo.
+      </p>
+
+      <a
+        class="primary-button empty-cart-button"
+        href="{{ url_for('storefront.collection') }}"
+      >
+        Explorar cafés
+      </a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

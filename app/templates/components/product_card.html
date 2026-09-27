@@ -1,0 +1,57 @@
+<article class="product-card">
+  <a
+    class="product-card-image"
+    href="{{ url_for('storefront.product_detail', slug=coffee.slug) }}"
+  >
+    <img
+      src="{{ url_for('static', filename=coffee.hero_image) }}"
+      alt="{{ coffee.gallery[0].alt }}"
+      loading="lazy"
+    >
+  </a>
+
+  <div class="product-card-content">
+    <p class="product-card-origin">{{ coffee.subtitle }}</p>
+
+    <h2>
+      <a href="{{ url_for('storefront.product_detail', slug=coffee.slug) }}">
+        {{ coffee.name }}
+      </a>
+    </h2>
+
+    <p>{{ coffee.short_story }}</p>
+
+    <div class="product-card-meta">
+      {% if coffee.coffee.process %}
+        <span>{{ coffee.coffee.process|title }}</span>
+      {% endif %}
+
+      {% if coffee.coffee.roast %}
+        <span>Tueste {{ coffee.coffee.roast|lower }}</span>
+      {% endif %}
+
+      {% if coffee.profile.score %}
+        <span>{{ coffee.profile.score }} pts</span>
+      {% endif %}
+    </div>
+
+    <div class="product-card-buy">
+      {% if coffee.price_from_cop is not none %}
+        <strong>Desde {{ coffee.price_from_cop|cop }}</strong>
+      {% else %}
+        <strong>Próximamente</strong>
+      {% endif %}
+
+      <a
+        class="text-link"
+        href="{{ url_for('storefront.product_detail', slug=coffee.slug) }}"
+      >
+        {% if coffee.available %}
+          Elegir presentación →
+        {% else %}
+          Conocer el origen →
+        {% endif %}
+      </a>
+    </div>
+  </div>
+</article>

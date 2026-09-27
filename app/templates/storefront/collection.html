@@ -1,0 +1,50 @@
+{% extends "storefront/base_store.html" %}
+
+{% block title %}Cafés de finca | Densa Niebla{% endblock %}
+
+{% block meta_description %}
+  Explora cafés de finca y microlotes colombianos de Densa Niebla.
+{% endblock %}
+
+{% block content %}
+<section class="store-hero">
+  <div>
+    <p class="eyebrow">Densa Niebla · Café de finca</p>
+
+    <h1>
+      No eliges solo<br>
+      una variedad.
+    </h1>
+
+    <p>
+      Elige una historia de origen, una forma de sentir el paisaje
+      y una taza para descubrir con calma.
+    </p>
+  </div>
+
+  <div class="store-hero-mark" aria-hidden="true">
+    <span>Guavatá</span>
+    <small>Santander · Colombia</small>
+  </div>
+</section>
+
+<section class="collection-section">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">La colección</p>
+      <h2>Cafés para volver al origen.</h2>
+    </div>
+
+    <p>
+      Cada lote tiene una expresión propia. Selecciona el café que
+      quieres llevar a tu taza.
+    </p>
+  </div>
+
+  <div class="product-grid">
+    {% for coffee in coffees %}
+      {% include "components/product_card.html" %}
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

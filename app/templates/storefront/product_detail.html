@@ -1,0 +1,322 @@
+{% extends "storefront/base_store.html" %}
+
+{% block title %}{{ product.seo.title }}{% endblock %}
+{% block meta_description %}{{ product.seo.description }}{% endblock %}
+
+{% block content %}
+<section class="product-detail">
+  <div class="product-gallery">
+    <div class="product-main-image">
+      <img
+        id="product-main-image"
+        src="{{ url_for('static', filename=product.gallery[0].src) }}"
+        alt="{{ product.gallery[0].alt }}"
+      >
+    </div>
+
+    {% if product.gallery|length > 1 %}
+      <div class="product-thumbnails" aria-label="Galería del producto">
+        {% for image in product.gallery %}
+          <button
+            class="thumbnail-button {% if loop.first %}is-active{% endif %}"
+            type="button"
+            data-image-src="{{ url_for('static', filename=image.src) }}"
+            data-image-alt="{{ image.alt }}"
+            aria-label="Ver imagen {{ loop.index }} de {{ product.name }}"
+          >
+            <img
+              src="{{ url_for('static', filename=image.src) }}"
+              alt=""
+              loading="lazy"
+            >
+          </button>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="product-purchase-panel">
+    <p class="eyebrow">{{ product.collection_label }}</p>
+
+    <h1>{{ product.name }}</h1>
+    <p class="product-subtitle">{{ product.subtitle }}</p>
+
+    <p class="product-story">{{ product.short_story }}</p>
+
+    {% if product.profile.score %}
+      <div class="score-pill">
+        <strong>{{ product.profile.score }}</strong>
+        <span>{{ product.profile.score_label }}</span>
+      </div>
+    {% endif %}
+
+    {% if product.variants %}
+      <form
+        class="product-buy-form"
+        action="{{ url_for('storefront.add_item') }}"
+        method="post"
+      >
+        <input
+          type="hidden"
+          name="next"
+          value="{{ url_for('storefront.product_detail', slug=product.slug) }}"
+        >
+
+        <fieldset>
+          <legend>Elige tu presentación</legend>
+
+          <div class="variant-options">
+            {% for variant in product.variants %}
+              <label
+                class="variant-option {% if loop.first %}is-selected{% endif %} {% if not variant.available %}is-unavailable{% endif %}"
+              >
+                <input
+                  type="radio"
+                  name="product_id"
+                  value="{{ variant.id }}"
+                  data-price="{{ variant.price_cop if variant.price_cop is not none else '' }}"
+                  data-stock-label="{{ variant.stock_label }}"
+                  {% if loop.first %}checked{% endif %}
+                  {% if not variant.available %}disabled{% endif %}
+                >
+
+                <span class="variant-main">
+                  <strong>{{ variant.label }}</strong>
+                  <small>{{ variant.stock_label }}</small>
+                </span>
+
+                <span class="variant-price">
+                  {% if variant.price_cop is not none %}
+                    {{ variant.price_cop|cop }}
+                  {% else %}
+                    Consultar
+                  {% endif %}
+                </span>
+              </label>
+            {% endfor %}
+          </div>
+        </fieldset>
+
+        <div class="purchase-row">
+          <label class="quantity-control">
+            <span>Cantidad</span>
+            <input
+              type="number"
+              name="quantity"
+              value="1"
+              min="1"
+              inputmode="numeric"
+            >
+          </label>
+
+          <div class="current-price">
+            <span>Precio</span>
+            <strong id="selected-variant-price">
+              {% set first_variant = product.variants[0] %}
+              {% if first_variant.price_cop is not none %}
+                {{ first_variant.price_cop|cop }}
+              {% else %}
+                Consultar
+              {% endif %}
+            </strong>
+          </div>
+        </div>
+
+        <p class="shipping-message">
+          {{ product.shipping.message }}
+        </p>
+
+        <button
+          class="primary-button"
+          type="submit"
+          {% if not product.available %}disabled{% endif %}
+        >
+          {% if product.available %}
+            Agregar a mi taza
+          {% else %}
+            No disponible por ahora
+          {% endif %}
+        </button>
+      </form>
+    {% else %}
+      <div class="not-for-sale">
+        <p>
+          Este café está disponible para conocer su origen, pero aún no
+          tiene una presentación activa en tienda.
+        </p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="sensory-section">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">En la taza</p>
+      <h2>Una forma de volver al origen.</h2>
+    </div>
+
+    <p>
+      La experiencia puede variar según receta, agua, molienda y
+      temperatura de servicio.
+    </p>
+  </div>
+
+  {% if product.profile.notes %}
+    <div class="sensory-notes">
+      {% for note in product.profile.notes %}
+        <button type="button" class="sensory-note">
+          {{ note }}
+        </button>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if product.profile.temperature_story %}
+    <div class="temperature-explorer">
+      <div class="temperature-tabs" role="tablist">
+        {% for key, text in product.profile.temperature_story.items() %}
+          <button
+            type="button"
+            role="tab"
+            class="temperature-tab {% if loop.first %}is-active{% endif %}"
+            data-temperature="{{ key }}"
+            aria-selected="{{ 'true' if loop.first else 'false' }}"
+          >
+            {% if key == "hot" %}
+              Caliente
+            {% elif key == "warm" %}
+              Tibio
+            {% else %}
+              Frío
+            {% endif %}
+          </button>
+        {% endfor %}
+      </div>
+
+      <p id="temperature-story" class="temperature-story">
+        {{ product.profile.temperature_story.values()|list|first }}
+      </p>
+    </div>
+  {% endif %}
+</section>
+
+<section class="origin-section">
+  <div class="origin-copy">
+    <p class="eyebrow">El origen</p>
+
+    <h2>
+      {{ product.origin.municipality }},
+      {{ product.origin.region }}.
+    </h2>
+
+    <p>
+      Un café de finca colombiano que busca dejar que el territorio
+      sea el protagonista de la taza.
+    </p>
+  </div>
+
+  <dl class="origin-facts">
+    {% if product.origin.altitude_masl %}
+      <div>
+        <dt>Altitud</dt>
+        <dd>{{ product.origin.altitude_masl }} msnm</dd>
+      </div>
+    {% endif %}
+
+    {% if product.coffee.variety %}
+      <div>
+        <dt>Variedad</dt>
+        <dd>{{ product.coffee.variety }}</dd>
+      </div>
+    {% endif %}
+
+    {% if product.coffee.process %}
+      <div>
+        <dt>Proceso</dt>
+        <dd>{{ product.coffee.process }}</dd>
+      </div>
+    {% endif %}
+
+    {% if product.coffee.drying %}
+      <div>
+        <dt>Secado</dt>
+        <dd>{{ product.coffee.drying }}</dd>
+      </div>
+    {% endif %}
+
+    {% if product.coffee.roast %}
+      <div>
+        <dt>Tueste</dt>
+        <dd>{{ product.coffee.roast }}</dd>
+      </div>
+    {% endif %}
+  </dl>
+</section>
+
+<section class="brew-section">
+  <div>
+    <p class="eyebrow">Para disfrutarlo</p>
+    <h2>Tu receta es parte de la historia.</h2>
+  </div>
+
+  <div class="brew-grid">
+    <article>
+      <h3>Filtrado</h3>
+      <p>
+        Empieza con una proporción de 1:16 y agua entre 90 y 94 °C.
+        Ajusta molienda y vertido según tu método.
+      </p>
+    </article>
+
+    <article>
+      <h3>Espresso</h3>
+      <p>
+        Usa una receta base y ajusta molienda, dosis y rendimiento
+        hasta encontrar el balance que prefieras.
+      </p>
+    </article>
+  </div>
+</section>
+
+{% if product.related_products %}
+  {% set next_coffee = product.related_products[0] %}
+
+  <section class="next-cup">
+    <div>
+      <p class="eyebrow">Siguiente taza</p>
+      <h2>El mismo paisaje.<br>Otra expresión.</h2>
+
+      <p>{{ next_coffee.short_story }}</p>
+
+      <a
+        class="text-link"
+        href="{{ url_for('storefront.product_detail', slug=next_coffee.slug) }}"
+      >
+        Conocer {{ next_coffee.name }} →
+      </a>
+    </div>
+
+    <a
+      class="next-cup-card"
+      href="{{ url_for('storefront.product_detail', slug=next_coffee.slug) }}"
+    >
+      <img
+        src="{{ url_for('static', filename=next_coffee.hero_image) }}"
+        alt="{{ next_coffee.gallery[0].alt }}"
+        loading="lazy"
+      >
+
+      <span>{{ next_coffee.subtitle }}</span>
+      <strong>{{ next_coffee.name }}</strong>
+    </a>
+  </section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+  <script
+    src="{{ url_for('static', filename='js/product-detail.js') }}"
+    defer
+  ></script>
+{% endblock %}

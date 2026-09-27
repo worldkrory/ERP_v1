@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+  <meta
+    name="description"
+    content="{% block meta_description %}Café de finca colombiano · Densa Niebla{% endblock %}"
+  >
+  <title>{% block title %}Densa Niebla{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/storefront.css') }}"
+  >
+
+  {% block head %}{% endblock %}
+</head>
+
+<body>
+  <a class="skip-link" href="#main-content">
+    Saltar al contenido
+  </a>
+
+  <header class="store-header">
+    <a class="store-brand" href="{{ url_for('storefront.collection') }}">
+      Densa Niebla
+    </a>
+
+    <nav class="store-nav" aria-label="Navegación de tienda">
+      <a href="{{ url_for('storefront.collection') }}">Cafés</a>
+
+      <a
+        class="cart-link"
+        href="{{ url_for('storefront.cart') }}"
+        aria-label="Ver carrito, {{ cart_count|default(0) }} unidades"
+      >
+        Mi taza
+        <span class="cart-count" data-cart-count>
+          {{ cart_count|default(0) }}
+        </span>
+      </a>
+    </nav>
+  </header>
+
+  <div
+    id="storefront-announcements"
+    class="sr-only"
+    aria-live="polite"
+    aria-atomic="true"
+  ></div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-stack" aria-live="polite">
+        {% for category, message in messages %}
+          <p class="flash flash-{{ category }}">{{ message }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <main id="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="store-footer">
+    <div>
+      <span class="store-footer-brand">Densa Niebla</span>
+      <p>Café de finca colombiano · Guavatá, Santander.</p>
+    </div>
+
+    <nav aria-label="Enlaces de marca">
+      <a
+        href="https://www.instagram.com/cafedensaniebla/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Instagram
+      </a>
+
+      <a
+        href="https://wa.me/573103893393"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        WhatsApp
+      </a>
+    </nav>
+  </footer>
+
+  <script
+    src="{{ url_for('static', filename='js/cart.js') }}"
+    defer
+  ></script>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>
