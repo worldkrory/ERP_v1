@@ -81,7 +81,11 @@
                 >
 
                 <span class="variant-main">
-                  <strong>{{ variant.label }}</strong>
+                  {% if "grano" not in variant.label|lower %}
+                    <strong>Molido {{ variant.label }}</strong>
+                  {% else %}
+                    <strong>{{ variant.label }}</strong> 
+                  {% endif %}
                   <small>{{ variant.stock_label }}</small>
                 </span>
 
@@ -270,12 +274,11 @@
     </article>
 
     <article>
-      <h3>Espresso</h3>
-      <p>
-        Usa una receta base y ajusta molienda, dosis y rendimiento
-        hasta encontrar el balance que prefieras.
-      </p>
-    </article>
+    <h3>Espresso</h3>
+    <p>
+      Sugerimos una dosis de 18 g y molienda fina para un rendimiento de 36 g (ratio 1:2) en 26 a 30 segundos. Ajusta la molienda según tu preferencia de balance.
+    </p>
+  </article>
   </div>
 </section>
 

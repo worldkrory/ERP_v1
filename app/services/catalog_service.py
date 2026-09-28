@@ -355,7 +355,7 @@ def _serialize_coffee(
         "price_from_cop": price_from,
         "available": any(variant["available"] for variant in variants),
         "shipping": {
-            "message": "Envíos desde Manizales a toda Colombia.",
+            "message": "Envíos desde Guavatá, Manizales, Bogotá y Cali a toda Colombia.",
             "dispatch": "Despachamos de lunes a sábado.",
             "free_shipping_threshold_cop": current_app.config.get(
                 "STOREFRONT_FREE_SHIPPING_THRESHOLD_COP",
