@@ -91,18 +91,31 @@ def create_customer():
 #@require_role("VENTAS", "ADMIN")
 def customers_admin_page():
     demo_mode = False
-    try:
-        customers = _customer_query().all()
-    except SQLAlchemyError:
-        db.session.rollback()
-        customers = [SimpleNamespace(**customer) for customer in _demo_customers()]
-        demo_mode = True
+    customers = []
+
+    # 1. Verificar si hay un usuario logueado y si tiene rol de ADMIN o VENTAS
+    has_permission = (
+        current_user.is_authenticated 
+        and getattr(current_user, "role", None) in ("ADMIN", "VENTAS")
+    )
+
+    # 2. Si tiene permiso, cargar los clientes; de lo contrario, la lista queda vacía
+    if has_permission:
+        try:
+            customers = _customer_query().all()
+        except SQLAlchemyError:
+            db.session.rollback()
+            customers = [SimpleNamespace(**customer) for customer in _demo_customers()]
+            demo_mode = True
+
+
     return render_template(
         "customers_admin.html",
         customers=customers,
         document_types=DOCUMENT_TYPES,
         customer_roles=("CUSTOMER", "CAFETERIA", "INTERMEDIARY"),
         demo_mode=demo_mode,
+        can_view_customers=has_permission  # Opcional: para usar en la plantilla si lo necesitas
     )
 
 
