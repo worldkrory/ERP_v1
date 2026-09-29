@@ -1,0 +1,128 @@
+<div class="production-output-row card card-subtle">
+    <div class="input-row-header">
+        <h3>Salida #{{ row_index + 1 }}</h3>
+
+        <button
+            type="button"
+            class="button button-danger button-small"
+            onclick="this.closest('.production-output-row').remove()">
+            Quitar
+        </button>
+    </div>
+
+    <div class="form-grid">
+        <div class="field">
+            <label for="outputs-{{ row_index }}-product_id">Producto terminado</label>
+
+            <select
+                id="outputs-{{ row_index }}-product_id"
+                name="outputs-{{ row_index }}-product_id"
+                required>
+                <option value="">Selecciona un producto</option>
+
+                {% for product in products %}
+                <option value="{{ product.id }}">
+                    {{ product.sku }} — {{ product.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="outputs-{{ row_index }}-unit_id">Unidad base</label>
+
+            <select
+                id="outputs-{{ row_index }}-unit_id"
+                name="outputs-{{ row_index }}-unit_id"
+                required>
+                <option value="">Selecciona la unidad base</option>
+
+                {% for unit in units %}
+                <option value="{{ unit.id }}">
+                    {{ unit.name }} ({{ unit.code }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="outputs-{{ row_index }}-quantity">Cantidad producida</label>
+
+            <input
+                id="outputs-{{ row_index }}-quantity"
+                name="outputs-{{ row_index }}-quantity"
+                type="number"
+                min="0.0001"
+                step="0.0001"
+                placeholder="Ej.: 129"
+                required>
+        </div>
+
+        <div class="field">
+            <label for="outputs-{{ row_index }}-net_weight_kg">Peso neto (KG)</label>
+
+            <input
+                id="outputs-{{ row_index }}-net_weight_kg"
+                name="outputs-{{ row_index }}-net_weight_kg"
+                type="number"
+                min="0.0001"
+                step="0.0001"
+                placeholder="Ej.: 43.8600"
+                required>
+        </div>
+
+        <div class="field">
+            <label for="outputs-{{ row_index }}-batch_code">Código de lote terminado</label>
+
+            <input
+                id="outputs-{{ row_index }}-batch_code"
+                name="outputs-{{ row_index }}-batch_code"
+                type="text"
+                maxlength="60"
+                placeholder="Ej.: DN-CAST-2026-001"
+                required>
+        </div>
+
+        <div class="field">
+            <label for="outputs-{{ row_index }}-output_kind">Tipo de salida</label>
+
+            <select
+                id="outputs-{{ row_index }}-output_kind"
+                name="outputs-{{ row_index }}-output_kind"
+                required>
+                {% for output_kind in output_kinds %}
+                <option
+                    value="{{ output_kind }}"
+                    {% if output_kind == "MAIN" %}selected{% endif %}>
+                    {{ output_kind }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="outputs-{{ row_index }}-unit_sale_price">
+                Precio de venta unitario
+            </label>
+
+            <input
+                id="outputs-{{ row_index }}-unit_sale_price"
+                name="outputs-{{ row_index }}-unit_sale_price"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Opcional">
+        </div>
+
+        <div class="field field-full">
+            <label for="outputs-{{ row_index }}-notes">Notas de salida</label>
+
+            <input
+                id="outputs-{{ row_index }}-notes"
+                name="outputs-{{ row_index }}-notes"
+                type="text"
+                maxlength="500"
+                placeholder="Ej.: Castillo lavado, tueste medio, grano entero o molido.">
+        </div>
+    </div>
+</div>

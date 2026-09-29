@@ -1,0 +1,134 @@
+{% if not preview_ok %}
+<section class="alert alert-error">
+    <h2>No fue posible calcular el preview</h2>
+    <p>{{ error_message }}</p>
+</section>
+
+{% else %}
+<section class="card preview-card">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">Preview calculado</p>
+            <h2>Resultado de producción</h2>
+            <p class="muted">
+                Este resultado es de solo lectura. No ha creado una orden,
+                movimientos, lotes ni cambios de inventario.
+            </p>
+        </div>
+
+        <span class="status status-success">Validado</span>
+    </div>
+
+    {% set summary = preview.summary %}
+
+    <div class="metrics-grid">
+        <article class="metric">
+            <span class="metric-label">Insumo origen</span>
+            <strong class="metric-value">
+                {{ summary.source_quantity_base }}
+            </strong>
+        </article>
+
+        <article class="metric">
+            <span class="metric-label">Salida terminada</span>
+            <strong class="metric-value">
+                {{ summary.output_weight_kg }} kg
+            </strong>
+        </article>
+
+        <article class="metric">
+            <span class="metric-label">Unidades terminadas</span>
+            <strong class="metric-value">
+                {{ summary.output_quantity_count }}
+            </strong>
+        </article>
+
+        <article class="metric">
+            <span class="metric-label">Merma clasificada</span>
+            <strong class="metric-value">
+                {{ summary.waste_quantity_base }}
+            </strong>
+        </article>
+
+        <article class="metric">
+            <span class="metric-label">Rendimiento</span>
+            <strong class="metric-value">
+                {{ summary.yield_display_pct }}%
+            </strong>
+        </article>
+
+        <article class="metric">
+            <span class="metric-label">Diferencia sin explicar</span>
+            <strong class="metric-value">
+                {{ summary.unexplained_difference_base }}
+            </strong>
+        </article>
+    </div>
+
+    <div class="cost-summary">
+        <h3>Composición del costo</h3>
+
+        <table class="data-table">
+            <tbody>
+                <tr>
+                    <th>Café e insumos físicos</th>
+                    <td>${{ summary.total_input_cost }}</td>
+                </tr>
+                <tr>
+                    <th>Proceso / maquila</th>
+                    <td>${{ summary.total_process_cost }}</td>
+                </tr>
+                <tr>
+                    <th>Costos indirectos</th>
+                    <td>${{ summary.total_overhead_cost }}</td>
+                </tr>
+                <tr class="table-total">
+                    <th>Costo total del lote</th>
+                    <td>${{ summary.total_cost }}</td>
+                </tr>
+                <tr>
+                    <th>Costo por KG terminado</th>
+                    <td>${{ summary.cost_per_finished_kg }}</td>
+                </tr>
+                <tr>
+                    <th>Costo por unidad terminada</th>
+                    <td>${{ summary.cost_per_finished_unit }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    {% if preview.warnings %}
+    <section class="alert alert-info">
+        <h3>Alertas y observaciones</h3>
+
+        <ul>
+            {% for warning in preview.warnings %}
+            <li>{{ warning }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+
+    <section class="alert alert-info">
+        <strong>Próxima etapa:</strong>
+        la confirmación estará deshabilitada hasta que implementemos el endpoint
+        transaccional que cree la orden, consuma los lotes y genere los lotes
+        terminados.
+    </section>
+
+    <div class="form-actions">
+        <button
+            type="button"
+            class="button button-primary"
+            hx-post="{{ url_for('production.production_confirm_partial') }}"
+            hx-include="#production-form"
+            hx-target="#production-preview"
+            hx-swap="innerHTML"
+            hx-confirm="¿Confirmas la producción {{ preview.order_number }}? Esta acción descontará los insumos seleccionados y creará los lotes terminados en la ubicación destino."
+            hx-disabled-elt="this">
+            Confirmar producción
+        </button>
+    </div>
+</section>
+{% endif %}

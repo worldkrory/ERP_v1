@@ -1,0 +1,146 @@
+<div class="production-waste-row card card-subtle">
+    <div class="input-row-header">
+        <h3>Merma #{{ row_index + 1 }}</h3>
+
+        <button
+            type="button"
+            class="button button-danger button-small"
+            onclick="this.closest('.production-waste-row').remove()">
+            Quitar
+        </button>
+    </div>
+
+    <div class="form-grid">
+        <div class="field">
+            <label for="wastes-{{ row_index }}-waste_type">Tipo de merma</label>
+
+            <select
+                id="wastes-{{ row_index }}-waste_type"
+                name="wastes-{{ row_index }}-waste_type"
+                required>
+                {% for waste_type in waste_types %}
+                <option
+                    value="{{ waste_type }}"
+                    {% if waste_type == "MERMA_PROCESO" %}selected{% endif %}>
+                    {{ waste_type.replace("_", " ").title() }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="wastes-{{ row_index }}-unit_id">Unidad</label>
+
+            <select
+                id="wastes-{{ row_index }}-unit_id"
+                name="wastes-{{ row_index }}-unit_id"
+                required>
+                <option value="">Selecciona una unidad</option>
+
+                {% for unit in units %}
+                <option value="{{ unit.id }}">
+                    {{ unit.name }} ({{ unit.code }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="wastes-{{ row_index }}-quantity">Cantidad de merma</label>
+
+            <input
+                id="wastes-{{ row_index }}-quantity"
+                name="wastes-{{ row_index }}-quantity"
+                type="number"
+                min="0.0001"
+                step="0.0001"
+                placeholder="Ej.: 23.6400"
+                required>
+        </div>
+
+        <div class="field">
+            <label for="wastes-{{ row_index }}-quantity_base">Cantidad base</label>
+
+            <input
+                id="wastes-{{ row_index }}-quantity_base"
+                name="wastes-{{ row_index }}-quantity_base"
+                type="number"
+                min="0.0001"
+                step="0.0001"
+                placeholder="Ej.: 23.6400"
+                required>
+        </div>
+
+        <div class="field">
+            <label for="wastes-{{ row_index }}-cost_treatment">
+                Tratamiento del costo
+            </label>
+
+            <select
+                id="wastes-{{ row_index }}-cost_treatment"
+                name="wastes-{{ row_index }}-cost_treatment"
+                required>
+                {% for cost_treatment in cost_treatments %}
+                <option
+                    value="{{ cost_treatment }}"
+                    {% if cost_treatment == "ABSORBED_BY_OUTPUT" %}selected{% endif %}>
+                    {{ cost_treatment.replace("_", " ").title() }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="wastes-{{ row_index }}-is_expected">¿Merma esperada?</label>
+
+            <select
+                id="wastes-{{ row_index }}-is_expected"
+                name="wastes-{{ row_index }}-is_expected"
+                required>
+                <option value="true" selected>Sí</option>
+                <option value="false">No, es anómala</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="wastes-{{ row_index }}-is_recoverable">¿Es recuperable?</label>
+
+            <select
+                id="wastes-{{ row_index }}-is_recoverable"
+                name="wastes-{{ row_index }}-is_recoverable"
+                required>
+                <option value="false" selected>No</option>
+                <option value="true">Sí</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="wastes-{{ row_index }}-recovered_product_id">
+                Producto recuperado
+            </label>
+
+            <select
+                id="wastes-{{ row_index }}-recovered_product_id"
+                name="wastes-{{ row_index }}-recovered_product_id">
+                <option value="">No aplica</option>
+
+                {% for product in products %}
+                <option value="{{ product.id }}">
+                    {{ product.sku }} — {{ product.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field field-full">
+            <label for="wastes-{{ row_index }}-notes">Notas de merma</label>
+
+            <input
+                id="wastes-{{ row_index }}-notes"
+                name="wastes-{{ row_index }}-notes"
+                type="text"
+                maxlength="500"
+                placeholder="Ej.: Merma total histórica acumulada entre pergamino y café empacado.">
+        </div>
+    </div>
+</div>

@@ -1,0 +1,63 @@
+<section class="card preview-card">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">Producción confirmada</p>
+            <h2>Inventario terminado disponible</h2>
+            <p class="muted">
+                La orden {{ result.order_number }} fue registrada correctamente.
+                Los saldos se crearon en {{ result.destination_location_name }}.
+            </p>
+        </div>
+
+        <span class="status status-success">Confirmada</span>
+    </div>
+
+    <div class="alert alert-info">
+        Se registraron consumos de origen y empaques, merma, costos, trazabilidad
+        de lotes y entradas de producto terminado. Ya puedes registrar ventas
+        históricas contra los lotes producidos.
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Lote terminado</th>
+                    <th>Cantidad disponible</th>
+                    <th>Costo unitario</th>
+                    <th>Costo asignado</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for output in result.outputs %}
+                <tr>
+                    <td>Producto ID {{ output.product_id }}</td>
+                    <td>
+                        <strong>{{ output.batch_code }}</strong><br>
+                        <span class="helper">Lote ID {{ output.batch_id }}</span>
+                    </td>
+                    <td>{{ output.quantity }}</td>
+                    <td>${{ output.unit_cost }}</td>
+                    <td>${{ output.allocated_cost }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="form-actions">
+        <a
+            class="button button-primary"
+            href="/ventas">
+            Registrar ventas
+        </a>
+
+        <a
+            class="button button-secondary"
+            href="/produccion/nueva">
+            Nueva producción
+        </a>
+    </div>
+</section>

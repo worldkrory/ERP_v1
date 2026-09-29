@@ -101,6 +101,13 @@ WASTE_COST_TREATMENTS: tuple[str, ...] = (
     "ALLOCATED_TO_BYPRODUCT",
 )
 
+PRODUCTION_COST_TYPES: tuple[str, ...] = (
+    "TRANSPORT",
+    "LABOR",
+    "ENERGY",
+    "QUALITY_CONTROL",
+    "OTHER",
+)
 
 class ProductionProcess(AuditMixin, ActiveMixin, Base):
     """Catalogo de procesos productivos (seccion 8.1).
@@ -266,6 +273,11 @@ class ProductionOrder(AuditMixin, Base):
     )
     waste: Mapped[list["ProductionWaste"]] = relationship(
         "ProductionWaste",
+        back_populates="production_order",
+        cascade="all, delete-orphan",
+    )
+    costs: Mapped[list["ProductionCost"]] = relationship(
+        "ProductionCost",
         back_populates="production_order",
         cascade="all, delete-orphan",
     )
@@ -441,6 +453,10 @@ class ProcessExecution(AuditMixin, Base):
     )
     waste: Mapped[list["ProductionWaste"]] = relationship(
         "ProductionWaste", back_populates="process_execution"
+    )
+    costs: Mapped[list["ProductionCost"]] = relationship(
+        "ProductionCost",
+        back_populates="process_execution",
     )
 
     __table_args__ = (
@@ -814,13 +830,88 @@ class ProductionWaste(TimestampMixin, Base):
         return self.cost_treatment == "EXPENSED"
 
 
+class ProductionCost(TimestampMixin, Base):
+    """Costo no inventariable imputable a una orden de producción.
+
+    Registra cargos variables que no corresponden al consumo físico de un
+    producto: transporte, mano de obra temporal, energía, control de calidad
+    u otros gastos asociados a una corrida.
+
+    Los insumos físicos —bolsas, etiquetas, stickers, cajas, válvulas o cinta—
+    se registran como Product y se consumen mediante ProductionInput. Así, sus
+    saldos, lotes, proveedores y costos quedan en el libro de inventario.
+    """
+
+    __tablename__ = "production_costs"
+
+    id: Mapped[PK]
+
+    production_order_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("production_orders.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    process_execution_id: Mapped[Optional[int]] = mapped_column(
+        BigInteger,
+        ForeignKey("process_executions.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+    cost_type: Mapped[str] = mapped_column(String(30), nullable=False)
+    description: Mapped[str] = mapped_column(String(200), nullable=False)
+
+    amount: Mapped[Money] = mapped_column(
+        Numeric(16, 2),
+        nullable=False,
+    )
+    currency: Mapped[Currency]
+
+    supplier_party_id: Mapped[Optional[int]] = mapped_column(
+        BigInteger,
+        ForeignKey("parties.id", ondelete="RESTRICT"),
+        nullable=True,
+    )
+    supplier_document_number: Mapped[Optional[str]] = mapped_column(
+        String(40),
+        nullable=True,
+    )
+    occurred_on: Mapped[Optional[_dt.date]] = mapped_column(
+        Date,
+        nullable=True,
+    )
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    production_order: Mapped["ProductionOrder"] = relationship(
+        "ProductionOrder",
+        back_populates="costs",
+    )
+    process_execution: Mapped[Optional["ProcessExecution"]] = relationship(
+        "ProcessExecution",
+        back_populates="costs",
+        foreign_keys=[process_execution_id],
+    )
+    supplier_party: Mapped[Optional["Party"]] = relationship(
+        "Party",
+        foreign_keys=[supplier_party_id],
+    )
+
+    __table_args__ = (
+        enum_check("cost_type", PRODUCTION_COST_TYPES),
+        positive_check("amount"),
+        Index("ix_production_costs_order", "production_order_id"),
+        Index("ix_production_costs_execution", "process_execution_id"),
+        Index("ix_production_costs_type", "cost_type"),
+    )
+
 __all__ = [
     "EXECUTOR_TYPES",
     "OUTPUT_KINDS",
+    "PRODUCTION_COST_TYPES",
     "PRODUCTION_ORDER_STATUSES",
     "PRODUCTION_PROCESS_CODES",
     "PROCESS_EXECUTION_STATUSES",
     "ProcessExecution",
+    "ProductionCost",
     "ProductionInput",
     "ProductionOrder",
     "ProductionOutput",

@@ -1,0 +1,146 @@
+<div class="production-input-row card card-subtle">
+    <input
+        id="inputs-{{ row_index }}-row_index"
+        type="hidden"
+        name="row_index"
+        value="{{ row_index }}">
+
+    <div class="input-row-header">
+        <h3>Insumo #{{ row_index + 1 }}</h3>
+
+        <button
+            type="button"
+            class="button button-danger button-small"
+            onclick="this.closest('.production-input-row').remove()">
+            Quitar
+        </button>
+    </div>
+
+    <div class="form-grid">
+        <div class="field">
+            <label for="inputs-{{ row_index }}-product_id">Producto</label>
+
+            <select
+                id="inputs-{{ row_index }}-product_id"
+                name="inputs-{{ row_index }}-product_id"
+                required
+                hx-get="{{ url_for('production.production_input_batches_partial') }}"
+                hx-target="#input-batches-{{ row_index }}"
+                hx-swap="innerHTML"
+                hx-trigger="change"
+                hx-include="
+                    #inputs-{{ row_index }}-location_id,
+                    #inputs-{{ row_index }}-row_index">
+
+                <option value="">Selecciona un insumo</option>
+
+                {% for product in products %}
+                <option value="{{ product.id }}">
+                    {{ product.sku }} — {{ product.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="inputs-{{ row_index }}-location_id">Ubicación</label>
+
+            <select
+                id="inputs-{{ row_index }}-location_id"
+                name="inputs-{{ row_index }}-location_id"
+                required
+                hx-get="{{ url_for('production.production_input_batches_partial') }}"
+                hx-target="#input-batches-{{ row_index }}"
+                hx-swap="innerHTML"
+                hx-trigger="change"
+                hx-include="
+                    #inputs-{{ row_index }}-product_id,
+                    #inputs-{{ row_index }}-row_index">
+
+                <option value="">Selecciona una ubicación</option>
+
+                {% for location in locations %}
+                <option
+                    value="{{ location.id }}"
+                    {% if suggested_location_id|string == location.id|string %}selected{% endif %}>
+                    {{ location.code }} — {{ location.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="inputs-{{ row_index }}-unit_id">Unidad</label>
+
+            <select
+                id="inputs-{{ row_index }}-unit_id"
+                name="inputs-{{ row_index }}-unit_id"
+                required>
+                <option value="">Selecciona una unidad</option>
+
+                {% for unit in units %}
+                <option value="{{ unit.id }}">
+                    {{ unit.name }} ({{ unit.code }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="inputs-{{ row_index }}-quantity">Cantidad</label>
+
+            <input
+                id="inputs-{{ row_index }}-quantity"
+                name="inputs-{{ row_index }}-quantity"
+                type="number"
+                min="0.0001"
+                step="0.0001"
+                placeholder="Ej.: 129"
+                required>
+        </div>
+
+        <div class="field">
+            <label for="inputs-{{ row_index }}-quantity_base">Cantidad base</label>
+
+            <input
+                id="inputs-{{ row_index }}-quantity_base"
+                name="inputs-{{ row_index }}-quantity_base"
+                type="number"
+                min="0.0001"
+                step="0.0001"
+                placeholder="Ej.: 129"
+                required>
+        </div>
+
+        <div
+            id="input-batches-{{ row_index }}"
+            class="field">
+            {% include "production/partials/_input_batch_options.html" %}
+        </div>
+
+        <div class="field">
+            <label for="inputs-{{ row_index }}-estimated_unit_cost">
+                Costo unitario estimado
+            </label>
+
+            <input
+                id="inputs-{{ row_index }}-estimated_unit_cost"
+                name="inputs-{{ row_index }}-estimated_unit_cost"
+                type="number"
+                min="0"
+                step="0.0001"
+                placeholder="Solo simulación">
+        </div>
+
+        <div class="field field-full">
+            <label for="inputs-{{ row_index }}-notes">Notas del insumo</label>
+
+            <input
+                id="inputs-{{ row_index }}-notes"
+                name="inputs-{{ row_index }}-notes"
+                type="text"
+                maxlength="500"
+                placeholder="Ej.: Bolsa 340 g eticolor, etiqueta Origen Castillo o sticker lote/fecha.">
+        </div>
+    </div>
+</div>

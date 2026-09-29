@@ -1,0 +1,30 @@
+<label for="source_batch_id">Lote de origen</label>
+
+<select
+    id="source_batch_id"
+    name="source_batch_id"
+    required
+    {% if not balances %}disabled{% endif %}>
+
+    <option value="">
+        {% if balances %}
+            Selecciona un lote disponible
+        {% else %}
+            Primero selecciona producto y ubicación
+        {% endif %}
+    </option>
+
+    {% for balance in balances %}
+    <option value="{{ balance.batch_id }}">
+        {{ balance.batch.batch_code }}
+        — disponible: {{ balance.quantity_base }}
+        — costo: ${{ balance.average_unit_cost }}
+    </option>
+    {% endfor %}
+</select>
+
+{% if balances %}
+<small>
+    Los lotes mostrados tienen saldo positivo en la ubicación seleccionada.
+</small>
+{% endif %}

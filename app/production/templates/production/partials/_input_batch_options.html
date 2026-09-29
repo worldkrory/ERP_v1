@@ -1,0 +1,32 @@
+<label for="inputs-{{ row_index }}-batch_id">Lote de inventario</label>
+
+<select
+    id="inputs-{{ row_index }}-batch_id"
+    name="inputs-{{ row_index }}-batch_id"
+    required
+    {% if not balances %}disabled{% endif %}>
+
+    <option value="">
+        {% if balances %}
+            Selecciona un lote disponible
+        {% else %}
+            Selecciona producto y ubicación
+        {% endif %}
+    </option>
+
+    {% for balance in balances %}
+    <option value="{{ balance.batch_id }}">
+        {% if balance.batch_id %}
+            {% if balance.batch %}
+                {{ balance.batch.batch_code }}
+            {% else %}
+                Lote #{{ balance.batch_id }}
+            {% endif %}
+        {% else %}
+            Sin lote
+        {% endif %}
+        — disponible: {{ balance.quantity_base | int }}
+        — costo: ${{ balance.average_unit_cost }}
+    </option>
+    {% endfor %}
+</select>

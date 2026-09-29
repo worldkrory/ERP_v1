@@ -250,18 +250,147 @@ def create_outbound_movement(
 		notes=notes,
 	)
 
+def create_production_input_movement(
+    session: Session,
+    *,
+    product_id: int,
+    location_id: int,
+    quantity: Decimal,
+    unit_id: int,
+    quantity_base: Decimal,
+    batch_id: int | None = None,
+    reference_id: int | None = None,
+    occurred_at: datetime | None = None,
+    created_by_id: int | None = None,
+    notes: str | None = None,
+) -> InventoryMovement:
+    """Registrar consumo de producto o insumo en una orden de producción."""
+
+    try:
+        resolution = resolve_outbound_cost(
+            session,
+            product_id,
+            batch_id,
+            location_id,
+            quantity_base,
+        )
+    except CostingError as exc:
+        raise InventoryError(str(exc)) from exc
+
+    return _create_movement(
+        session,
+        movement_type="OUT_PRODUCTION",
+        product_id=product_id,
+        location_id=location_id,
+        batch_id=batch_id,
+        quantity=quantity,
+        unit_id=unit_id,
+        quantity_base=quantity_base,
+        unit_cost=resolution.unit_cost,
+        total_cost=resolution.total_cost,
+        reference_type="PRODUCTION_INPUT",
+        reference_id=reference_id,
+        occurred_at=occurred_at,
+        created_by_id=created_by_id,
+        notes=notes,
+    )
+
+
+def create_production_output_movement(
+    session: Session,
+    *,
+    product_id: int,
+    location_id: int,
+    quantity: Decimal,
+    unit_id: int,
+    quantity_base: Decimal,
+    batch_id: int | None,
+    unit_cost: Decimal,
+    total_cost: Decimal,
+    reference_id: int | None = None,
+    occurred_at: datetime | None = None,
+    created_by_id: int | None = None,
+    notes: str | None = None,
+) -> InventoryMovement:
+    """Registrar entrada de producto terminado procedente de producción."""
+
+    return _create_movement(
+        session,
+        movement_type="IN_PRODUCTION",
+        product_id=product_id,
+        location_id=location_id,
+        batch_id=batch_id,
+        quantity=quantity,
+        unit_id=unit_id,
+        quantity_base=quantity_base,
+        unit_cost=unit_cost,
+        total_cost=total_cost,
+        reference_type="PRODUCTION_OUTPUT",
+        reference_id=reference_id,
+        occurred_at=occurred_at,
+        created_by_id=created_by_id,
+        notes=notes,
+    )
+
+
+def create_production_waste_movement(
+    session: Session,
+    *,
+    product_id: int,
+    location_id: int,
+    quantity: Decimal,
+    unit_id: int,
+    quantity_base: Decimal,
+    batch_id: int | None = None,
+    reference_id: int | None = None,
+    occurred_at: datetime | None = None,
+    created_by_id: int | None = None,
+    notes: str | None = None,
+) -> InventoryMovement:
+    """Registrar merma no recuperable generada durante producción."""
+
+    try:
+        resolution = resolve_outbound_cost(
+            session,
+            product_id,
+            batch_id,
+            location_id,
+            quantity_base,
+        )
+    except CostingError as exc:
+        raise InventoryError(str(exc)) from exc
+
+    return _create_movement(
+        session,
+        movement_type="OUT_WASTE",
+        product_id=product_id,
+        location_id=location_id,
+        batch_id=batch_id,
+        quantity=quantity,
+        unit_id=unit_id,
+        quantity_base=quantity_base,
+        unit_cost=resolution.unit_cost,
+        total_cost=resolution.total_cost,
+        reference_type="PRODUCTION_WASTE",
+        reference_id=reference_id,
+        occurred_at=occurred_at,
+        created_by_id=created_by_id,
+        notes=notes,
+    )
 
 def create_transfer(
-	session: Session,
-	*,
-	product_id: int,
-	batch_id: int | None,
-	from_location_id: int,
-	to_location_id: int,
-	quantity: Decimal,
-	unit_id: int,
-	quantity_base: Decimal,
-	created_by_id: int | None = None,
+    session: Session,
+    *,
+    product_id: int,
+    batch_id: int | None,
+    from_location_id: int,
+    to_location_id: int,
+    quantity: Decimal,
+    unit_id: int,
+    quantity_base: Decimal,
+    occurred_at: datetime | None = None,
+    created_by_id: int | None = None,
+    notes: str | None = None,
 ) -> tuple[InventoryMovement, InventoryMovement]:
 	if from_location_id == to_location_id:
 		raise InventoryError("El origen y destino del traslado deben ser distintos.")
@@ -282,7 +411,9 @@ def create_transfer(
 		quantity_base=quantity_base,
 		unit_cost=resolution.unit_cost,
 		total_cost=resolution.total_cost,
+		occurred_at=occurred_at,
 		created_by_id=created_by_id,
+		notes=notes,
 	)
 	inbound = _create_movement(
 		session,
@@ -295,7 +426,9 @@ def create_transfer(
 		quantity_base=quantity_base,
 		unit_cost=outbound.unit_cost,
 		total_cost=outbound.total_cost,
+		occurred_at=occurred_at,
 		created_by_id=created_by_id,
+		notes=notes,
 	)
 	outbound.counterpart_movement_id = inbound.id
 	inbound.counterpart_movement_id = outbound.id
@@ -367,9 +500,13 @@ __all__ = [
 	"InventoryError",
 	"create_inbound_movement",
 	"create_outbound_movement",
+	"create_production_input_movement",
+	"create_production_output_movement",
+	"create_production_waste_movement",
 	"create_transfer",
 	"get_available_quantity",
 	"receive_purchase",
 	"rebuild_balances",
 	"reverse_movement",
+	
 ]

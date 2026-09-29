@@ -1,0 +1,450 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva producción | Densa Niebla ERP{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Producción</p>
+        <h1>Nueva producción</h1>
+        <p class="muted">
+            Registra los datos físicos del lote, agrega los empaques consumidos
+            y calcula el preview antes de confirmar movimientos de inventario.
+        </p>
+    </div>
+
+    <a
+        class="button button-secondary"
+        href="{{ url_for('production.historical_microlot_page') }}">
+        Reconstrucción histórica
+    </a>
+</section>
+
+<form
+    id="production-form"
+    class="production-form"
+    hx-post="{{ url_for('production.production_preview_partial') }}"
+    hx-target="#production-preview"
+    hx-swap="innerHTML"
+    hx-indicator="#preview-loading">
+
+  
+    <input type="hidden" name="currency" value="COP">
+    <input type="hidden" name="historical_reconstruction" value="true">
+
+    <section class="card">
+
+        <div class="field">
+            <label for="mode">Modo del preview</label>
+
+            <select id="mode" name="mode" required>
+                <option value="HISTORICAL" selected>
+                    Histórico — reconstrucción sin persistir
+                </option>
+                <option value="REAL">
+                    Real — valida todo para confirmar después
+                </option>
+                <option value="SIMULATION">
+                    Simulación — usa costos estimados, sin consumir inventario
+                </option>
+            </select>
+
+            <small>
+                Histórico usa lotes y costos existentes para reconstruir un hecho pasado.
+                Real exige que el balance físico quede completamente explicado.
+                Simulación permite estimar sin depender de existencias reales.
+            </small>
+        </div>
+
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Paso 1</p>
+                <h2>Orden y proceso</h2>
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="field">
+                <label for="order_number">Número de orden</label>
+                <input
+                    id="order_number"
+                    name="order_number"
+                    type="text"
+                    maxlength="30"
+                    placeholder="Ej.: OP-HIST-CASTILLO-2026-001"
+                    required>
+            </div>
+
+            <div class="field">
+                <label for="process_id">Proceso principal</label>
+                <select id="process_id" name="process_id">
+                    <option value="">Selecciona un proceso</option>
+                    {% for process in processes %}
+                    <option value="{{ process.id }}">
+                        {{ process.name }} — {{ process.code }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="executor_party_id">Ejecutor / maquilador</label>
+                <select id="executor_party_id" name="executor_party_id">
+                    <option value="">Selecciona un tercero</option>
+                    {% for party in parties %}
+                    <option value="{{ party.id }}">
+                        {{ party.legal_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="processor_location_id">Ubicación del procesador</label>
+                <select id="processor_location_id" name="processor_location_id">
+                    <option value="">Selecciona una ubicación</option>
+                    {% for location in locations %}
+                    <option value="{{ location.id }}">
+                        {{ location.code }} — {{ location.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="destination_location_id">Ubicación de destino</label>
+                <select id="destination_location_id" name="destination_location_id">
+                    <option value="">Selecciona una ubicación</option>
+                    {% for location in locations %}
+                    <option value="{{ location.id }}">
+                        {{ location.code }} — {{ location.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="started_at">Inicio del proceso</label>
+                <input
+                    id="started_at"
+                    name="started_at"
+                    type="datetime-local">
+            </div>
+
+            <div class="field">
+                <label for="completed_at">Terminación del proceso</label>
+                <input
+                    id="completed_at"
+                    name="completed_at"
+                    type="datetime-local">
+            </div>
+
+            <div class="field">
+                <label for="received_at">Recepción del lote</label>
+                <input
+                    id="received_at"
+                    name="received_at"
+                    type="datetime-local">
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Paso 2</p>
+                <h2>Materia prima de origen</h2>
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="field">
+                <label for="source_product_id">Producto origen</label>
+
+                <select
+                    id="source_product_id"
+                    name="source_product_id"
+                    required
+                    hx-get="{{ url_for('production.production_source_batches_partial') }}"
+                    hx-target="#source-batch-container"
+                    hx-swap="innerHTML"
+                    hx-trigger="change"
+                    hx-include="#source_location_id">
+                    <option value="">Selecciona el café de origen</option>
+
+                    {% for product in products %}
+                    <option value="{{ product.id }}">
+                        {{ product.sku }} — {{ product.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="source_location_id">Ubicación de origen</label>
+
+                <select
+                    id="source_location_id"
+                    name="source_location_id"
+                    required
+                    hx-get="{{ url_for('production.production_source_batches_partial') }}"
+                    hx-target="#source-batch-container"
+                    hx-swap="innerHTML"
+                    hx-trigger="change"
+                    hx-include="#source_product_id">
+                    <option value="">Selecciona una ubicación</option>
+
+                    {% for location in locations %}
+                    <option value="{{ location.id }}">
+                        {{ location.code }} — {{ location.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div
+                id="source-batch-container"
+                class="field">
+                {% include "production/partials/_source_batch_options.html" %}
+            </div>
+
+            <div class="field">
+                <label for="source_unit_id">Unidad de entrada</label>
+
+                <select id="source_unit_id" name="source_unit_id">
+                    <option value="">Selecciona una unidad</option>
+
+                    {% for unit in units %}
+                    <option value="{{ unit.id }}">
+                        {{ unit.name }} ({{ unit.code }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="source_quantity">Cantidad de entrada</label>
+
+                <input
+                    id="source_quantity"
+                    name="source_quantity"
+                    type="number"
+                    min="0.0001"
+                    step="0.0001"
+                    placeholder="Ej.: 67.5000"
+                    required>
+            </div>
+
+            <div class="field">
+                <label for="source_quantity_base">Cantidad base</label>
+
+                <input
+                    id="source_quantity_base"
+                    name="source_quantity_base"
+                    type="number"
+                    min="0.0001"
+                    step="0.0001"
+                    placeholder="Ej.: 67.50"
+                    required>
+
+                <small>
+                    Para pergamino almacenado en KG, normalmente coincide con
+                    la cantidad de entrada.
+                </small>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="section-heading section-heading-actions">
+            <div>
+                <p class="eyebrow">Paso 3</p>
+                <h2>Productos terminados</h2>
+                <p class="muted">
+                    Registra una salida por presentación real:
+                    grano, molido, subproducto o reproceso.
+                </p>
+            </div>
+
+            <button
+                type="button"
+                class="button button-secondary"
+                hx-get="{{ url_for('production.production_output_row_partial') }}"
+                hx-target="#production-outputs"
+                hx-swap="beforeend"
+                hx-vals='js:{
+                    "index": document.querySelectorAll(
+                        "#production-outputs .production-output-row"
+                    ).length
+                }'>
+                Agregar salida
+            </button>
+        </div>
+
+        <div id="production-outputs">
+            <p class="muted empty-state-message">
+                Agrega al menos un producto terminado.
+            </p>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="section-heading section-heading-actions">
+            <div>
+                <p class="eyebrow">Paso 4</p>
+                <h2>Merma y recuperación</h2>
+                <p class="muted">
+                    Clasifica toda diferencia de masa: merma de proceso,
+                    humedad, cascarilla, pasilla u otra causa real.
+                </p>
+            </div>
+
+            <button
+                type="button"
+                class="button button-secondary"
+                hx-get="{{ url_for('production.production_waste_row_partial') }}"
+                hx-target="#production-wastes"
+                hx-swap="beforeend"
+                hx-vals='js:{
+                    "index": document.querySelectorAll(
+                        "#production-wastes .production-waste-row"
+                    ).length
+                }'>
+                Agregar merma
+            </button>
+        </div>
+
+        <div id="production-wastes">
+            <p class="muted empty-state-message">
+                Agrega una fila de merma si la producción la generó.
+            </p>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="section-heading section-heading-actions">
+            <div>
+                <p class="eyebrow">Paso 5</p>
+                <h2>Empaques e insumos</h2>
+                <p class="muted">
+                    Agrega bolsas, etiquetas, stickers, válvulas, cajas u otros
+                    materiales consumidos. La pantalla solicitará el lote
+                    disponible del insumo.
+                </p>
+            </div>
+
+            <button
+                type="button"
+                class="button button-secondary"
+                hx-get="{{ url_for('production.production_input_row_partial') }}"
+                hx-target="#production-inputs"
+                hx-swap="beforeend"
+                hx-vals='js:{
+                    "index": document.querySelectorAll(
+                        "#production-inputs .production-input-row"
+                    ).length,
+                    "location_id": document.querySelector(
+                        "#destination_location_id"
+                    ).value
+                }'>
+                Agregar insumo
+            </button>
+        </div>
+
+        <div id="production-inputs">
+            <p class="muted empty-state-message">
+                Agrega los empaques e insumos físicos realmente consumidos.
+            </p>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="section-heading section-heading-actions">
+            <div>
+                <p class="eyebrow">Paso 6</p>
+                <h2>Costos de proceso y operación</h2>
+                <p class="muted">
+                    Registra costos no inventariables: maquila, transporte,
+                    mano de obra, energía, control de calidad u otros.
+                    Los empaques físicos deben permanecer en el paso anterior.
+                </p>
+            </div>
+
+            <button
+                type="button"
+                class="button button-secondary"
+                hx-get="{{ url_for('production.production_manual_cost_row_partial') }}"
+                hx-target="#production-manual-costs"
+                hx-swap="beforeend"
+                hx-vals='js:{
+                    "index": document.querySelectorAll(
+                        "#production-manual-costs .production-manual-cost-row"
+                    ).length
+                }'>
+                Agregar costo
+            </button>
+        </div>
+
+        <div id="production-manual-costs">
+            <p class="muted empty-state-message">
+                Agrega aquí maquila, transporte y otros cargos no inventariables.
+            </p>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Paso 7</p>
+                <h2>Supuestos y observaciones</h2>
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="field">
+                <label for="estimated_source_unit_cost">
+                    Costo estimado de origen
+                </label>
+
+                <input
+                    id="estimated_source_unit_cost"
+                    name="estimated_source_unit_cost"
+                    type="number"
+                    min="0"
+                    step="0.0001"
+                    placeholder="Solo para simulaciones">
+            </div>
+
+            <div class="field field-full">
+                <label for="notes">Notas de la producción</label>
+
+                <textarea
+                    id="notes"
+                    name="notes"
+                    rows="4"
+                    placeholder="Maquila, tostión, molienda, empaques, transporte, observaciones de calidad o reconstrucción histórica."></textarea>
+            </div>
+        </div>
+    </section>
+
+    <section class="form-actions">
+        <button
+            type="submit"
+            class="button button-primary">
+            Calcular preview
+        </button>
+
+        <span
+            id="preview-loading"
+            class="htmx-indicator muted">
+            Calculando disponibilidad, rendimiento y costos…
+        </span>
+    </section>
+</form>
+
+<section
+    id="production-preview"
+    class="production-preview-region"
+    aria-live="polite">
+</section>
+{% endblock %}

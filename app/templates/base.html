@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Densa Niebla | Centro de operaciones{% endblock %}</title>
+  <style>
+    :root {
+      --ink: #211a25;
+      --muted: #776d7b;
+      --line: #e9e0e7;
+      --paper: #fffdfb;
+      --accent: #a55b72;
+      --accent-dark: #703b50;
+      --ok: #24745c;
+      --danger: #b34a4a;
+      --warning: #74551e;
+      --shadow: 0 18px 50px #29172714;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #f8f3f6, #fffdfb 45%, #f1e9ef);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, input, select, textarea { font: inherit; }
+
+    .shell {
+      max-width: 1440px;
+      margin: auto;
+      padding: 28px clamp(18px, 4vw, 64px) 70px;
+    }
+
+    .topbar,
+    .intro,
+    .panel-header,
+    .form-actions,
+    .row,
+    .page-header,
+    .section-heading,
+    .section-heading-actions,
+    .input-row-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .topbar { margin-bottom: 38px; }
+
+    .brand {
+      color: var(--accent-dark);
+      font: 600 2rem/.8 Georgia, serif;
+      letter-spacing: .04em;
+    }
+
+    .brand small {
+      display: block;
+      margin-top: 9px;
+      color: var(--muted);
+      font: 700 .6rem/1 Inter, sans-serif;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .link {
+      color: var(--muted);
+      font-size: .85rem;
+      font-weight: 650;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--accent);
+      font-size: .7rem;
+      font-weight: 800;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      margin-bottom: 10px;
+      font: 600 clamp(2.2rem, 4vw, 4rem)/.98 Georgia, serif;
+      letter-spacing: -.03em;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    h3 {
+      margin: 0;
+      color: var(--accent-dark);
+      font: 600 1.1rem Georgia, serif;
+    }
+
+    .intro {
+      align-items: end;
+      margin-bottom: 28px;
+    }
+
+    .intro p:not(.eyebrow) {
+      max-width: 530px;
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .page-header {
+      align-items: end;
+      margin-bottom: 28px;
+    }
+
+    .page-header > div > .muted {
+      max-width: 680px;
+      margin-bottom: 0;
+      line-height: 1.55;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(310px, .38fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel,
+    .card {
+      margin-bottom: 24px;
+      overflow: hidden;
+      background: rgba(255, 253, 251, .9);
+      border: 1px solid #fff;
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-subtle {
+      margin-bottom: 16px;
+      background: #fff9fb;
+      border-color: var(--line);
+      box-shadow: none;
+    }
+
+    .panel-header,
+    .section-heading {
+      padding: 22px 26px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-heading-actions {
+      flex-wrap: wrap;
+    }
+
+    .form-body,
+    .card > .form-grid,
+    .card > .cost-summary,
+    .card > .metrics-grid,
+    .card > .alert,
+    .card > .form-actions,
+    .production-input-row > .form-grid,
+    .production-output-row > .form-grid,
+    .production-waste-row > .form-grid {
+      margin-left: 26px;
+      margin-right: 26px;
+    }
+
+    .form-body { padding: 26px; }
+
+    .fields,
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0 16px;
+    }
+
+    .form-grid {
+      gap: 16px;
+      padding: 26px 0;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+      margin-bottom: 18px;
+    }
+
+    .form-grid .field { margin-bottom: 0; }
+
+    .field.full,
+    .field-full { grid-column: 1 / -1; }
+
+    label {
+      color: var(--muted);
+      font-size: .72rem;
+      font-weight: 750;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      color: var(--ink);
+      outline: none;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px #a55b7220;
+    }
+
+    input[readonly] {
+      color: var(--muted);
+      background: #faf6f8;
+    }
+
+    .helper,
+    .muted,
+    small {
+      color: var(--muted);
+      font-size: .72rem;
+      line-height: 1.45;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 10px 15px;
+      color: var(--accent-dark);
+      cursor: pointer;
+      background: #fff;
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      font-size: .82rem;
+      font-weight: 750;
+    }
+
+    .button:hover:not(:disabled) {
+      background: #fff7fa;
+    }
+
+    .button.primary,
+    .button-primary {
+      color: #fff;
+      background: var(--accent-dark);
+      border-color: var(--accent-dark);
+    }
+
+    .button.primary:hover:not(:disabled),
+    .button-primary:hover:not(:disabled) {
+      background: #5e3043;
+    }
+
+    .button.secondary,
+    .button-secondary {
+      color: var(--accent-dark);
+      background: #fff;
+      border-color: var(--accent);
+    }
+
+    .button.ghost {
+      min-height: 36px;
+      padding: 7px 11px;
+      color: var(--muted);
+      border-color: var(--line);
+    }
+
+    .button-danger {
+      min-height: 36px;
+      padding: 7px 11px;
+      color: var(--danger);
+      border-color: #e6b9b9;
+    }
+
+    .button-small { font-size: .74rem; }
+
+    .button:disabled {
+      cursor: not-allowed;
+      opacity: .6;
+    }
+
+    .notice,
+    .info-banner,
+    .alert {
+      margin-bottom: 24px;
+      padding: 13px 16px;
+      border-radius: 10px;
+      font-size: .84rem;
+      line-height: 1.45;
+    }
+
+    .notice {
+      display: none;
+      color: var(--danger);
+      background: #fbeeee;
+    }
+
+    .notice.show { display: block; }
+
+    .info-banner,
+    .alert-info {
+      color: var(--warning);
+      background: #fff7df;
+      border: 1px solid #e8c98d;
+    }
+
+    .alert-error {
+      color: var(--danger);
+      background: #fbeeee;
+      border: 1px solid #edc2c2;
+    }
+
+    .alert h2,
+    .alert h3 { margin-bottom: 8px; }
+
+    .summary {
+      position: sticky;
+      top: 18px;
+      padding: 22px;
+      background: linear-gradient(160deg, #fff, #fff7fa);
+      border: 1px solid #e2ced6;
+      border-radius: 16px;
+      box-shadow: 0 12px 28px #2917270d;
+    }
+
+    .summary h2 {
+      margin-bottom: 16px;
+      color: var(--accent-dark);
+      font: 600 1.35rem Georgia, serif;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: .82rem;
+    }
+
+    .summary-row span { color: var(--muted); }
+
+    .summary-row strong {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .summary-total {
+      margin-top: 8px;
+      border-top: 2px solid var(--accent);
+    }
+
+    .summary-total strong {
+      color: var(--accent-dark);
+      font: 600 1.3rem Georgia, serif;
+    }
+
+    .hidden { display: none; }
+
+    .result-grid,
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .metric {
+      padding: 16px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .metric span,
+    .metric-label {
+      display: block;
+      color: var(--muted);
+      font-size: .67rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .metric strong,
+    .metric-value {
+      display: block;
+      margin-top: 7px;
+      color: var(--accent-dark);
+      font: 600 1.25rem Georgia, serif;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    table,
+    .data-table {
+      width: 100%;
+      min-width: 650px;
+      border-collapse: collapse;
+      background: #fff;
+    }
+
+    th,
+    td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      font-size: .82rem;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: .67rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    tbody tr:last-child td { border-bottom: 0; }
+
+    .data-table td { text-align: right; }
+
+    .data-table th {
+      text-align: left;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: .82rem;
+    }
+
+    .table-total th,
+    .table-total td {
+      color: var(--accent-dark);
+      font-weight: 800;
+    }
+
+    .warning-list {
+      margin: 0;
+      padding-left: 19px;
+      color: var(--warning);
+      font-size: .82rem;
+      line-height: 1.55;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: .72rem;
+      font-weight: 800;
+    }
+
+    .status-success {
+      color: var(--ok);
+      background: #e9f5ef;
+    }
+
+    .status-error {
+      color: var(--danger);
+      background: #fbeeee;
+    }
+
+    .form-actions {
+      justify-content: flex-end;
+      padding: 8px 0 0;
+    }
+
+    .production-preview-region { margin-top: 24px; }
+
+    .empty-state-message {
+      margin: 0;
+      padding: 20px 26px;
+      color: var(--muted);
+      font-size: .84rem;
+      border-top: 1px solid var(--line);
+    }
+
+    .htmx-indicator { display: none; }
+    .htmx-request .htmx-indicator,
+    .htmx-request.htmx-indicator { display: inline; }
+
+    @media (max-width: 1050px) {
+      .layout { grid-template-columns: 1fr; }
+      .summary { position: static; }
+      .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 650px) {
+      .topbar,
+      .intro,
+      .page-header,
+      .section-heading,
+      .section-heading-actions,
+      .input-row-header,
+      .form-actions {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .top-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .fields,
+      .form-grid,
+      .result-grid,
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .field.full,
+      .field-full { grid-column: auto; }
+
+      .panel-header,
+      .section-heading,
+      .form-body { padding: 20px; }
+
+      .form-body,
+      .card > .form-grid,
+      .card > .cost-summary,
+      .card > .metrics-grid,
+      .card > .alert,
+      .card > .form-actions,
+      .production-input-row > .form-grid,
+      .production-output-row > .form-grid,
+      .production-waste-row > .form-grid {
+        margin-left: 20px;
+        margin-right: 20px;
+      }
+    }
+  </style>
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="/">
+        DENSA NIEBLA
+        <small>Centro de operaciones</small>
+      </a>
+
+      <nav class="top-actions" aria-label="Navegación principal">
+        <a class="link" href="/compras">Compras</a>
+        <a class="button ghost" href="/">Inicio</a>
+      </nav>
+    </header>
+
+    {% block page_intro %}{% endblock %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <script
+    src="https://unpkg.com/htmx.org@2.0.4"
+    integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+    crossorigin="anonymous"></script>
+  <script>
+    document.body.addEventListener("htmx:beforeSwap", function (event) {
+      if (event.detail.xhr.status === 422) {
+        event.detail.shouldSwap = true;
+        event.detail.isError = false;
+      }
+    });
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
+
