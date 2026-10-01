@@ -73,7 +73,9 @@ def create_app(config_name=None):
         
         if current_user.is_authenticated:
             return redirect(url_for("sales_admin.sales_admin_page"))
-        return redirect(url_for("auth.login"))
+        #return redirect(url_for("auth.login"))
+        #return redirect(url_for("storefront/collection.html"))
+        return render_template('storefront/collection.html')
 
     @app.route('/microlote/bourbon-rosado')
     def bourbon_rosado():
