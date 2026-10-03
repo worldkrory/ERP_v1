@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+
+{% block title %}Ventas | Densa Niebla{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/sales.css') }}">
+
+<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+{% endblock %}
+
+{% block content %}
+<main class="dn-sales-page">
+  <div class="dn-sales-shell">
+
+    <header class="dn-sales-header">
+      <div class="dn-sales-brand">
+        <p class="dn-eyebrow">Densa Niebla · Comercial</p>
+        <h1>Registrar una venta<br>sin perder el origen.</h1>
+        <p class="dn-sales-intro">
+          Cada venta conserva el cliente, el precio aplicado y la historia
+          del café que salió de la finca.
+        </p>
+      </div>
+
+      <div class="dn-sales-context">
+        <span>Guavatá, Santander</span>
+        <span>Café de finca colombiano</span>
+      </div>
+    </header>
+
+    {% if demo_mode %}
+    <div class="dn-demo-banner" role="status">
+      <strong>Modo de demostración.</strong>
+      La base de datos no está disponible; los datos mostrados son de prueba.
+    </div>
+    {% endif %}
+
+    <form id="sale-form"
+          class="dn-sale-form"
+          novalidate>
+
+      <div class="dn-sale-layout">
+        <section class="dn-sale-panel">
+
+          <header class="dn-panel-header">
+            <div>
+              <p class="dn-panel-kicker">01 · Documento comercial</p>
+              <h2>Datos de la venta</h2>
+            </div>
+
+            <span class="dn-draft-badge">Borrador</span>
+          </header>
+
+          <div class="dn-panel-body">
+            <div class="dn-form-grid dn-form-grid-three">
+              <label class="dn-field dn-field-wide">
+                <span>Cliente</span>
+                <select id="party_id"
+                        name="party_id"
+                        required>
+                  <option value="">Selecciona un cliente</option>
+
+                  {% for customer in customers %}
+                  <option value="{{ customer.id }}">
+                    {{ customer.display_name }} · {{ customer.document_full }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label class="dn-field">
+                <span>Fecha</span>
+                <input id="sale_date"
+                       name="sale_date"
+                       type="date"
+                       value="{{ today }}"
+                       required>
+              </label>
+
+              <label class="dn-field">
+                <span>Canal</span>
+                <select id="channel"
+                        name="channel"
+                        required>
+                  <option value="RETAIL">Retail</option>
+                  <option value="CAFETERIA">Cafetería</option>
+                  <option value="WHOLESALE">Mayorista</option>
+                  <option value="ONLINE">Online</option>
+                  <option value="EVENT">Evento</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="dn-field">
+              <span>Número interno</span>
+              <input id="sale_number"
+                     name="sale_number"
+                     placeholder="Se asignará al guardar"
+                     readonly>
+              <small>
+                El consecutivo debe generarse en el servidor. No es el número de factura electrónica.
+              </small>
+            </label>
+
+            <div class="dn-lines-header">
+              <div>
+                <p class="dn-panel-kicker">02 · Productos</p>
+                <h3>Cafés y presentaciones</h3>
+              </div>
+
+              <button type="button"
+                      class="dn-button dn-button-outline"
+                      hx-get="{{ url_for('sales_admin.sales_admin_line') }}"
+                      hx-target="#sale-lines"
+                      hx-swap="beforeend">
+                + Agregar producto
+              </button>
+            </div>
+
+            <div id="sale-lines"
+                 class="dn-sale-lines">
+              {% include "sales/partials/_sale_lines.html" %}
+            </div>
+
+            <div id="sale-feedback"
+                 class="dn-sale-feedback"
+                 aria-live="polite">
+            </div>
+          </div>
+        </section>
+
+        <aside class="dn-sale-panel dn-summary-panel">
+          <header class="dn-panel-header">
+            <div>
+              <p class="dn-panel-kicker">03 · Resumen</p>
+              <h2>Antes de guardar</h2>
+            </div>
+          </header>
+
+          <div id="sale-summary"
+               class="dn-panel-body"
+               hx-post="{{ url_for('sales_admin.sales_admin_preview') }}"
+               hx-trigger="input changed delay:450ms from:#sale-form, sale:changed from:body"
+               hx-target="this"
+               hx-swap="innerHTML"
+               hx-include="#sale-form">
+            {% include "sales/partials/_sale_summary.html" %}
+          </div>
+
+          <footer class="dn-summary-footer">
+            <button id="save-sale"
+                    class="dn-button dn-button-primary"
+                    type="submit">
+              Guardar borrador
+            </button>
+
+            <p>
+              Confirmar e impactar inventario será una acción independiente.
+            </p>
+          </footer>
+        </aside>
+      </div>
+    </form>
+
+    <section class="dn-sales-history">
+      <header class="dn-history-header">
+        <div>
+          <p class="dn-eyebrow">Historial</p>
+          <h2>Ventas recientes</h2>
+        </div>
+
+        <button type="button"
+                class="dn-button dn-button-outline"
+                hx-get="{{ url_for('sales_admin.sales_admin_table') }}"
+                hx-target="#sales-body"
+                hx-swap="innerHTML">
+          Actualizar
+        </button>
+      </header>
+
+      <div class="dn-history-scroll">
+        <table class="dn-sales-table">
+          <thead>
+            <tr>
+              <th>Venta</th>
+              <th>Cliente</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+
+          <tbody id="sales-body"
+                 hx-get="{{ url_for('sales_admin.sales_admin_table') }}"
+                 hx-trigger="load"
+                 hx-swap="innerHTML">
+            <tr>
+              <td colspan="5" class="dn-empty">
+                Cargando ventas…
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+  function money(value) {
+    return new Intl.NumberFormat("es-CO", {
+      style: "currency",
+      currency: "COP",
+      maximumFractionDigits: 0
+    }).format(Number(value || 0));
+  }
+
+  function getLineTotal(line) {
+    const quantity = Number(
+      line.querySelector("[name='quantity[]']")?.value || 0
+    );
+
+    const unitPrice = Number(
+      line.querySelector("[name='unit_price[]']")?.value || 0
+    );
+
+    const discountPct = Number(
+      line.querySelector("[name='discount_pct[]']")?.value || 0
+    );
+
+    return quantity * unitPrice * (1 - discountPct / 100);
+  }
+
+  function updateLineVisualTotal(line) {
+    const totalNode = line.querySelector("[data-line-total]");
+
+    if (totalNode) {
+      totalNode.textContent = money(getLineTotal(line));
+    }
+  }
+
+  function notifySaleChanged() {
+    document.body.dispatchEvent(new Event("sale:changed"));
+  }
+
+  document.addEventListener("input", function(event) {
+    const line = event.target.closest("[data-sale-line]");
+
+    if (!line) {
+      return;
+    }
+
+    updateLineVisualTotal(line);
+    notifySaleChanged();
+  });
+
+  document.addEventListener("change", function(event) {
+    const line = event.target.closest("[data-sale-line]");
+
+    if (!line) {
+      return;
+    }
+
+    updateLineVisualTotal(line);
+    notifySaleChanged();
+  });
+
+  document.body.addEventListener("htmx:afterSwap", function(event) {
+    if (event.target.id === "sale-lines") {
+      event.target.querySelectorAll("[data-sale-line]").forEach(
+        updateLineVisualTotal
+      );
+
+      notifySaleChanged();
+    }
+  });
+
+  document.getElementById("sale-form").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const feedback = document.getElementById("sale-feedback");
+    const lines = [...form.querySelectorAll("[data-sale-line]")];
+
+    feedback.innerHTML = "";
+
+    if (!form.reportValidity() || !lines.length) {
+      feedback.innerHTML = `
+        <div class="dn-alert dn-alert-error">
+          Selecciona un cliente y agrega al menos un producto.
+        </div>
+      `;
+      return;
+    }
+
+    const payload = {
+      party_id: Number(form.querySelector("[name='party_id']").value),
+      sale_date: form.querySelector("[name='sale_date']").value,
+      channel: form.querySelector("[name='channel']").value,
+      items: lines.map(function(line) {
+        return {
+          product_id: Number(line.querySelector("[name='product_id[]']").value),
+          quantity: line.querySelector("[name='quantity[]']").value,
+          unit_id: Number(line.querySelector("[name='unit_id[]']").value),
+          manual_unit_price: line.querySelector("[name='unit_price[]']").value || null,
+          discount_pct: line.querySelector("[name='discount_pct[]']").value || "0"
+        };
+      })
+    };
+
+    const button = document.getElementById("save-sale");
+
+    button.disabled = true;
+    button.textContent = "Guardando…";
+
+    try {
+      const response = await fetch("/api/v1/sales", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "No fue posible guardar la venta."
+        );
+      }
+
+      feedback.innerHTML = `
+        <div class="dn-alert dn-alert-success">
+          Venta ${data.sale_number} guardada como borrador.
+        </div>
+      `;
+
+      document.body.dispatchEvent(
+        new Event("sale:changed")
+      );
+
+      htmx.ajax(
+        "GET",
+        "{{ url_for('sales_admin.sales_admin_table') }}",
+        "#sales-body"
+      );
+
+    } catch (error) {
+      feedback.innerHTML = `
+        <div class="dn-alert dn-alert-error">
+          ${error.message}
+        </div>
+      `;
+    } finally {
+      button.disabled = false;
+      button.textContent = "Guardar borrador";
+    }
+  });
+</script>
+{% endblock %}

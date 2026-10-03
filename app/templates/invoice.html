@@ -1,0 +1,56 @@
+<div class="invoice">
+  <header>
+    <img src="/static/img/densa-niebla-logo.png" alt="Densa Niebla">
+    <div>
+      <h1>Densa Niebla — Café Especial</h1>
+      <p>NIT: {{ company.nit }} · Manizales, Caldas</p>
+      <p>{{ company.phone }} · {{ company.email }}</p>
+    </div>
+    <div class="invoice-meta">
+      <h2>Factura de venta</h2>
+      <p><strong>No.:</strong> {{ sale.invoice_number }}</p>
+      <p><strong>Fecha:</strong> {{ sale.sale_date }}</p>
+      <p><strong>Canal:</strong> {{ sale.channel_label }}</p>
+    </div>
+  </header>
+
+  <section class="customer">
+    <h3>Cliente</h3>
+    <p><strong>{{ customer.business_name }}</strong></p>
+    <p>NIT: {{ customer.nit }}</p>
+    <p>{{ customer.address }} — {{ customer.city }}</p>
+  </section>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Descripción</th>
+        <th>Cant.</th>
+        <th>Vr. unitario</th>
+        <th>Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in sale.items %}
+      <tr>
+        <td>{{ item.name }} — {{ item.presentation }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>${{ '{:,.0f}'.format(item.unit_price) }}</td>
+        <td>${{ '{:,.0f}'.format(item.line_subtotal) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <section class="totals">
+    <p>Subtotal: ${{ '{:,.0f}'.format(sale.subtotal) }}</p>
+    <p>IVA: ${{ '{:,.0f}'.format(sale.tax_total) }}</p>
+    <p class="total"><strong>Total: ${{ '{:,.0f}'.format(sale.total) }}</strong></p>
+  </section>
+
+  <footer>
+    <p>{{ sale.notes }}</p>
+    <img src="{{ qr_url }}" alt="QR de trazabilidad">
+    <p>Densa Niebla — Café de origen, con historia en cada taza.</p>
+  </footer>
+</div>

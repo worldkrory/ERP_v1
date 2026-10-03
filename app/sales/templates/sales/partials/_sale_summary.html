@@ -1,0 +1,38 @@
+<div class="dn-summary-card">
+  <div class="dn-summary-row">
+    <span>Productos</span>
+    <strong>{{ preview.item_count }}</strong>
+  </div>
+
+  <div class="dn-summary-row">
+    <span>Subtotal</span>
+    <strong>
+      ${{ "{:,.0f}".format(preview.subtotal).replace(",", ".") }} COP
+    </strong>
+  </div>
+
+  <div class="dn-summary-row">
+    <span>Descuentos</span>
+    <strong>
+      − ${{ "{:,.0f}".format(preview.discount_total).replace(",", ".") }} COP
+    </strong>
+  </div>
+
+  <div class="dn-summary-row">
+    <span>Impuestos</span>
+    <strong>
+      ${{ "{:,.0f}".format(preview.tax_total).replace(",", ".") }} COP
+    </strong>
+  </div>
+
+  <div class="dn-summary-total">
+    <span>Total estimado</span>
+    <strong>
+      ${{ "{:,.0f}".format(preview.total).replace(",", ".") }} COP
+    </strong>
+  </div>
+
+  <p class="dn-summary-note">
+    El valor definitivo se valida al guardar la venta.
+  </p>
+</div>

@@ -294,6 +294,81 @@ def allocate_sale_item_batches(
 		raise SaleError("La suma de lotes no coincide con la cantidad de la linea.")
 	return result
 
+def confirm_sale_dispatch(
+    session: Session,
+    sale: Sale,
+    *,
+    allocations_by_item: dict[int, list[dict]],
+    created_by_id: int | None = None,
+) -> Sale:
+    """
+    Confirma una venta DRAFT con sus asignaciones de lote completas.
+
+    Flujo atómico:
+    1. Valida que la venta pueda confirmarse.
+    2. Exige asignación para cada línea.
+    3. Verifica que cada asignación sume exactamente quantity_base.
+    4. Crea SaleItemBatch y movimientos OUT_SALE.
+    5. Materializa costo, margen y estado CONFIRMED.
+
+    La ruta debe hacer commit una vez; ante un error, rollback completo.
+    """
+    if not sale.is_editable:
+        raise SaleError("Solo se pueden confirmar ventas en borrador.")
+
+    if not sale.items:
+        raise SaleError("La venta no tiene líneas para confirmar.")
+
+    expected_item_ids = {item.id for item in sale.items}
+    supplied_item_ids = set(allocations_by_item)
+
+    unexpected = supplied_item_ids - expected_item_ids
+    if unexpected:
+        raise SaleError("Hay asignaciones para líneas que no pertenecen a la venta.")
+
+    missing = expected_item_ids - supplied_item_ids
+    if missing:
+        raise SaleError("Todas las líneas deben tener lotes asignados.")
+
+    for item in sale.items:
+        if item.batch_allocations:
+            raise SaleError(
+                f"La línea {item.line_no} ya tiene lotes asignados; "
+                "no puede reasignarse."
+            )
+
+        allocations = allocations_by_item[item.id]
+
+        if not allocations:
+            raise SaleError(
+                f"La línea {item.line_no} no tiene asignaciones de lote."
+            )
+
+        allocated_total = sum(
+            (
+                Decimal(str(allocation.get("quantity_base", "0")))
+                for allocation in allocations
+            ),
+            Decimal("0"),
+        )
+
+        if allocated_total != Decimal(item.quantity_base):
+            raise SaleError(
+                f"La línea {item.line_no} requiere "
+                f"{item.quantity_base} en unidad base, pero se asignaron "
+                f"{allocated_total}."
+            )
+
+    for item in sale.items:
+        allocate_sale_item_batches(
+            session,
+            item,
+            allocations=allocations_by_item[item.id],
+            created_by_id=created_by_id,
+        )
+
+    return confirm_sale(session, sale)
+
 
 def confirm_sale(session: Session, sale: Sale) -> Sale:
 	if not sale.is_editable or not sale.items:
@@ -419,6 +494,7 @@ __all__ = [
 	"allocate_sale_item_batches",
 	"cancel_sale",
 	"confirm_sale",
+	"confirm_sale_dispatch",
 	"create_sale",
 	"resolve_sale_price",
 ]

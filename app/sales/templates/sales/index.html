@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Ventas y despacho | Densa Niebla{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/sales_workspace.css') }}">
+
+<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+{% endblock %}
+
+{% block content %}
+<main class="dn-workspace">
+  <div class="dn-workspace-shell">
+
+    <header class="dn-workspace-header">
+      <div>
+        <p class="dn-eyebrow">Densa Niebla · Comercial</p>
+        <h1>Ventas y despacho</h1>
+        <p class="dn-workspace-intro">
+          Cada bolsa conserva su cliente, precio, lote y recorrido.
+        </p>
+      </div>
+
+      <a href="{{ url_for('sales_admin.sales_admin_classic_page') }}"
+         class="dn-button dn-button-primary">
+        Nueva venta
+      </a>
+    </header>
+
+    <section class="dn-metrics-grid">
+      <article class="dn-metric-card">
+        <span class="dn-metric-label">Borradores</span>
+        <strong>{{ metrics.draft_count }}</strong>
+        <small>Ventas aún editables</small>
+      </article>
+
+      <article class="dn-metric-card">
+        <span class="dn-metric-label">En operación</span>
+        <strong>{{ metrics.confirmed_count }}</strong>
+        <small>Confirmadas, despachadas o entregadas</small>
+      </article>
+
+      <article class="dn-metric-card dn-metric-card-money">
+        <span class="dn-metric-label">Por cobrar</span>
+        <strong>${{ "{:,.0f}".format(metrics.pending_collection).replace(",", ".") }}</strong>
+        <small>Saldo pendiente de clientes</small>
+      </article>
+
+      <article class="dn-metric-card">
+        <span class="dn-metric-label">Vencidas</span>
+        <strong>{{ metrics.overdue_count }}</strong>
+        <small>Ventas fuera de plazo</small>
+      </article>
+
+      <article class="dn-metric-card">
+        <span class="dn-metric-label">Por despachar</span>
+        <strong>{{ metrics.pending_dispatch_count }}</strong>
+        <small>Confirmadas sin entrega registrada</small>
+      </article>
+    </section>
+
+    <section class="dn-filter-panel">
+      <form method="get"
+            class="dn-filter-form">
+        <label class="dn-field dn-search-field">
+          <span>Buscar</span>
+          <input type="search"
+                 name="q"
+                 value="{{ filters.q }}"
+                 placeholder="Venta, cliente, NIT o documento">
+        </label>
+
+        <label class="dn-field">
+          <span>Operación</span>
+          <select name="status">
+            <option value="">Todos los estados</option>
+            <option value="DRAFT" {% if filters.status == "DRAFT" %}selected{% endif %}>Borrador</option>
+            <option value="CONFIRMED" {% if filters.status == "CONFIRMED" %}selected{% endif %}>Confirmada</option>
+            <option value="DISPATCHED" {% if filters.status == "DISPATCHED" %}selected{% endif %}>Despachada</option>
+            <option value="DELIVERED" {% if filters.status == "DELIVERED" %}selected{% endif %}>Entregada</option>
+            <option value="CANCELLED" {% if filters.status == "CANCELLED" %}selected{% endif %}>Cancelada</option>
+            <option value="RETURNED" {% if filters.status == "RETURNED" %}selected{% endif %}>Devuelta</option>
+          </select>
+        </label>
+
+        <label class="dn-field">
+          <span>Cobro</span>
+          <select name="payment_status">
+            <option value="">Todos</option>
+            <option value="UNPAID" {% if filters.payment_status == "UNPAID" %}selected{% endif %}>Sin pago</option>
+            <option value="PARTIAL" {% if filters.payment_status == "PARTIAL" %}selected{% endif %}>Parcial</option>
+            <option value="PAID" {% if filters.payment_status == "PAID" %}selected{% endif %}>Pagado</option>
+            <option value="OVERDUE" {% if filters.payment_status == "OVERDUE" %}selected{% endif %}>Vencido</option>
+          </select>
+        </label>
+
+        <label class="dn-field">
+          <span>Canal</span>
+          <select name="channel">
+            <option value="">Todos</option>
+            <option value="RETAIL" {% if filters.channel == "RETAIL" %}selected{% endif %}>Retail</option>
+            <option value="CAFETERIA" {% if filters.channel == "CAFETERIA" %}selected{% endif %}>Cafetería</option>
+            <option value="WHOLESALE" {% if filters.channel == "WHOLESALE" %}selected{% endif %}>Mayorista</option>
+            <option value="INTERMEDIARY" {% if filters.channel == "INTERMEDIARY" %}selected{% endif %}>Intermediario</option>
+            <option value="ONLINE" {% if filters.channel == "ONLINE" %}selected{% endif %}>Online</option>
+            <option value="EVENT" {% if filters.channel == "EVENT" %}selected{% endif %}>Evento</option>
+          </select>
+        </label>
+
+        <div class="dn-filter-actions">
+          <button class="dn-button dn-button-primary" type="submit">
+            Aplicar filtros
+          </button>
+
+          <a class="dn-button dn-button-outline"
+             href="{{ url_for('sales_admin.sales_workspace') }}">
+            Limpiar
+          </a>
+        </div>
+      </form>
+    </section>
+
+    <section class="dn-sales-list">
+      <header class="dn-section-header">
+        <div>
+          <p class="dn-eyebrow">Bandeja comercial</p>
+          <h2>{{ sales|length }} ventas visibles</h2>
+        </div>
+
+        <span class="dn-section-note">
+          Ordenadas desde la más reciente
+        </span>
+      </header>
+
+      <div class="dn-table-scroll">
+        <table class="dn-sales-table">
+          <thead>
+            <tr>
+              <th>Venta</th>
+              <th>Cliente</th>
+              <th>Canal</th>
+              <th>Fecha</th>
+              <th>Operación</th>
+              <th>Cobro</th>
+              <th>Total</th>
+              <th></th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for sale in sales %}
+            <tr>
+              <td>
+                <strong>{{ sale.sale_number }}</strong>
+                <span class="dn-table-muted">#{{ sale.id }}</span>
+              </td>
+
+              <td>
+                <strong>{{ sale.party.display_name }}</strong>
+                <span class="dn-table-muted">
+                  {{ sale.party.document_type }} {{ sale.party.document_full }}
+                </span>
+              </td>
+
+              <td>{{ sale.channel|replace("_", " ")|title }}</td>
+
+              <td>{{ sale.sale_date.strftime("%d %b %Y") }}</td>
+
+              <td>
+                <span class="dn-status dn-status-{{ sale.status|lower }}">
+                  {{ sale.status|replace("_", " ")|title }}
+                </span>
+              </td>
+
+              <td>
+                <span class="dn-status dn-payment-{{ sale.payment_status|lower }}">
+                  {{ sale.payment_status|replace("_", " ")|title }}
+                </span>
+              </td>
+
+              <td class="dn-money">
+                ${{ "{:,.0f}".format(sale.total).replace(",", ".") }}
+              </td>
+
+              <td class="dn-table-action">
+                <a class="dn-button dn-button-small"
+                   href="{{ url_for('sales_admin.sale_detail', sale_id=sale.id) }}">
+                  Ver venta
+                </a>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="8" class="dn-empty">
+                No encontramos ventas con los filtros aplicados.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</main>
+{% endblock %}

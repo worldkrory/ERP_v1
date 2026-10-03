@@ -1,0 +1,37 @@
+{% if sales %}
+  {% for sale in sales %}
+  <tr>
+    <td>
+      <strong>{{ sale.sale_number }}</strong>
+    </td>
+
+    <td>
+      {% if sale.party %}
+        {{ sale.party.display_name }}
+      {% else %}
+        {{ sale.party_name|default("Cliente sin nombre") }}
+      {% endif %}
+    </td>
+
+    <td>
+      {{ sale.sale_date.strftime("%d/%m/%Y") if sale.sale_date is not string else sale.sale_date }}
+    </td>
+
+    <td>
+      <span class="dn-status dn-status-{{ sale.status|lower }}">
+        {{ sale.status }}
+      </span>
+    </td>
+
+    <td class="dn-money">
+      ${{ "{:,.0f}".format(sale.total|float).replace(",", ".") }}
+    </td>
+  </tr>
+  {% endfor %}
+{% else %}
+  <tr>
+    <td colspan="5" class="dn-empty">
+      Todavía no hay ventas registradas.
+    </td>
+  </tr>
+{% endif %}

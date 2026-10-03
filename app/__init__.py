@@ -77,6 +77,20 @@ def create_app(config_name=None):
         return redirect(url_for("storefront.collection"))
         #return render_template('storefront/collection.html')
 
+    @app.route('/invoice')
+    def invoice():
+        """Ruta principal: redirige a login o al dashboard."""
+        from flask_login import current_user
+
+        company = {
+            'nit': '900.123.456-7',
+            'name': 'Mi Empresa S.A.S.'
+        }
+        
+        #return redirect(url_for("auth.login"))
+        return render_template('invoice.html',  company=company)
+        #return render_template('storefront/collection.html')
+
     @app.route('/microlote/bourbon-rosado')
     def bourbon_rosado():
 

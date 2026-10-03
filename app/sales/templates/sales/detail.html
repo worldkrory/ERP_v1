@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}{{ sale.sale_number }} | Densa Niebla{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/sales_workspace.css') }}">
+
+<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+{% endblock %}
+
+{% block content %}
+<main class="dn-workspace">
+  <div class="dn-workspace-shell">
+
+    <a class="dn-back-link"
+       href="{{ url_for('sales_admin.sales_workspace') }}">
+      ← Volver a ventas
+    </a>
+
+    <header class="dn-sale-detail-header">
+      <div>
+        <p class="dn-eyebrow">Venta {{ sale.sale_number }}</p>
+        <h1>{{ sale.party.display_name }}</h1>
+
+        <p class="dn-sale-detail-subtitle">
+          {{ sale.party.document_type }} {{ sale.party.document_full }}
+          · {{ sale.channel|replace("_", " ")|title }}
+          · {{ sale.sale_date.strftime("%d de %B de %Y") }}
+        </p>
+      </div>
+
+      <div class="dn-sale-detail-total">
+        <span>Total venta</span>
+        <strong>${{ "{:,.0f}".format(sale.total).replace(",", ".") }} COP</strong>
+
+        <div class="dn-status-stack">
+          <span class="dn-status dn-status-{{ sale.status|lower }}">
+            Operación: {{ sale.status|replace("_", " ")|title }}
+          </span>
+
+          <span class="dn-status dn-payment-{{ sale.payment_status|lower }}">
+            Cobro: {{ sale.payment_status|replace("_", " ")|title }}
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <section class="dn-sale-progress">
+      <article class="dn-progress-card {% if sale.status != 'DRAFT' %}dn-progress-complete{% endif %}">
+        <span>01</span>
+        <div>
+          <strong>Venta</strong>
+          <small>
+            {% if sale.status == "DRAFT" %}
+              Editable antes de confirmar
+            {% else %}
+              Cliente, precio e impuestos congelados
+            {% endif %}
+          </small>
+        </div>
+      </article>
+
+      <article class="dn-progress-card {% if sale.status in ('CONFIRMED', 'DISPATCHED', 'DELIVERED') %}dn-progress-complete{% endif %}">
+        <span>02</span>
+        <div>
+          <strong>Despacho</strong>
+          <small>
+            {% if sale.status == "DRAFT" %}
+              Pendiente de lote y salida
+            {% elif sale.status == "CONFIRMED" %}
+              Inventario confirmado
+            {% elif sale.status == "DISPATCHED" %}
+              Mercancía en ruta
+            {% elif sale.status == "DELIVERED" %}
+              Entrega completada
+            {% else %}
+              Sin despacho activo
+            {% endif %}
+          </small>
+        </div>
+      </article>
+
+      <article class="dn-progress-card {% if sale.payment_status == 'PAID' %}dn-progress-complete{% endif %}">
+        <span>03</span>
+        <div>
+          <strong>Cobro</strong>
+          <small>
+            {% if sale.payment_status == "PAID" %}
+              Pago aplicado completamente
+            {% elif sale.payment_status == "PARTIAL" %}
+              Pago parcial registrado
+            {% elif sale.payment_status == "OVERDUE" %}
+              Saldo vencido
+            {% else %}
+              Saldo pendiente de cobro
+            {% endif %}
+          </small>
+        </div>
+      </article>
+
+      <article class="dn-progress-card {% if sale.status != 'DRAFT' %}dn-progress-complete{% endif %}">
+        <span>04</span>
+        <div>
+          <strong>Documento</strong>
+          <small>
+            {% if sale.status == "DRAFT" %}
+              Disponible tras confirmar
+            {% else %}
+              Listo para generar y compartir
+            {% endif %}
+          </small>
+        </div>
+      </article>
+    </section>
+
+    <div class="dn-detail-grid">
+      <section class="dn-card dn-detail-main">
+        <header class="dn-card-header">
+          <div>
+            <p class="dn-panel-kicker">Productos vendidos</p>
+            <h2>Detalle de la venta</h2>
+          </div>
+
+          {% if sale.is_editable %}
+          <span class="dn-editable-note">Borrador editable</span>
+          {% else %}
+          <span class="dn-locked-note">Datos congelados</span>
+          {% endif %}
+        </header>
+
+        <div class="dn-table-scroll">
+          <table class="dn-sale-items-table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Descuento</th>
+                <th>Impuesto</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for item in sale.items %}
+              <tr>
+                <td>
+                  <strong>{{ item.description }}</strong>
+                  <span class="dn-table-muted">
+                    {{ item.product.sku if item.product and item.product.sku else "Sin SKU" }}
+                    · Precio: {{ item.price_source|replace("_", " ")|title }}
+                  </span>
+                </td>
+
+                <td>
+                  {{ item.quantity }} {{ item.unit.display_name }}
+                </td>
+
+                <td>
+                  ${{ "{:,.0f}".format(item.unit_price).replace(",", ".") }}
+                </td>
+
+                <td>
+                  {% if item.discount_amount > 0 %}
+                    − ${{ "{:,.0f}".format(item.discount_amount).replace(",", ".") }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+
+                <td>
+                  {{ (item.tax_rate * 100)|round(2) }}%
+                  <span class="dn-table-muted">
+                    ${{ "{:,.0f}".format(item.tax_amount).replace(",", ".") }}
+                  </span>
+                </td>
+
+                <td class="dn-money">
+                  ${{ "{:,.0f}".format(item.total).replace(",", ".") }}
+                </td>
+              </tr>
+
+              {% if item.batch_allocations %}
+              <tr class="dn-traceability-row">
+                <td colspan="6">
+                  <div class="dn-traceability-list">
+                    {% for allocation in item.batch_allocations %}
+                    <span class="dn-traceability-chip">
+                      Lote {{ allocation.batch.batch_code }}
+                      · {{ allocation.location.name }}
+                      · {{ allocation.quantity_base }} base
+                    </span>
+                    {% endfor %}
+                  </div>
+                </td>
+              </tr>
+              {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="dn-sale-totals">
+          <div><span>Subtotal</span><strong>${{ "{:,.0f}".format(sale.subtotal).replace(",", ".") }}</strong></div>
+          <div><span>Descuentos</span><strong>− ${{ "{:,.0f}".format(sale.discount_total).replace(",", ".") }}</strong></div>
+          <div><span>Impuestos</span><strong>${{ "{:,.0f}".format(sale.tax_total).replace(",", ".") }}</strong></div>
+          <div class="dn-sale-grand-total"><span>Total</span><strong>${{ "{:,.0f}".format(sale.total).replace(",", ".") }} COP</strong></div>
+        </div>
+      </section>
+
+      <aside class="dn-detail-sidebar">
+        <section class="dn-card">
+          <header class="dn-card-header">
+            <div>
+              <p class="dn-panel-kicker">Cliente</p>
+              <h2>{{ sale.party.display_name }}</h2>
+            </div>
+          </header>
+
+          <dl class="dn-definition-list">
+            <div>
+              <dt>Documento</dt>
+              <dd>{{ sale.party.document_type }} {{ sale.party.document_full }}</dd>
+            </div>
+
+            <div>
+              <dt>Correo</dt>
+              <dd>{{ sale.party.email or "No registrado" }}</dd>
+            </div>
+
+            <div>
+              <dt>WhatsApp</dt>
+              <dd>{{ sale.party.whatsapp or sale.party.phone or "No registrado" }}</dd>
+            </div>
+
+            <div>
+              <dt>Condición</dt>
+              <dd>{{ sale.payment_term_days }} día(s)</dd>
+            </div>
+
+            <div>
+              <dt>Vencimiento</dt>
+              <dd>
+                {{ sale.due_date.strftime("%d/%m/%Y") if sale.due_date else "No aplica" }}
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="dn-card">
+          <header class="dn-card-header">
+            <div>
+              <p class="dn-panel-kicker">Siguiente acción</p>
+              <h2>Operación</h2>
+            </div>
+          </header>
+
+          {% if sale.status == "DRAFT" %}
+            <p class="dn-card-copy">
+              Selecciona el lote y la ubicación real de cada producto antes de confirmar la salida.
+            </p>
+
+            <a class="dn-button dn-button-primary dn-button-full"
+               href="{{ url_for('sales_admin.sale_dispatch_workspace', sale_id=sale.id) }}">
+              Preparar despacho
+            </a>
+
+          {% elif sale.status == "CONFIRMED" %}
+            <p class="dn-card-copy">
+              La salida de inventario quedó confirmada. Ahora puedes registrar el pago o preparar la entrega.
+            </p>
+
+            <button type="button"
+                    class="dn-button dn-button-primary dn-button-full"
+                    disabled>
+              Registrar cobro
+            </button>
+
+          {% elif sale.status in ("DISPATCHED", "DELIVERED") %}
+            <p class="dn-card-copy">
+              La operación ya tiene movimiento de salida. Revisa cobro, entrega y documento.
+            </p>
+
+            <button type="button"
+                    class="dn-button dn-button-primary dn-button-full"
+                    disabled>
+              Ver documento
+            </button>
+
+          {% elif sale.status == "CANCELLED" %}
+            <p class="dn-card-copy">
+              Esta venta está cancelada. Los movimientos de inventario fueron revertidos mediante el libro de inventario.
+            </p>
+          {% endif %}
+        </section>
+
+        <section class="dn-card dn-financial-card">
+          <header class="dn-card-header">
+            <div>
+              <p class="dn-panel-kicker">Cartera</p>
+              <h2>Saldo de cliente</h2>
+            </div>
+          </header>
+
+          <div class="dn-balance-due">
+            <span>Saldo pendiente</span>
+            <strong>${{ "{:,.0f}".format(sale.balance_due).replace(",", ".") }} COP</strong>
+          </div>
+
+          <div class="dn-financial-grid">
+            <div>
+              <span>Pagado</span>
+              <strong>${{ "{:,.0f}".format(sale.paid_amount).replace(",", ".") }}</strong>
+            </div>
+
+            <div>
+              <span>Vencido</span>
+              <strong>{{ "Sí" if sale.is_overdue else "No" }}</strong>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+</main>
+{% endblock %}

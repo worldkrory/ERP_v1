@@ -1,0 +1,558 @@
+{% extends "base.html" %}
+
+{% block title %}Despacho {{ sale.sale_number }} | Densa Niebla{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/sales_workspace.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="dn-workspace">
+  <div class="dn-workspace-shell">
+
+    <a class="dn-back-link"
+       href="{{ url_for('sales_admin.sale_detail', sale_id=sale.id) }}">
+      ← Volver a la venta
+    </a>
+
+    <header class="dn-dispatch-page-header">
+      <div>
+        <p class="dn-eyebrow">Salida trazable · Venta {{ sale.sale_number }}</p>
+        <h1>Preparar despacho</h1>
+        <p>
+          Selecciona el lote y la ubicación real de cada café.
+          La salida de inventario se registrará solo al confirmar.
+        </p>
+      </div>
+
+      <aside class="dn-dispatch-customer">
+        <span>Cliente</span>
+        <strong>{{ sale.party.display_name }}</strong>
+        <small>{{ sale.party.document_type }} {{ sale.party.document_full }}</small>
+      </aside>
+    </header>
+
+    {% if dispatch_error %}
+    <div class="dn-alert dn-alert-error">
+      {{ dispatch_error }}
+    </div>
+    {% endif %}
+
+    <form id="dispatch-form"
+          data-sale-id="{{ sale.id }}"
+          data-confirm-url="{{ url_for('sales_admin.confirm_sale_dispatch_route', sale_id=sale.id) }}">
+
+      <section class="dn-dispatch-layout">
+        <div class="dn-dispatch-items">
+
+          {% for item in sale.items %}
+          <article class="dn-dispatch-card"
+                   data-dispatch-item
+                   data-sale-item-id="{{ item.id }}"
+                   data-required="{{ item.quantity_base }}">
+
+            <header class="dn-dispatch-card-header">
+              <div>
+                <p class="dn-panel-kicker">Línea {{ item.line_no }}</p>
+                <h2>{{ item.description }}</h2>
+
+                <p class="dn-dispatch-product-meta">
+                  Vendido: <strong>{{ item.quantity }} {{ item.unit.display_name }}</strong>
+                  · Requerido en base:
+                  <strong data-required-display>{{ item.quantity_base }}</strong>
+                </p>
+              </div>
+
+              <div class="dn-dispatch-progress-badge"
+                   data-item-progress-badge>
+                <span data-assigned-display>0</span>
+                /
+                <span>{{ item.quantity_base }}</span>
+                <small>asignado</small>
+              </div>
+            </header>
+
+            {% set options = available_batches_by_item.get(item.id, []) %}
+
+            {% if options %}
+            <div class="dn-available-batches">
+              <div class="dn-available-batches-head">
+                <div>
+                  <p class="dn-panel-kicker">Lotes disponibles</p>
+                  <h3>Origen, saldo y ubicación</h3>
+                </div>
+
+                <span>{{ options|length }} opción{{ "" if options|length == 1 else "es" }}</span>
+              </div>
+
+              <div class="dn-batch-option-list">
+                {% for option in options %}
+                <article class="dn-batch-option"
+                    data-batch-option
+                    data-batch-id="{{ option.batch_id }}"
+                    data-location-id="{{ option.location_id }}"
+                    data-available="{{ option.available_quantity_base }}"
+                    data-unit-cost="{{ option.average_unit_cost }}"
+                    data-batch-code="{{ option.batch_code }}"
+                    data-location-display="{{ option.location_display }}">
+
+                  <div class="dn-batch-option-main">
+                    <div class="dn-batch-radio">
+                      <input type="radio"
+                             name="batch-choice-{{ item.id }}"
+                             value="{{ option.batch_id }}|{{ option.location_id }}"
+                             {% if loop.first %}checked{% endif %}>
+                    </div>
+
+                    <div>
+                      <strong>{{ option.batch_code }}</strong>
+
+                      <p>
+                        {% if option.farm_name %}{{ option.farm_name }}{% endif %}
+                        {% if option.municipality_name %}
+                          {% if option.farm_name %} · {% endif %}
+                          {{ option.municipality_name }}
+                        {% endif %}
+                        {% if not option.farm_name and not option.municipality_name %}
+                          Lote {{ option.batch_type|lower|title }}
+                        {% endif %}
+                      </p>
+
+                      <div class="dn-batch-tags">
+                        <span>{{ option.location_display }}</span>
+
+                        {% if option.harvest_year %}
+                        <span>Cosecha {{ option.harvest_year }}</span>
+                        {% endif %}
+
+                        {% if option.harvest_period %}
+                        <span>{{ option.harvest_period|lower|title }}</span>
+                        {% endif %}
+
+                        {% if option.cupping_score %}
+                        <span>{{ option.cupping_score }} pts</span>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="dn-batch-option-numbers">
+                    <span>Disponible</span>
+                    <strong>{{ option.available_quantity_base }}</strong>
+
+                    <span>Costo base</span>
+                    <strong>${{ "{:,.0f}".format(option.average_unit_cost).replace(",", ".") }}</strong>
+                  </div>
+
+                  <div class="dn-batch-option-action">
+                    <label class="dn-field">
+                      <span>Asignar</span>
+                      <input type="number"
+                             min="0.0001"
+                             max="{{ option.available_quantity_base }}"
+                             step="0.0001"
+                             value=""
+                             placeholder="0"
+                             data-batch-quantity>
+                    </label>
+
+                    <button type="button"
+                            class="dn-button dn-button-outline dn-add-allocation"
+                            data-add-allocation>
+                      Añadir
+                    </button>
+                  </div>
+                </article>
+                {% endfor %}
+              </div>
+            </div>
+
+            <section class="dn-assigned-batches"
+                     data-assigned-list>
+              <header>
+                <div>
+                  <p class="dn-panel-kicker">Asignación de salida</p>
+                  <h3>Lotes elegidos para esta venta</h3>
+                </div>
+                <span data-assignment-status>Pendiente</span>
+              </header>
+
+              <div class="dn-assigned-rows"
+                   data-assigned-rows>
+                <p class="dn-empty-assignment">
+                  Aún no has asignado un lote.
+                </p>
+              </div>
+            </section>
+
+            {% else %}
+            <div class="dn-alert dn-alert-error">
+              No existe saldo disponible para este producto en ninguna ubicación activa.
+            </div>
+            {% endif %}
+          </article>
+          {% endfor %}
+        </div>
+
+        <aside class="dn-dispatch-summary">
+          <section class="dn-card dn-dispatch-summary-card">
+            <header class="dn-card-header">
+              <div>
+                <p class="dn-panel-kicker">Validación final</p>
+                <h2>Antes de confirmar</h2>
+              </div>
+            </header>
+
+            <div class="dn-dispatch-summary-body">
+              <div class="dn-dispatch-summary-row">
+                <span>Líneas de venta</span>
+                <strong>{{ sale.items|length }}</strong>
+              </div>
+
+              <div class="dn-dispatch-summary-row">
+                <span>Líneas listas</span>
+                <strong data-ready-items>0</strong>
+              </div>
+
+              <div class="dn-dispatch-summary-row">
+                <span>Costo estimado</span>
+                <strong data-estimated-cost>$0</strong>
+              </div>
+
+              <div class="dn-dispatch-summary-row dn-dispatch-summary-margin">
+                <span>Margen estimado</span>
+                <strong data-estimated-margin>
+                  ${{ "{:,.0f}".format(sale.total).replace(",", ".") }}
+                </strong>
+              </div>
+
+              <p class="dn-dispatch-summary-note">
+                La confirmación crea las salidas de inventario, fija costos y bloquea la edición comercial.
+              </p>
+            </div>
+
+            <footer class="dn-dispatch-summary-footer">
+              <div id="dispatch-feedback"
+                   aria-live="polite"></div>
+
+              <button type="submit"
+                      class="dn-button dn-button-primary dn-button-full"
+                      data-confirm-dispatch>
+                Confirmar salida e inventario
+              </button>
+
+              <p>
+                Esta acción no se edita. Si ocurre un error después, la venta se cancela y el ERP crea movimientos de reversa.
+              </p>
+            </footer>
+          </section>
+        </aside>
+      </section>
+    </form>
+  </div>
+</main>
+
+<template id="assigned-row-template">
+  <article class="dn-assigned-row" data-assigned-row>
+    <div>
+      <strong data-row-batch-code></strong>
+      <span data-row-location></span>
+    </div>
+
+    <div>
+      <span>Cantidad</span>
+      <strong data-row-quantity></strong>
+    </div>
+
+    <div>
+      <span>Costo</span>
+      <strong data-row-cost></strong>
+    </div>
+
+    <button type="button"
+            class="dn-remove-assignment"
+            title="Quitar asignación"
+            aria-label="Quitar asignación">
+      ×
+    </button>
+  </article>
+</template>
+
+<script>
+(() => {
+  const form = document.getElementById("dispatch-form");
+
+  if (!form) {
+    return;
+  }
+
+  const totalSale = Number("{{ sale.total }}");
+  const money = value => new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    maximumFractionDigits: 0
+  }).format(Number(value || 0));
+
+  const allocationsByItem = new Map();
+  const template = document.getElementById("assigned-row-template");
+
+  const toNumber = value => {
+    const number = Number(String(value ?? "").replace(",", "."));
+    return Number.isFinite(number) ? number : 0;
+  };
+
+  function itemAllocations(itemNode) {
+    const itemId = Number(itemNode.dataset.saleItemId);
+
+    if (!allocationsByItem.has(itemId)) {
+      allocationsByItem.set(itemId, []);
+    }
+
+    return allocationsByItem.get(itemId);
+  }
+
+  function renderItem(itemNode) {
+    const required = toNumber(itemNode.dataset.required);
+    const allocations = itemAllocations(itemNode);
+    const rows = itemNode.querySelector("[data-assigned-rows]");
+    const assigned = allocations.reduce(
+      (sum, allocation) => sum + allocation.quantityBase,
+      0
+    );
+
+    const display = itemNode.querySelector("[data-assigned-display]");
+    const status = itemNode.querySelector("[data-assignment-status]");
+    const badge = itemNode.querySelector("[data-item-progress-badge]");
+
+    display.textContent = assigned.toFixed(4);
+
+    rows.innerHTML = "";
+
+    if (!allocations.length) {
+      rows.innerHTML = `
+        <p class="dn-empty-assignment">
+          Aún no has asignado un lote.
+        </p>
+      `;
+    }
+
+    allocations.forEach((allocation, index) => {
+      const fragment = template.content.cloneNode(true);
+      const row = fragment.querySelector("[data-assigned-row]");
+
+      row.querySelector("[data-row-batch-code]").textContent =
+        allocation.batchCode;
+
+      row.querySelector("[data-row-location]").textContent =
+        allocation.locationDisplay;
+
+      row.querySelector("[data-row-quantity]").textContent =
+        allocation.quantityBase.toFixed(4);
+
+      row.querySelector("[data-row-cost]").textContent =
+        money(allocation.quantityBase * allocation.unitCost);
+
+      row.querySelector(".dn-remove-assignment").addEventListener("click", () => {
+        allocations.splice(index, 1);
+        renderItem(itemNode);
+        updateSummary();
+      });
+
+      rows.appendChild(fragment);
+    });
+
+    const epsilon = 0.0001;
+    const isBalanced = Math.abs(assigned - required) < epsilon;
+    const isOver = assigned > required + epsilon;
+
+    badge.classList.remove("dn-progress-ready", "dn-progress-over");
+    status.classList.remove("dn-assignment-ready", "dn-assignment-over");
+
+    if (isBalanced) {
+      badge.classList.add("dn-progress-ready");
+      status.classList.add("dn-assignment-ready");
+      status.textContent = "Listo";
+    } else if (isOver) {
+      badge.classList.add("dn-progress-over");
+      status.classList.add("dn-assignment-over");
+      status.textContent = "Excede lo requerido";
+    } else {
+      status.textContent = "Pendiente";
+    }
+  }
+
+  function updateSummary() {
+    let readyItems = 0;
+    let estimatedCost = 0;
+
+    document.querySelectorAll("[data-dispatch-item]").forEach(itemNode => {
+      const required = toNumber(itemNode.dataset.required);
+      const allocations = itemAllocations(itemNode);
+      const assigned = allocations.reduce(
+        (sum, allocation) => sum + allocation.quantityBase,
+        0
+      );
+
+      const epsilon = 0.0001;
+
+      if (Math.abs(assigned - required) < epsilon) {
+        readyItems += 1;
+      }
+
+      estimatedCost += allocations.reduce(
+        (sum, allocation) => sum + allocation.quantityBase * allocation.unitCost,
+        0
+      );
+    });
+
+    document.querySelector("[data-ready-items]").textContent = readyItems;
+    document.querySelector("[data-estimated-cost]").textContent =
+      money(estimatedCost);
+
+    document.querySelector("[data-estimated-margin]").textContent =
+      money(totalSale - estimatedCost);
+  }
+
+  form.querySelectorAll("[data-add-allocation]").forEach(button => {
+    button.addEventListener("click", () => {
+      const option = button.closest("[data-batch-option]");
+      const itemNode = button.closest("[data-dispatch-item]");
+      const quantityInput = option.querySelector("[data-batch-quantity]");
+
+      const quantityBase = toNumber(quantityInput.value);
+      const available = toNumber(option.dataset.available);
+
+      if (quantityBase <= 0) {
+        quantityInput.focus();
+        return;
+      }
+
+      const allocations = itemAllocations(itemNode);
+
+      const alreadyAssignedFromOption = allocations
+        .filter(allocation =>
+          allocation.batchId === Number(option.dataset.batchId)
+          && allocation.locationId === Number(option.dataset.locationId)
+        )
+        .reduce((sum, allocation) => sum + allocation.quantityBase, 0);
+
+      if ((alreadyAssignedFromOption + quantityBase) > available + 0.0001) {
+        quantityInput.setCustomValidity(
+          `El saldo disponible es ${available}.`
+        );
+        quantityInput.reportValidity();
+        quantityInput.setCustomValidity("");
+        return;
+      }
+
+      const batchCode = option.dataset.batchCode || "Lote sin código";
+      const locationDisplay =
+        option.dataset.locationDisplay || "Ubicación no especificada";
+
+      allocations.push({
+        batchId: Number(option.dataset.batchId),
+        locationId: Number(option.dataset.locationId),
+        quantityBase,
+        unitCost: toNumber(option.dataset.unitCost),
+        batchCode,
+        locationDisplay
+      });
+
+      quantityInput.value = "";
+      renderItem(itemNode);
+      updateSummary();
+    });
+  });
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const feedback = document.getElementById("dispatch-feedback");
+    const confirmButton = form.querySelector("[data-confirm-dispatch]");
+    const items = [];
+
+    let isValid = true;
+
+    document.querySelectorAll("[data-dispatch-item]").forEach(itemNode => {
+      const itemId = Number(itemNode.dataset.saleItemId);
+      const required = toNumber(itemNode.dataset.required);
+      const allocations = itemAllocations(itemNode);
+
+      const assigned = allocations.reduce(
+        (sum, allocation) => sum + allocation.quantityBase,
+        0
+      );
+
+      if (Math.abs(assigned - required) >= 0.0001) {
+        isValid = false;
+      }
+
+      items.push({
+        sale_item_id: itemId,
+        allocations: allocations.map(allocation => ({
+          batch_id: allocation.batchId,
+          location_id: allocation.locationId,
+          quantity_base: allocation.quantityBase.toFixed(4)
+        }))
+      });
+    });
+
+    if (!isValid) {
+      feedback.innerHTML = `
+        <div class="dn-alert dn-alert-error">
+          Cada línea debe quedar asignada exactamente a la cantidad requerida antes de confirmar.
+        </div>
+      `;
+      return;
+    }
+
+    confirmButton.disabled = true;
+    confirmButton.textContent = "Confirmando salida…";
+
+    try {
+      const response = await fetch(form.dataset.confirmUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ items })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "No fue posible confirmar el despacho."
+        );
+      }
+
+      feedback.innerHTML = `
+        <div class="dn-alert dn-alert-success">
+          Venta ${data.sale_number} confirmada. Inventario, costo y margen fueron actualizados.
+        </div>
+      `;
+
+      confirmButton.textContent = "Salida confirmada";
+
+      window.setTimeout(() => {
+        window.location.assign(data.detail_url);
+      }, 1100);
+
+    } catch (error) {
+      feedback.innerHTML = `
+        <div class="dn-alert dn-alert-error">
+          ${error.message}
+        </div>
+      `;
+
+      confirmButton.disabled = false;
+      confirmButton.textContent = "Confirmar salida e inventario";
+    }
+  });
+
+  document.querySelectorAll("[data-dispatch-item]").forEach(renderItem);
+  updateSummary();
+})();
+</script>
+{% endblock %}
