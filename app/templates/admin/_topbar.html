@@ -1,0 +1,24 @@
+<header class="admin-topbar">
+    <div class="brand-lockup">
+        <span class="brand-name">Densa Niebla</span>
+        <span class="brand-subtitle">Centro de Operaciones</span>
+    </div>
+
+    <div class="topbar-actions">
+        <button
+            type="button"
+            class="command-trigger"
+            aria-label="Buscar en Densa Niebla"
+        >
+            <span>Buscar módulos, lotes o clientes…</span>
+            <kbd>Ctrl K</kbd>
+        </button>
+
+        <a
+            href="{{ url_for('auth.logout') }}"
+            class="topbar-user-link"
+        >
+            {{ current_user.nombre }}
+        </a>
+    </div>
+</header>

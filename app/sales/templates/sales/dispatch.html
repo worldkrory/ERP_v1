@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% from "admin/_admin_shell.html" import admin_shell %}
+
 {% block title %}Despacho {{ sale.sale_number }} | Densa Niebla{% endblock %}
 
 {% block head_extra %}
@@ -8,7 +10,12 @@
 {% endblock %}
 
 {% block content %}
-<main class="dn-workspace">
+{% call admin_shell(
+  active_section="dispatch",
+  page_kicker="Salida trazable · Venta " ~ sale.sale_number,
+  page_title="Preparar despacho",
+  page_hint="Selecciona el lote y ubicación real de cada producto antes de confirmar."
+) %}
   <div class="dn-workspace-shell">
 
     <a class="dn-back-link"
@@ -555,4 +562,5 @@
   updateSummary();
 })();
 </script>
+{% endcall %}
 {% endblock %}

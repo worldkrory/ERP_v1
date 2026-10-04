@@ -1,0 +1,192 @@
+<aside class="admin-sidebar" id="admin-sidebar">
+
+    <div class="sidebar-top">
+        <a
+            href="{{ url_for('dashboard.index') }}"
+            class="sidebar-monogram"
+            aria-label="Ir al resumen de Densa Niebla"
+            hx-get="{{ url_for('dashboard.index') }}"
+            hx-target="#workspace"
+            hx-select="#workspace"
+            hx-swap="outerHTML show:top"
+            hx-push-url="true"
+        >
+            DN
+        </a>
+
+        <button
+            id="sidebar-toggle"
+            class="sidebar-collapse-button"
+            type="button"
+            aria-label="Contraer menú"
+            aria-expanded="true"
+        >
+            ←
+        </button>
+    </div>
+
+    <div class="sidebar-system-status">
+        <span class="status-dot status-dot--success"></span>
+        <div>
+            <strong>Operación estable</strong>
+            <small>Sistema local activo</small>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Navegación principal">
+
+        <p class="nav-section-label">General</p>
+
+        {% set active_endpoint = request.endpoint or '' %}
+
+        <a
+            href="{{ url_for('dashboard.index') }}"
+            class="nav-item {% if active_endpoint == 'dashboard.index' %}is-active{% endif %}"
+            hx-get="{{ url_for('dashboard.index') }}"
+            hx-target="#workspace"
+            hx-select="#workspace"
+            hx-swap="outerHTML show:top"
+            hx-push-url="true"
+        >
+            <span class="nav-icon">▦</span>
+            <span class="nav-label">Resumen</span>
+        </a>
+
+        <a
+            href="{{ url_for('terceros.index') }}"
+            class="nav-item {% if active_endpoint.startswith('terceros.') %}is-active{% endif %}"
+            hx-get="{{ url_for('terceros.index') }}"
+            hx-target="#workspace"
+            hx-select="#workspace"
+            hx-swap="outerHTML show:top"
+            hx-push-url="true"
+        >
+            <span class="nav-icon">◌</span>
+            <span class="nav-label">Terceros</span>
+        </a>
+
+        <p class="nav-section-label">Ruta del café</p>
+
+        <a
+            href="{{ url_for('compras.index') }}"
+            class="nav-item {% if active_endpoint.startswith('compras.') %}is-active{% endif %}"
+            hx-get="{{ url_for('compras.index') }}"
+            hx-target="#workspace"
+            hx-select="#workspace"
+            hx-swap="outerHTML show:top"
+            hx-push-url="true"
+        >
+            <span class="nav-icon">◒</span>
+            <span class="nav-label">Origen y compras</span>
+        </a>
+
+        <a
+            href="{{ url_for('inventario.index') }}"
+            class="nav-item {% if active_endpoint.startswith('inventario.') %}is-active{% endif %}"
+            hx-get="{{ url_for('inventario.index') }}"
+            hx-target="#workspace"
+            hx-select="#workspace"
+            hx-swap="outerHTML show:top"
+            hx-push-url="true"
+        >
+            <span class="nav-icon">□</span>
+            <span class="nav-label">Inventario</span>
+
+            {% if nav_badges.stock_alerts %}
+                <span id="badge-inventario" class="nav-badge">
+                    {{ nav_badges.stock_alerts }}
+                </span>
+            {% else %}
+                <span id="badge-inventario"></span>
+            {% endif %}
+        </a>
+
+        <a
+            href="{{ url_for('produccion.index') }}"
+            class="nav-item {% if active_endpoint.startswith('produccion.') %}is-active{% endif %}"
+            hx-get="{{ url_for('produccion.index') }}"
+            hx-target="#workspace"
+            hx-select="#workspace"
+            hx-swap="outerHTML show:top"
+            hx-push-url="true"
+        >
+            <span class="nav-icon">◉</span>
+            <span class="nav-label">Producción</span>
+        </a>
+
+        <a
+            href="{{ url_for('ventas.index') }}"
+            class="nav-item {% if active_endpoint.startswith('ventas.') %}is-active{% endif %}"
+            hx-get="{{ url_for('ventas.index') }}"
+            hx-target="#workspace"
+            hx-select="#workspace"
+            hx-swap="outerHTML show:top"
+            hx-push-url="true"
+        >
+            <span class="nav-icon">↗</span>
+            <span class="nav-label">Ventas</span>
+        </a>
+
+        <a
+            href="{{ url_for('despachos.index') }}"
+            class="nav-item {% if active_endpoint.startswith('despachos.') %}is-active{% endif %}"
+            hx-get="{{ url_for('despachos.index') }}"
+            hx-target="#workspace"
+            hx-select="#workspace"
+            hx-swap="outerHTML show:top"
+            hx-push-url="true"
+        >
+            <span class="nav-icon">→</span>
+            <span class="nav-label">Despacho</span>
+
+            {% if nav_badges.pending_dispatches %}
+                <span id="badge-despachos" class="nav-badge nav-badge--warning">
+                    {{ nav_badges.pending_dispatches }}
+                </span>
+            {% else %}
+                <span id="badge-despachos"></span>
+            {% endif %}
+        </a>
+
+        <a
+            href="{{ url_for('recaudo.index') }}"
+            class="nav-item {% if active_endpoint.startswith('recaudo.') %}is-active{% endif %}"
+            hx-get="{{ url_for('recaudo.index') }}"
+            hx-target="#workspace"
+            hx-select="#workspace"
+            hx-swap="outerHTML show:top"
+            hx-push-url="true"
+        >
+            <span class="nav-icon">↓</span>
+            <span class="nav-label">Recaudo</span>
+
+            {% if nav_badges.pending_collections %}
+                <span id="badge-recaudo" class="nav-badge nav-badge--warning">
+                    {{ nav_badges.pending_collections }}
+                </span>
+            {% else %}
+                <span id="badge-recaudo"></span>
+            {% endif %}
+        </a>
+
+        <p class="nav-section-label">Lectura del negocio</p>
+
+        <a
+            href="{{ url_for('balances.index') }}"
+            class="nav-item {% if active_endpoint.startswith('balances.') %}is-active{% endif %}"
+            hx-get="{{ url_for('balances.index') }}"
+            hx-target="#workspace"
+            hx-select="#workspace"
+            hx-swap="outerHTML show:top"
+            hx-push-url="true"
+        >
+            <span class="nav-icon">≈</span>
+            <span class="nav-label">Balances</span>
+        </a>
+    </nav>
+
+    <footer class="sidebar-footer">
+        <span class="status-dot status-dot--success"></span>
+        <span>Sistema local activo</span>
+    </footer>
+</aside>

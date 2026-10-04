@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% from "admin/_admin_shell.html" import admin_shell %}
+
 {% block title %}{{ sale.sale_number }} | Densa Niebla{% endblock %}
 
 {% block head_extra %}
@@ -10,7 +12,12 @@
 {% endblock %}
 
 {% block content %}
-<main class="dn-workspace">
+{% call admin_shell(
+  active_section="sales",
+  page_kicker="Venta " ~ sale.sale_number,
+  page_title=sale.party.display_name,
+  page_hint="Detalle comercial, trazabilidad, cobro y entrega."
+) %}
   <div class="dn-workspace-shell">
 
     <a class="dn-back-link"
@@ -116,6 +123,7 @@
 
     <div class="dn-detail-grid">
       <section class="dn-card dn-detail-main">
+        
         <header class="dn-card-header">
           <div>
             <p class="dn-panel-kicker">Productos vendidos</p>
@@ -202,11 +210,16 @@
         </div>
 
         <div class="dn-sale-totals">
+            
           <div><span>Subtotal</span><strong>${{ "{:,.0f}".format(sale.subtotal).replace(",", ".") }}</strong></div>
           <div><span>Descuentos</span><strong>− ${{ "{:,.0f}".format(sale.discount_total).replace(",", ".") }}</strong></div>
           <div><span>Impuestos</span><strong>${{ "{:,.0f}".format(sale.tax_total).replace(",", ".") }}</strong></div>
           <div class="dn-sale-grand-total"><span>Total</span><strong>${{ "{:,.0f}".format(sale.total).replace(",", ".") }} COP</strong></div>
+        
+          
         </div>
+
+        
       </section>
 
       <aside class="dn-detail-sidebar">
@@ -323,5 +336,5 @@
       </aside>
     </div>
   </div>
-</main>
+{% endcall %}
 {% endblock %}

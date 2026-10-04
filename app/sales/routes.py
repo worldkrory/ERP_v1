@@ -19,6 +19,7 @@ from app.models.shipment import Shipment, ShipmentEvent, ShipmentItem
 from app.models.sale import Sale, SaleItem, SaleItemBatch
 from app.services.cloud_storage import CloudStorageError, upload_receipt
 from app.models.unit import UnitOfMeasure
+from app.utils.htmx import is_htmx_request
 
 from app.models.batch import Batch
 from app.models.inventory import InventoryBalance, InventoryLocation

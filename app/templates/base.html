@@ -564,6 +564,9 @@
     }
   </style>
   {% block head_extra %}{% endblock %}
+
+  <link rel="stylesheet"
+      href="{{ url_for('static', filename='css/admin_shell.css') }}">
 </head>
 <body>
   <main class="shell">
@@ -600,3 +603,4 @@
 </body>
 </html>
 
+<script src="{{ url_for('static', filename='js/admin_shell.js') }}" defer></script>

@@ -11,6 +11,8 @@ from app.production import production_bp
 from app.storefront import storefront_bp
 
 
+
+
 from app import models
 
 from app.services.web_visit_service import (
@@ -71,8 +73,8 @@ def create_app(config_name=None):
         """Ruta principal: redirige a login o al dashboard."""
         from flask_login import current_user
         
-        if current_user.is_authenticated:
-            return redirect(url_for("sales_admin.sales_admin_page"))
+        #if current_user.is_authenticated:
+            #return redirect(url_for("sales_admin.sales_admin_page"))
         #return redirect(url_for("auth.login"))
         return redirect(url_for("storefront.collection"))
         #return render_template('storefront/collection.html')
@@ -88,7 +90,7 @@ def create_app(config_name=None):
         }
         
         #return redirect(url_for("auth.login"))
-        return render_template('invoice.html',  company=company)
+        return render_template('invoice.html',  company=company, )
         #return render_template('storefront/collection.html')
 
     @app.route('/microlote/bourbon-rosado')
