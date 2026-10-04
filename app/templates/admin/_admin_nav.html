@@ -49,110 +49,98 @@
 </div>
 
   <nav class="dn-admin-nav"
-       data-admin-nav>
+     data-admin-nav>
 
-    <p class="dn-admin-nav-heading">General</p>
+  <p class="dn-admin-nav-heading">General</p>
 
-    <a href="/"
-       class="dn-admin-nav-link {% if active_section == 'dashboard' %}is-active{% endif %}">
-      <span class="dn-admin-nav-icon" aria-hidden="true">⌂</span>
-      <span>Resumen</span>
-    </a>
+  <a href="{{ url_for('index') }}"
+     class="dn-admin-nav-link {% if active_section == 'dashboard' %}is-active{% endif %}">
+    <span class="dn-admin-nav-icon" aria-hidden="true">⌂</span>
+    <span>Resumen</span>
+  </a>
 
-    <a href="/clientes"
-       class="dn-admin-nav-link is-disabled"
-       aria-disabled="true"
-       tabindex="-1"
-       title="Módulo de terceros pendiente de integrar">
-      <span class="dn-admin-nav-icon" aria-hidden="true">◌</span>
-      <span>Terceros</span>
-      <small>Próximamente</small>
-    </a>
+  <a href="{{ url_for('parties_admin.customers_admin_page') }}"
+     class="dn-admin-nav-link {% if active_section == 'parties' %}is-active{% endif %}">
+    <span class="dn-admin-nav-icon" aria-hidden="true">◌</span>
+    <span>Terceros</span>
+  </a>
 
-    <p class="dn-admin-nav-heading">Ruta del café</p>
+  <p class="dn-admin-nav-heading">Ruta del café</p>
 
-    <a href="/compras"
-       class="dn-admin-nav-link is-disabled"
-       aria-disabled="true"
-       tabindex="-1"
-       title="Módulo de compras pendiente de integrar">
-      <span class="dn-admin-nav-icon" aria-hidden="true">↙</span>
-      <span>Origen y compras</span>
-    </a>
+  <a href="{{ url_for('purchases_admin.purchases_admin_page') }}"
+     class="dn-admin-nav-link {% if active_section == 'purchases' %}is-active{% endif %}">
+    <span class="dn-admin-nav-icon" aria-hidden="true">↙</span>
+    <span>Origen y compras</span>
+  </a>
 
-    <a href="#"
-       class="dn-admin-nav-link is-disabled"
-       aria-disabled="true"
-       tabindex="-1"
-       title="Módulo de inventario pendiente de integrar">
-      <span class="dn-admin-nav-icon" aria-hidden="true">▦</span>
-      <span>Inventario</span>
-      <small data-admin-badge="inventory">—</small>
-    </a>
+  <a href="#"
+     class="dn-admin-nav-link is-disabled"
+     aria-disabled="true"
+     tabindex="-1"
+     title="La consola de inventario será la próxima estación operativa">
+    <span class="dn-admin-nav-icon" aria-hidden="true">▦</span>
+    <span>Inventario</span>
+    <small data-admin-badge="inventory">Próx.</small>
+  </a>
 
-    <a href="/produccion"
-       class="dn-admin-nav-link is-disabled"
-       aria-disabled="true"
-       tabindex="-1"
-       title="Módulo de producción pendiente de integrar">
-      <span class="dn-admin-nav-icon" aria-hidden="true">◉</span>
-      <span>Producción</span>
-    </a>
+  <a href="{{ url_for('production.new_production_page') }}"
+     class="dn-admin-nav-link {% if active_section == 'production' %}is-active{% endif %}">
+    <span class="dn-admin-nav-icon" aria-hidden="true">◉</span>
+    <span>Producción</span>
+  </a>
 
-    <a href="{{ url_for('sales_admin.sales_workspace') }}"
-       class="dn-admin-nav-link {% if active_section == 'sales' %}is-active{% endif %}">
-      <span class="dn-admin-nav-icon" aria-hidden="true">↗</span>
-      <span>Ventas</span>
-    </a>
+  <a href="{{ url_for('sales_admin.sales_workspace') }}"
+     class="dn-admin-nav-link {% if active_section == 'sales' %}is-active{% endif %}">
+    <span class="dn-admin-nav-icon" aria-hidden="true">↗</span>
+    <span>Ventas</span>
+  </a>
 
-    <a href="{{ url_for('sales_admin.sales_workspace', status='CONFIRMED') }}"
-       class="dn-admin-nav-link {% if active_section == 'dispatch' %}is-active{% endif %}">
-      <span class="dn-admin-nav-icon" aria-hidden="true">→</span>
-      <span>Despacho</span>
-      {% if active_section == "dispatch" %}
-      <small class="dn-admin-badge-active">Activo</small>
-      {% endif %}
-    </a>
+  <a href="{{ url_for('sales_admin.sales_workspace', status='CONFIRMED') }}"
+     class="dn-admin-nav-link {% if active_section == 'dispatch' %}is-active{% endif %}">
+    <span class="dn-admin-nav-icon" aria-hidden="true">→</span>
+    <span>Despacho</span>
+  </a>
 
-    <a href="#"
-       class="dn-admin-nav-link is-disabled"
-       aria-disabled="true"
-       tabindex="-1"
-       title="Módulo de recaudo pendiente de integrar">
-      <span class="dn-admin-nav-icon" aria-hidden="true">↓</span>
-      <span>Recaudo</span>
-      <small data-admin-badge="collections">—</small>
-    </a>
+  <a href="#"
+     class="dn-admin-nav-link is-disabled"
+     aria-disabled="true"
+     tabindex="-1"
+     title="El módulo de recaudo se conectará a payments y payment_allocations">
+    <span class="dn-admin-nav-icon" aria-hidden="true">↓</span>
+    <span>Recaudo</span>
+    <small data-admin-badge="collections">Próx.</small>
+  </a>
 
-    <p class="dn-admin-nav-heading">Lectura del negocio</p>
+  <p class="dn-admin-nav-heading">Lectura del negocio</p>
 
-    <a href="#"
-       class="dn-admin-nav-link is-disabled"
-       aria-disabled="true"
-       tabindex="-1"
-       title="Dashboard de balances pendiente de integrar">
-      <span class="dn-admin-nav-icon" aria-hidden="true">≈</span>
-      <span>Balances</span>
-    </a>
+  <a href="#"
+     class="dn-admin-nav-link is-disabled"
+     aria-disabled="true"
+     tabindex="-1"
+     title="Balances de inventario, cartera y margen">
+    <span class="dn-admin-nav-icon" aria-hidden="true">≈</span>
+    <span>Balances</span>
+    <small>Próx.</small>
+  </a>
 
-    <a href="#"
-       class="dn-admin-nav-link is-disabled"
-       aria-disabled="true"
-       tabindex="-1"
-       title="Reportes pendientes de integrar">
-      <span class="dn-admin-nav-icon" aria-hidden="true">⌁</span>
-      <span>Reportes</span>
-    </a>
+  <a href="#"
+     class="dn-admin-nav-link is-disabled"
+     aria-disabled="true"
+     tabindex="-1"
+     title="Reportes comerciales y operativos">
+    <span class="dn-admin-nav-icon" aria-hidden="true">⌁</span>
+    <span>Reportes</span>
+  </a>
 
-    <a href="#"
-       class="dn-admin-nav-link is-disabled"
-       aria-disabled="true"
-       tabindex="-1"
-       title="Vista de trazabilidad pendiente de integrar">
-      <span class="dn-admin-nav-icon" aria-hidden="true">⌘</span>
-      <span>Trazabilidad</span>
-    </a>
-  </nav>
+  <a href="#"
+     class="dn-admin-nav-link is-disabled"
+     aria-disabled="true"
+     tabindex="-1"
+     title="Recorrido de lotes desde origen hasta cliente">
+    <span class="dn-admin-nav-icon" aria-hidden="true">⌘</span>
+    <span>Trazabilidad</span>
+  </a>
+</nav>
 
   <footer class="dn-admin-sidebar-footer">
     <div>
