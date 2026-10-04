@@ -73,11 +73,16 @@
     </div>
   </main>
   <script>
+  const canViewCustomers = {{ can_view_customers | tojson }};
+</script>
+  <script>
     const form = document.getElementById('customer-form'); const body = document.getElementById('customers-body'); const notice = document.getElementById('notice');
     const escapeHtml = value => String(value || '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
     async function loadCustomers() { const response = await fetch('/api/v1/customers'); const customers = await response.json(); document.getElementById('customer-count').textContent = `${customers.length} registrados`; body.innerHTML = customers.length ? customers.map(customer => `<tr><td><strong>${escapeHtml(customer.display_name)}</strong><br><span class="helper">${escapeHtml(customer.party_type === 'JURIDICA' ? 'Empresa' : 'Persona natural')}</span><div class="role-list">${(customer.roles || []).map(role => `<span class="badge">${escapeHtml(role === 'INTERMEDIARY' ? 'Distribuidor' : role === 'CAFETERIA' ? 'Cafetería' : 'Cliente')}</span>`).join('')}</div></td><td><span class="badge">${escapeHtml(customer.document)}</span></td><td>${escapeHtml(customer.email || 'Sin correo')}<br>${escapeHtml(customer.phone || 'Sin teléfono')}</td><td>${customer.payment_term_days ? `${customer.payment_term_days} días` : 'Contado'}</td></tr>`).join('') : '<tr><td class="empty" colspan="4">Todavía no hay clientes registrados.</td></tr>'; }
     form.addEventListener('submit', async event => { event.preventDefault(); notice.classList.remove('show'); if (!form.reportValidity()) return; const payload = { party_type:document.getElementById('party_type').value, document_type:document.getElementById('document_type').value, document_number:document.getElementById('document_number').value, verification_digit:document.getElementById('verification_digit').value || null, legal_name:document.getElementById('legal_name').value, trade_name:document.getElementById('trade_name').value, email:document.getElementById('email').value, phone:document.getElementById('phone').value, whatsapp:document.getElementById('whatsapp').value, payment_term_days:document.getElementById('payment_term_days').value, roles:[...form.querySelectorAll('input[name="roles"]:checked')].map(input => input.value) }; const response = await fetch('/api/v1/customers', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) }); const data = await response.json(); if (!response.ok) { notice.textContent = data.error || 'No fue posible guardar el cliente.'; notice.classList.add('show'); return; } form.reset(); notice.textContent = `Cliente ${data.display_name} guardado correctamente.`; notice.style.background = '#e9f5ef'; notice.style.color = 'var(--ok)'; notice.classList.add('show'); loadCustomers(); });
-    loadCustomers();
+    if (canViewCustomers) {
+      loadCustomers();
+    }
   </script>
 </body>
 </html>

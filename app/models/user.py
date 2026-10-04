@@ -118,10 +118,30 @@ class User(TimestampMixin, Base):
 
     @property
     def role_codes(self) -> set[str]:
-        return {ur.role.code for ur in self.user_roles if ur.role is not None}
+        return {
+            ur.role.code.strip().upper()
+            for ur in self.user_roles
+            if ur.role is not None and ur.role.code
+        }
 
-    def has_role(self, code: str) -> bool:
-        return self.is_superuser or code in self.role_codes
+    def has_role(self, *required_codes: str) -> bool:
+        """
+        Devuelve True si el usuario es superusuario o posee,
+        como mínimo, uno de los roles solicitados.
+        """
+        if not self.is_active:
+            return False
+
+        if self.is_superuser:
+            return True
+
+        normalized_required_codes = {
+            code.strip().upper()
+            for code in required_codes
+            if code and code.strip()
+        }
+
+        return bool(self.role_codes.intersection(normalized_required_codes))
 
     def has_permission(self, permission: str) -> bool:
         if self.is_superuser:

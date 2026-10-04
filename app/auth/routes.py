@@ -15,6 +15,7 @@ from app.models.user import User
 logger = logging.getLogger(__name__)
 
 
+
 @auth_bp.before_request
 def check_user_locked():
     """Verifica si el usuario actual está bloqueado por intentos fallidos."""

@@ -12,6 +12,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.extensions import db
 from app.models.party import DOCUMENT_TYPES, PARTY_ROLE_CODES, Party, PartyRole
 
+from app.security.permissions import require_role
+
 parties_bp = Blueprint("parties", __name__, url_prefix="/api/v1")
 parties_admin_bp = Blueprint(
     "parties_admin", __name__, template_folder="templates", url_prefix=""
@@ -19,16 +21,22 @@ parties_admin_bp = Blueprint(
 
 
 @parties_bp.get("/customers")
+@login_required
+@require_role("ADMIN", "VENTAS")
 def list_customers():
+
     try:
         customers = _customer_query().all()
         return jsonify([_customer_payload(customer) for customer in customers])
     except SQLAlchemyError:
         db.session.rollback()
         return jsonify(_demo_customers())
+    
 
 
 @parties_bp.post("/customers")
+@login_required
+@require_role("ADMIN", "VENTAS")
 def create_customer():
     payload = request.get_json(silent=True) or {}
     try:
@@ -87,37 +95,23 @@ def create_customer():
 
 
 @parties_admin_bp.get("/clientes")
-#@login_required
-#@require_role("VENTAS", "ADMIN")
+@login_required
+@require_role("ADMIN", "VENTAS")
 def customers_admin_page():
-    demo_mode = False
-    customers = []
-
-    # 1. Verificar si hay un usuario logueado y si tiene rol de ADMIN o VENTAS
-    has_permission = (
-        current_user.is_authenticated 
-        and getattr(current_user, "role", None) in ("ADMIN", "VENTAS")
-    )
-
-    # 2. Si tiene permiso, cargar los clientes; de lo contrario, la lista queda vacía
-    if has_permission:
-        try:
-            customers = _customer_query().all()
-        except SQLAlchemyError:
-            db.session.rollback()
-            customers = [SimpleNamespace(**customer) for customer in _demo_customers()]
-            demo_mode = True
-
+    try:
+        customers = _customer_query().all()
+    except SQLAlchemyError:
+        db.session.rollback()
+        customers = []
 
     return render_template(
         "customers_admin.html",
         customers=customers,
         document_types=DOCUMENT_TYPES,
         customer_roles=("CUSTOMER", "CAFETERIA", "INTERMEDIARY"),
-        demo_mode=demo_mode,
-        can_view_customers=has_permission  # Opcional: para usar en la plantilla si lo necesitas
+        demo_mode=False,
+        can_view_customers=True,
     )
-
 
 def _customer_query():
     today = date.today()
