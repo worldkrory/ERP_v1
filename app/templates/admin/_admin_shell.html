@@ -1,18 +1,50 @@
 {% macro admin_shell(
   active_section="",
+  active_module="",
+  breadcrumb=[],
   page_kicker="",
   page_title="",
-  page_hint=""
+  page_hint="",
+  page_actions="",
+  admin_user=None
 ) %}
-<div class="dn-admin-shell"
-     data-admin-shell
-     data-active-section="{{ active_section }}">
+<div class="dn-admin-app"
+     data-admin-app
+     data-active-section="{{ active_section }}"
+     data-active-module="{{ active_module }}">
 
+     
+
+  {% with current_admin_user=admin_user, active_section=active_section %}
+  {% include "admin/_topbar.html" %}
+{% endwith %}
+
+{% with current_admin_user=admin_user, active_section=active_section %}
   {% include "admin/_admin_nav.html" %}
+{% endwith %}
 
   <main class="dn-admin-main">
-    <header class="dn-admin-page-context">
-      <div>
+    <header class="dn-admin-context">
+      <div class="dn-admin-context-copy">
+        {% if breadcrumb %}
+        <nav class="dn-admin-breadcrumb"
+             aria-label="Ruta de navegación">
+          {% for crumb in breadcrumb %}
+            {% if crumb.href and not loop.last %}
+            <a href="{{ crumb.href }}">{{ crumb.label }}</a>
+            {% else %}
+            <span {% if loop.last %}aria-current="page"{% endif %}>
+              {{ crumb.label }}
+            </span>
+            {% endif %}
+
+            {% if not loop.last %}
+            <i aria-hidden="true">/</i>
+            {% endif %}
+          {% endfor %}
+        </nav>
+        {% endif %}
+
         {% if page_kicker %}
         <p class="dn-admin-kicker">{{ page_kicker }}</p>
         {% endif %}
@@ -22,28 +54,28 @@
         {% endif %}
 
         {% if page_hint %}
-        <p class="dn-admin-page-hint">{{ page_hint }}</p>
+        <p>{{ page_hint }}</p>
         {% endif %}
       </div>
 
-      <button type="button"
-              class="dn-admin-mobile-toggle"
-              aria-label="Abrir navegación"
-              aria-expanded="false"
-              data-admin-mobile-toggle>
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
+      {% if page_actions %}
+      <div class="dn-admin-context-actions">
+        {{ page_actions | safe }}
+      </div>
+      {% endif %}
     </header>
 
     <section id="admin-workspace"
              class="dn-admin-workspace"
+             tabindex="-1"
              aria-live="polite">
       {{ caller() }}
     </section>
   </main>
 
+  {% with active_section=active_section %}
   {% include "admin/_admin_mobile_nav.html" %}
+{% endwith %}
+  {% include "admin/_toast_region.html" %}
 </div>
 {% endmacro %}

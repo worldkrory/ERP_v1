@@ -1,30 +1,29 @@
-<div class="dn-admin-mobile-backdrop"
-     data-admin-mobile-backdrop></div>
-
 <nav class="dn-admin-mobile-nav"
-     aria-label="Navegación móvil">
+     aria-label="Navegación móvil del ERP">
 
   <a href="/"
      class="{% if active_section == 'dashboard' %}is-active{% endif %}">
-    <span>⌂</span>
-    <small>Inicio</small>
+    <span aria-hidden="true">⌂</span>
+    <small>Resumen</small>
   </a>
 
   <a href="{{ url_for('sales_admin.sales_workspace') }}"
      class="{% if active_section == 'sales' %}is-active{% endif %}">
-    <span>↗</span>
+    <span aria-hidden="true">↗</span>
     <small>Ventas</small>
   </a>
 
   <a href="{{ url_for('sales_admin.sales_workspace', status='CONFIRMED') }}"
      class="{% if active_section == 'dispatch' %}is-active{% endif %}">
-    <span>→</span>
+    <span aria-hidden="true">→</span>
     <small>Despacho</small>
   </a>
 
   <button type="button"
-          data-admin-mobile-toggle>
-    <span>☰</span>
-    <small>Más</small>
+          aria-label="Abrir menú completo"
+          aria-expanded="false"
+          data-admin-menu-toggle>
+    <span aria-hidden="true">☰</span>
+    <small>Menú</small>
   </button>
 </nav>

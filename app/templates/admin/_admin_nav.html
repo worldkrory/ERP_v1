@@ -1,102 +1,175 @@
-<aside class="dn-admin-nav"
-       aria-label="Navegación principal del ERP">
+<aside class="dn-admin-sidebar"
+       aria-label="Mapa operativo">
 
-  <a class="dn-admin-brand"
-     href="/"
-     aria-label="Ir al inicio de Densa Niebla">
-    <span class="dn-admin-brand-mark">DN</span>
-    <span>
-      <strong>Densa Niebla</strong>
-      <small>Centro de operaciones</small>
-    </span>
-  </a>
 
-  <section class="dn-admin-cup-context">
-    <div class="dn-admin-cup" aria-hidden="true">
-      <div class="dn-admin-cup-steam dn-admin-cup-steam-one"></div>
-      <div class="dn-admin-cup-steam dn-admin-cup-steam-two"></div>
-      <div class="dn-admin-cup-rim"></div>
-      <div class="dn-admin-cup-body"></div>
-      <div class="dn-admin-cup-handle"></div>
-    </div>
+  <div class="dn-admin-cup-guide"
+     aria-label="Ruta operativa de Densa Niebla">
 
-    <div>
-      <span class="dn-admin-cup-label">Ruta de la taza</span>
-      <strong data-admin-flow-title>Operación en marcha</strong>
-      <small data-admin-flow-description>
-        Del origen al cliente, sin perder el lote.
-      </small>
-    </div>
-  </section>
+  <div class="dn-admin-cup-icon"
+       aria-hidden="true">
+    <span class="dn-admin-cup-steam dn-admin-cup-steam-left"></span>
+    <span class="dn-admin-cup-steam dn-admin-cup-steam-right"></span>
+    <span class="dn-admin-cup-rim"></span>
+    <span class="dn-admin-cup-body"></span>
+    <span class="dn-admin-cup-handle"></span>
+  </div>
 
-  <nav class="dn-admin-nav-list">
+  <div>
+    <span class="dn-admin-cup-guide-label">Ruta de la taza</span>
+
+    {% if active_section == "sales" %}
+      <strong>Café rumbo al cliente</strong>
+      <small>Venta, lote y precio conectados.</small>
+
+    {% elif active_section == "dispatch" %}
+      <strong>Salida trazable</strong>
+      <small>Lote y ubicación confirmados.</small>
+
+    {% elif active_section == "production" %}
+      <strong>Transformando origen</strong>
+      <small>Proceso, merma y costo en control.</small>
+
+    {% elif active_section == "inventory" %}
+      <strong>Lote bajo control</strong>
+      <small>Saldo y ubicación disponibles.</small>
+
+    {% elif active_section == "purchases" %}
+      <strong>Origen registrado</strong>
+      <small>Compra, finca e insumos recibidos.</small>
+
+    {% elif active_section == "collections" %}
+      <strong>Retorno registrado</strong>
+      <small>Cobros y cartera bajo control.</small>
+
+    {% else %}
+      <strong>De origen a cobro</strong>
+      <small>Sin perder el lote.</small>
+    {% endif %}
+  </div>
+</div>
+
+  <nav class="dn-admin-nav"
+       data-admin-nav>
+
+    <p class="dn-admin-nav-heading">General</p>
+
     <a href="/"
-       class="dn-admin-nav-item {% if active_section == 'dashboard' %}is-active{% endif %}">
-      <span class="dn-admin-nav-icon">⌂</span>
+       class="dn-admin-nav-link {% if active_section == 'dashboard' %}is-active{% endif %}">
+      <span class="dn-admin-nav-icon" aria-hidden="true">⌂</span>
       <span>Resumen</span>
     </a>
 
     <a href="/clientes"
-       class="dn-admin-nav-item {% if active_section == 'parties' %}is-active{% endif %}">
-      <span class="dn-admin-nav-icon">◌</span>
+       class="dn-admin-nav-link is-disabled"
+       aria-disabled="true"
+       tabindex="-1"
+       title="Módulo de terceros pendiente de integrar">
+      <span class="dn-admin-nav-icon" aria-hidden="true">◌</span>
       <span>Terceros</span>
+      <small>Próximamente</small>
     </a>
 
-    <div class="dn-admin-nav-group-label">Flujo del café</div>
+    <p class="dn-admin-nav-heading">Ruta del café</p>
 
     <a href="/compras"
-       class="dn-admin-nav-item {% if active_section == 'purchases' %}is-active{% endif %}">
-      <span class="dn-admin-nav-icon">◒</span>
+       class="dn-admin-nav-link is-disabled"
+       aria-disabled="true"
+       tabindex="-1"
+       title="Módulo de compras pendiente de integrar">
+      <span class="dn-admin-nav-icon" aria-hidden="true">↙</span>
       <span>Origen y compras</span>
     </a>
 
-    <a href="/inventario"
-       class="dn-admin-nav-item {% if active_section == 'inventory' %}is-active{% endif %}">
-      <span class="dn-admin-nav-icon">▦</span>
+    <a href="#"
+       class="dn-admin-nav-link is-disabled"
+       aria-disabled="true"
+       tabindex="-1"
+       title="Módulo de inventario pendiente de integrar">
+      <span class="dn-admin-nav-icon" aria-hidden="true">▦</span>
       <span>Inventario</span>
+      <small data-admin-badge="inventory">—</small>
     </a>
 
     <a href="/produccion"
-       class="dn-admin-nav-item {% if active_section == 'production' %}is-active{% endif %}">
-      <span class="dn-admin-nav-icon">◉</span>
+       class="dn-admin-nav-link is-disabled"
+       aria-disabled="true"
+       tabindex="-1"
+       title="Módulo de producción pendiente de integrar">
+      <span class="dn-admin-nav-icon" aria-hidden="true">◉</span>
       <span>Producción</span>
     </a>
 
     <a href="{{ url_for('sales_admin.sales_workspace') }}"
-       class="dn-admin-nav-item {% if active_section == 'sales' %}is-active{% endif %}">
-      <span class="dn-admin-nav-icon">↗</span>
+       class="dn-admin-nav-link {% if active_section == 'sales' %}is-active{% endif %}">
+      <span class="dn-admin-nav-icon" aria-hidden="true">↗</span>
       <span>Ventas</span>
     </a>
 
     <a href="{{ url_for('sales_admin.sales_workspace', status='CONFIRMED') }}"
-       class="dn-admin-nav-item {% if active_section == 'dispatch' %}is-active{% endif %}">
-      <span class="dn-admin-nav-icon">→</span>
+       class="dn-admin-nav-link {% if active_section == 'dispatch' %}is-active{% endif %}">
+      <span class="dn-admin-nav-icon" aria-hidden="true">→</span>
       <span>Despacho</span>
+      {% if active_section == "dispatch" %}
+      <small class="dn-admin-badge-active">Activo</small>
+      {% endif %}
     </a>
 
     <a href="#"
-       class="dn-admin-nav-item is-disabled"
+       class="dn-admin-nav-link is-disabled"
        aria-disabled="true"
-       title="Módulo de recaudo en construcción">
-      <span class="dn-admin-nav-icon">↓</span>
+       tabindex="-1"
+       title="Módulo de recaudo pendiente de integrar">
+      <span class="dn-admin-nav-icon" aria-hidden="true">↓</span>
       <span>Recaudo</span>
-      <small>Próximamente</small>
+      <small data-admin-badge="collections">—</small>
     </a>
 
-    <div class="dn-admin-nav-group-label">Lectura del negocio</div>
+    <p class="dn-admin-nav-heading">Lectura del negocio</p>
 
     <a href="#"
-       class="dn-admin-nav-item is-disabled"
+       class="dn-admin-nav-link is-disabled"
        aria-disabled="true"
-       title="Dashboard de balances en construcción">
-      <span class="dn-admin-nav-icon">≈</span>
+       tabindex="-1"
+       title="Dashboard de balances pendiente de integrar">
+      <span class="dn-admin-nav-icon" aria-hidden="true">≈</span>
       <span>Balances</span>
-      <small>Próximamente</small>
+    </a>
+
+    <a href="#"
+       class="dn-admin-nav-link is-disabled"
+       aria-disabled="true"
+       tabindex="-1"
+       title="Reportes pendientes de integrar">
+      <span class="dn-admin-nav-icon" aria-hidden="true">⌁</span>
+      <span>Reportes</span>
+    </a>
+
+    <a href="#"
+       class="dn-admin-nav-link is-disabled"
+       aria-disabled="true"
+       tabindex="-1"
+       title="Vista de trazabilidad pendiente de integrar">
+      <span class="dn-admin-nav-icon" aria-hidden="true">⌘</span>
+      <span>Trazabilidad</span>
     </a>
   </nav>
 
-  <footer class="dn-admin-nav-footer">
-    <span class="dn-admin-presence-dot"></span>
-    <span>Sistema local activo</span>
+  <footer class="dn-admin-sidebar-footer">
+    <div>
+      <span class="dn-admin-health-dot" aria-hidden="true"></span>
+      <span>Sincronizado ahora</span>
+    </div>
+
+    <button type="button"
+            class="dn-admin-settings-link"
+            disabled
+            title="Configuración próxima">
+      {% if current_admin_user and current_admin_user.is_authenticated %}
+  {{ current_admin_user.email.split('@')[0] }}
+{% else %}
+  Administrador
+{% endif %}
+      <span>Configuración</span>
+    </button>
   </footer>
 </aside>

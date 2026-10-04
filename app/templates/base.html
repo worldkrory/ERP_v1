@@ -568,29 +568,25 @@
   <link rel="stylesheet"
       href="{{ url_for('static', filename='css/admin_shell.css') }}">
 </head>
-<body>
-  <main class="shell">
-    <header class="topbar">
-      <a class="brand" href="/">
-        DENSA NIEBLA
-        <small>Centro de operaciones</small>
-      </a>
+<body class="{% block body_class %}{% endblock %}">
 
-      <nav class="top-actions" aria-label="Navegación principal">
-        <a class="link" href="/compras">Compras</a>
-        <a class="button ghost" href="/">Inicio</a>
-      </nav>
-    </header>
+  {% block public_navigation %}
+  
+  {% endblock %}
 
-    {% block page_intro %}{% endblock %}
+  {% block page_intro %}{% endblock %}
 
-    {% block content %}{% endblock %}
-  </main>
+  {% block content %}{% endblock %}
 
   <script
     src="https://unpkg.com/htmx.org@2.0.4"
     integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
     crossorigin="anonymous"></script>
+
+  <script
+    src="{{ url_for('static', filename='js/admin_shell.js') }}"
+    defer></script>
+
   <script>
     document.body.addEventListener("htmx:beforeSwap", function (event) {
       if (event.detail.xhr.status === 422) {
@@ -599,8 +595,7 @@
       }
     });
   </script>
+
   {% block scripts %}{% endblock %}
 </body>
 </html>
-
-<script src="{{ url_for('static', filename='js/admin_shell.js') }}" defer></script>

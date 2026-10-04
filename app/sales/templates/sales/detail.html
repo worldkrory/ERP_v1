@@ -14,9 +14,17 @@
 {% block content %}
 {% call admin_shell(
   active_section="sales",
-  page_kicker="Venta " ~ sale.sale_number,
+  active_module="sale-detail",
+  breadcrumb=[
+    {"label": "Centro de Operaciones", "href": "/"},
+    {"label": "Ventas", "href": url_for("sales_admin.sales_workspace")},
+    {"label": sale.sale_number}
+  ],
   page_title=sale.party.display_name,
-  page_hint="Detalle comercial, trazabilidad, cobro y entrega."
+  page_hint="Venta " ~ sale.sale_number ~ " · "
+            ~ sale.status|title ~ " · Cobro "
+            ~ sale.payment_status|title,
+  admin_user=current_user
 ) %}
   <div class="dn-workspace-shell">
 

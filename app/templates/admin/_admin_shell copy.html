@@ -1,0 +1,49 @@
+{% macro admin_shell(
+  active_section="",
+  page_kicker="",
+  page_title="",
+  page_hint=""
+) %}
+<div class="dn-admin-shell"
+     data-admin-shell
+     data-active-section="{{ active_section }}">
+
+  {% include "admin/_admin_nav.html" %}
+
+  <main class="dn-admin-main">
+    <header class="dn-admin-page-context">
+      <div>
+        {% if page_kicker %}
+        <p class="dn-admin-kicker">{{ page_kicker }}</p>
+        {% endif %}
+
+        {% if page_title %}
+        <h1>{{ page_title }}</h1>
+        {% endif %}
+
+        {% if page_hint %}
+        <p class="dn-admin-page-hint">{{ page_hint }}</p>
+        {% endif %}
+      </div>
+
+      <button type="button"
+              class="dn-admin-mobile-toggle"
+              aria-label="Abrir navegación"
+              aria-expanded="false"
+              data-admin-mobile-toggle>
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </header>
+
+    <section id="admin-workspace"
+             class="dn-admin-workspace"
+             aria-live="polite">
+      {{ caller() }}
+    </section>
+  </main>
+
+  {% include "admin/_admin_mobile_nav.html" %}
+</div>
+{% endmacro %}

@@ -14,9 +14,11 @@
 {% block content %}
 {% call admin_shell(
   active_section="sales",
+  active_module="sales",
   page_kicker="Densa Niebla · Comercial",
   page_title="Ventas y despacho",
-  page_hint="Cada bolsa conserva su cliente, precio, lote y recorrido."
+  page_hint="Cada bolsa conserva su cliente, precio, lote y recorrido.",
+  admin_user=current_user
 ) %}
   <div class="dn-workspace-shell">
 
