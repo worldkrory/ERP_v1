@@ -567,6 +567,8 @@
 
   <link rel="stylesheet"
       href="{{ url_for('static', filename='css/admin_shell.css') }}">
+
+  {% block extra_css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
 

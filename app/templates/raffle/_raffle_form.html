@@ -1,0 +1,124 @@
+{% set values = values or {} %}
+{% set errors = errors or {} %}
+
+<div class="form-card">
+  <div class="form-card-heading">
+    <span class="form-step">01 / 01</span>
+    <h2>Tu lugar en la niebla</h2>
+    <p>Completa tus datos y deja registrada tu participación.</p>
+  </div>
+
+  <form
+    method="post"
+    action="{{ url_for('raffle.raffle_preview_entry') }}"
+    x-post="{{ url_for('raffle.raffle_preview_entry') }}"
+    hx-target="#raffle-form-zone"
+    hx-swap="innerHTML"
+    hx-indicator="#raffle-loading"
+    novalidate
+  >
+    <input
+      type="hidden"
+      name="source"
+      value="{{ request.args.get('source', 'whatsapp') }}"
+    >
+
+    <div class="field-group">
+      <label for="full_name">¿Cómo te llamas?</label>
+      <input
+        id="full_name"
+        name="full_name"
+        type="text"
+        autocomplete="name"
+        placeholder="Tu nombre completo"
+        value="{{ values.get('full_name', '') }}"
+        required
+      >
+      {% if errors.get('full_name') %}
+        <p class="field-error">{{ errors['full_name'] }}</p>
+      {% endif %}
+    </div>
+
+    <div class="field-group">
+      <label for="whatsapp">Tu WhatsApp</label>
+      <input
+        id="whatsapp"
+        name="whatsapp"
+        type="tel"
+        inputmode="numeric"
+        autocomplete="tel"
+        placeholder="300 123 4567"
+        value="{{ values.get('whatsapp', '') }}"
+        required
+      >
+      <p class="field-helper">Te avisaremos por aquí si eres la persona ganadora.</p>
+      {% if errors.get('whatsapp') %}
+        <p class="field-error">{{ errors['whatsapp'] }}</p>
+      {% endif %}
+    </div>
+
+    <div class="field-group">
+      <label for="email">Correo <span>opcional</span></label>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        autocomplete="email"
+        placeholder="tu@correo.com"
+        value="{{ values.get('email', '') }}"
+      >
+    </div>
+
+    <div class="field-group">
+      <label for="city">¿Desde dónde nos acompañas? <span>opcional</span></label>
+      <input
+        id="city"
+        name="city"
+        type="text"
+        autocomplete="address-level2"
+        placeholder="Ej. Manizales"
+        value="{{ values.get('city', '') }}"
+      >
+    </div>
+
+    <label class="check-row {% if errors.get('accepts_data_processing') %}has-error{% endif %}">
+      <input
+        type="checkbox"
+        name="accepts_data_processing"
+        required
+      >
+      <span>
+        Acepto el tratamiento de mis datos para validar mi participación,
+        conforme al aviso de tratamiento de datos personales de Densa Niebla.
+        </span>
+    </label>
+
+    {% if errors.get('accepts_data_processing') %}
+      <p class="field-error">{{ errors['accepts_data_processing'] }}</p>
+    {% endif %}
+
+    <label class="check-row">
+      <input
+        type="checkbox"
+        name="accepts_marketing"
+        {% if values.get('accepts_marketing') %}checked{% endif %}
+      >
+      <span>
+        También quiero recibir primero nuevos microlotes, rituales y próximos sorteos.
+      </span>
+    </label>
+
+    <button class="raffle-submit" type="submit">
+      <span>Quiero participar</span>
+      <span aria-hidden="true">→</span>
+    </button>
+
+    <div id="raffle-loading" class="htmx-indicator raffle-loading">
+      Guardando tu lugar en la niebla…
+    </div>
+
+    <p class="form-footnote">
+      Solo una participación por WhatsApp. No vendemos ni cedemos tus datos.
+    </p>
+  </form>
+</div>

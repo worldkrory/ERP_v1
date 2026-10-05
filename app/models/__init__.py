@@ -141,6 +141,9 @@ from app.models.sale import (
     SaleItem,
     SaleItemBatch,
 )
+
+from app.models.raffle import Raffle, RaffleEntry
+
 from app.models.payment import (
     PAYMENT_DIRECTIONS,
     PAYMENT_METHODS,
@@ -192,6 +195,8 @@ from app.models.setting import (
     AppSetting,
     DocumentSequence,
 )
+
+
 
 # Las 50 clases mapeadas, en el mismo orden de los modulos del ERD.
 MODELS: tuple[type[Base], ...] = (
@@ -265,5 +270,6 @@ __all__ = [
     "SALE_PAYMENT_STATUSES", "SALE_STATUSES", "SETTING_VALUE_TYPES",
     "SHIPMENT_EVENT_TYPES", "SHIPMENT_STATUSES", "SHIPMENT_TYPES",
     "SUPPLIER_DOCUMENT_TYPES", "TAX_REGIMES", "TAX_TYPES", "UNIT_DIMENSIONS",
-    "WASTE_COST_TREATMENTS", "WASTE_TYPES",
+    "WASTE_COST_TREATMENTS", "WASTE_TYPES","Raffle",
+    "RaffleEntry",
 ]

@@ -9,6 +9,7 @@ from app.auth import auth_bp
 from app.seed import register_seed_commands
 from app.production import production_bp
 from app.storefront import storefront_bp
+from app.raffle import raffle_bp
 
 
 
@@ -142,4 +143,5 @@ def register_blueprints(app):
     app.register_blueprint(purchases_admin_bp)
     app.register_blueprint(production_bp)
     app.register_blueprint(storefront_bp)
+    app.register_blueprint(raffle_bp)
     return app

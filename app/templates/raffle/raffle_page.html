@@ -1,0 +1,65 @@
+<script src="https://unpkg.com/htmx.org@2.0.8"></script>
+
+{% extends "base.html" %}
+
+{% block title %}Gran Sorteo | Densa Niebla{% endblock %}
+
+{% block extra_css %}
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/raffle.css') }}"
+  >
+{% endblock %}
+
+{% block content %}
+<main class="raffle-page">
+  <section class="raffle-hero">
+    <div class="raffle-orbit raffle-orbit-one"></div>
+    <div class="raffle-orbit raffle-orbit-two"></div>
+
+    <div class="raffle-shell">
+      <p class="eyebrow">COMUNIDAD DENSA NIEBLA · EDICIÓN ESPECIAL</p>
+
+      <div class="raffle-grid">
+        <div class="raffle-story">
+          <p class="raffle-kicker">UN RITUAL PUEDE COMENZAR HOY</p>
+
+          <h1>
+            Entra a la niebla.<br>
+            <em>Prepara algo extraordinario.</em>
+          </h1>
+
+          <p class="raffle-lead">
+            Queremos celebrar a quienes convierten una taza de café en un
+            momento propio. Participa por un V60 y un café Castillo
+            seleccionado por Densa Niebla.
+          </p>
+
+          <div class="prize-cards" aria-label="Premios">
+            <article class="prize-card">
+              <span class="prize-number">01</span>
+              <h2>V60</h2>
+              <p>Un método para descubrir pausas, aromas y precisión.</p>
+            </article>
+
+            <article class="prize-card">
+              <span class="prize-number">02</span>
+              <h2>Castillo</h2>
+              <p>Un café de origen para llevar la montaña a tu ritual.</p>
+            </article>
+          </div>
+
+          <div class="raffle-trust">
+            <span aria-hidden="true">✦</span>
+            <p>Una participación por número de WhatsApp. Tus datos se cuidan y no se comparten con terceros.</p>
+          </div>
+        </div>
+
+        <aside class="raffle-panel" id="raffle-form-zone">
+          {% include "raffle/_raffle_form.html" %}
+        </aside>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}
