@@ -24,6 +24,7 @@ from app.services.web_visit_service import (
 
 
 
+
 def create_app(config_name=None):
 
     config_name = config_name or os.getenv("FLASK_CONFIG", "development")

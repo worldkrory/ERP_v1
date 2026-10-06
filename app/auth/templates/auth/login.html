@@ -3,375 +3,684 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Densa Niebla ERP</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- El login del ERP no debe competir con las páginas comerciales -->
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="theme-color" content="#2B1A15">
+
+    <title>Acceso seguro al ERP | Densa Niebla</title>
+    <meta name="description" content="Acceso seguro al sistema de gestión y trazabilidad de Café Especial Densa Niebla.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
+        :root {
+            --espresso: #2B1A15;
+            --cacao: #4A2D23;
+            --coffee: #6F4E37;
+            --caramel: #A76F3C;
+            --gold: #D8B57B;
+            --cream: #F8F2EA;
+            --mist: #EAE0D3;
+            --ink: #33251F;
+            --muted: #7C6A5D;
+            --danger: #9C3D3D;
+            --success: #3E7656;
+        }
+
         * {
-            margin: 0;
-            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            background: linear-gradient(135deg, #2D1B1B 0%, #3D2520 40%, #6F4E37 70%, #8B6F47 100%);
             min-height: 100vh;
+            margin: 0;
+            background:
+                radial-gradient(circle at 12% 12%, rgba(216, 181, 123, 0.19), transparent 28%),
+                radial-gradient(circle at 86% 84%, rgba(167, 111, 60, 0.22), transparent 30%),
+                linear-gradient(135deg, #22120F 0%, #3B211A 45%, #6E4A32 100%);
+            color: var(--cream);
+            font-family: "Inter", Arial, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .login-page {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: minmax(0, 1.08fr) minmax(380px, 0.92fr);
+            position: relative;
+            isolation: isolate;
+        }
+
+        .login-page::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.55;
+            z-index: -1;
+            background-image:
+                linear-gradient(120deg, rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(30deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+            background-size: 36px 36px;
+        }
+
+        .brand-panel {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Georgia', 'Garamond', serif;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 100vh;
+            padding: clamp(2rem, 5vw, 4.7rem);
             position: relative;
             overflow: hidden;
         }
 
-        /* Patrón de textura café */
-        body::before {
-            content: '';
+        .brand-panel::after {
+            content: "";
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: 
-                radial-gradient(circle at 20% 50%, rgba(210, 180, 140, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(160, 82, 45, 0.1) 0%, transparent 50%);
-            pointer-events: none;
+            width: 34rem;
+            height: 34rem;
+            right: -12rem;
+            bottom: -15rem;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(216, 181, 123, 0.24) 0%, rgba(216, 181, 123, 0) 68%);
+            filter: blur(5px);
         }
 
-        /* Efecto de niebla animado */
-        @keyframes drift {
-            0%, 100% { transform: translateX(0px); }
-            50% { transform: translateX(20px); }
-        }
-
-        body::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: 
-                radial-gradient(circle at 30% 30%, rgba(210, 180, 140, 0.05) 0%, transparent 60%),
-                radial-gradient(circle at 70% 70%, rgba(180, 140, 100, 0.05) 0%, transparent 60%);
-            animation: drift 20s ease-in-out infinite;
-            pointer-events: none;
-        }
-
-        .login-wrapper {
+        .brand-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--cream);
             position: relative;
-            z-index: 10;
-            width: 100%;
-            max-width: 450px;
-            padding: 20px;
+            z-index: 1;
+            width: fit-content;
         }
 
-        .login-container {
-            background: rgba(255, 248, 240, 0.98);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 
-                0 8px 32px rgba(0, 0, 0, 0.3),
-                0 0 1px rgba(255, 255, 255, 0.5) inset;
-            padding: 50px 40px;
-            border: 1px solid rgba(210, 180, 140, 0.3);
-            position: relative;
-        }
-
-        /* Decoración esquina superior */
-        .login-container::before {
-            content: '☕';
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 40px;
-            opacity: 0.8;
-        }
-
-        .login-header {
-            text-align: center;
-            margin-bottom: 40px;
-            border-bottom: 2px solid #D2B48C;
-            padding-bottom: 25px;
-        }
-
-        .logo-text {
-            font-size: 16px;
-            letter-spacing: 2px;
-            color: #8B6F47;
-            font-weight: 300;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-            font-family: 'Arial', sans-serif;
-        }
-
-        .login-header h1 {
-            font-size: 42px;
+        .brand-mark {
+            display: grid;
+            place-items: center;
+            width: 46px;
+            height: 46px;
+            border: 1px solid rgba(216, 181, 123, 0.8);
+            border-radius: 50%;
+            color: var(--gold);
+            font-family: "Cormorant Garamond", Georgia, serif;
+            font-size: 1.65rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #6F4E37 0%, #A0522D 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 8px;
-            letter-spacing: -1px;
         }
 
-        .login-header p {
-            color: #8B7355;
-            font-size: 13px;
-            margin: 5px 0 0 0;
-            letter-spacing: 1px;
-            font-style: italic;
+        .brand-name {
+            font-family: "Cormorant Garamond", Georgia, serif;
+            font-size: 1.55rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            line-height: 1;
         }
 
-        .brand-tagline {
-            font-size: 11px;
-            color: #A0826D;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-top: 12px;
-            font-family: 'Arial', sans-serif;
-        }
-
-        .form-group {
-            margin-bottom: 22px;
-        }
-
-        .form-label {
-            font-weight: 600;
-            color: #6F4E37;
-            margin-bottom: 8px;
+        .brand-subname {
             display: block;
-            font-size: 13px;
+            margin-top: 0.25rem;
+            color: rgba(248, 242, 234, 0.72);
+            font-size: 0.67rem;
+            font-weight: 600;
+            letter-spacing: 0.17em;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-family: 'Arial', sans-serif;
         }
 
-        .form-control {
-            border: 2px solid #D2B48C;
-            border-radius: 8px;
-            padding: 12px 16px;
-            font-size: 14px;
-            background: rgba(255, 255, 255, 0.9);
-            color: #333;
-            transition: all 0.3s ease;
-            font-family: 'Georgia', serif;
+        .brand-copy {
+            max-width: 680px;
+            position: relative;
+            z-index: 1;
+            margin: 4rem 0;
         }
 
-        .form-control:focus {
-            border-color: #8B6F47;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(139, 111, 71, 0.1);
-            outline: none;
-        }
-
-        .form-control::placeholder {
-            color: #A0826D;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #8B6F47 0%, #A0522D 100%);
-            border: none;
-            padding: 14px 30px;
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: var(--gold);
+            font-size: 0.75rem;
             font-weight: 700;
-            font-size: 15px;
+            letter-spacing: 0.16em;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(139, 111, 71, 0.25);
-            font-family: 'Arial', sans-serif;
-            color: white;
         }
 
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(139, 111, 71, 0.4);
-            background: linear-gradient(135deg, #A0522D 0%, #8B6F47 100%);
+        .eyebrow::before {
+            content: "";
+            display: block;
+            width: 32px;
+            height: 1px;
+            background: var(--gold);
         }
 
-        .btn-primary:active {
-            transform: translateY(-1px);
+        .brand-copy h1 {
+            margin: 1rem 0 1.25rem;
+            max-width: 720px;
+            color: var(--cream);
+            font-family: "Cormorant Garamond", Georgia, serif;
+            font-size: clamp(3rem, 5.7vw, 5.6rem);
+            font-weight: 700;
+            line-height: 0.93;
+            letter-spacing: -0.04em;
+        }
+
+        .brand-copy p {
+            max-width: 550px;
+            margin: 0;
+            color: rgba(248, 242, 234, 0.80);
+            font-size: 1.02rem;
+            line-height: 1.75;
+        }
+
+        .origin-pill {
+            display: inline-flex;
+            margin-top: 1.75rem;
+            padding: 0.7rem 0.95rem;
+            border: 1px solid rgba(216, 181, 123, 0.38);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            color: #F4D9A7;
+            font-size: 0.76rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .brand-footer {
+            position: relative;
+            z-index: 1;
+            color: rgba(248, 242, 234, 0.55);
+            font-size: 0.74rem;
+            letter-spacing: 0.04em;
+        }
+
+        .auth-panel {
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+            background: rgba(255, 251, 246, 0.98);
+            color: var(--ink);
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 425px;
+        }
+
+        .auth-heading {
+            margin-bottom: 2rem;
+        }
+
+        .auth-heading .mobile-brand {
+            display: none;
+        }
+
+        .auth-heading h2 {
+            margin: 0 0 0.55rem;
+            color: var(--espresso);
+            font-family: "Cormorant Garamond", Georgia, serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: -0.035em;
+        }
+
+        .auth-heading p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.91rem;
+            line-height: 1.55;
         }
 
         .alert {
-            border-radius: 12px;
-            margin-bottom: 20px;
+            border: 0;
             border-left: 4px solid;
-            font-size: 13px;
+            border-radius: 10px;
+            font-size: 0.86rem;
         }
 
         .alert-danger {
-            background: rgba(220, 53, 69, 0.1);
-            color: #8B4545;
-            border-left-color: #DC3545;
+            background: #FBEDED;
+            border-left-color: var(--danger);
+            color: #743232;
         }
 
         .alert-warning {
-            background: rgba(255, 193, 7, 0.1);
-            color: #8B7355;
-            border-left-color: #FFC107;
+            background: #FFF6E2;
+            border-left-color: #D19422;
+            color: #715319;
         }
 
         .alert-success {
-            background: rgba(40, 167, 69, 0.1);
-            color: #6F7F4E;
-            border-left-color: #28A745;
+            background: #EAF6EE;
+            border-left-color: var(--success);
+            color: #2F6545;
         }
 
-        .error-message {
-            color: #8B4545;
-            font-size: 12px;
-            margin-top: 6px;
-            font-style: italic;
-        }
-
-        .form-check {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #E8D7C3;
-        }
-
-        .form-check-input {
-            border: 2px solid #D2B48C;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            width: 18px;
-            height: 18px;
-        }
-
-        .form-check-input:checked {
-            background: linear-gradient(135deg, #8B6F47 0%, #A0522D 100%);
-            border-color: #8B6F47;
-        }
-
-        .form-check-label {
-            font-size: 13px;
-            color: #8B7355;
-            cursor: pointer;
-            user-select: none;
-            margin-left: 8px;
-        }
-
-        .form-footer {
-            text-align: center;
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px solid #E8D7C3;
-        }
-
-        .footer-text {
-            color: #A0826D;
-            font-size: 11px;
-            letter-spacing: 0.5px;
+        .form-label {
+            margin-bottom: 0.5rem;
+            color: var(--cacao);
+            font-size: 0.76rem;
+            font-weight: 700;
+            letter-spacing: 0.085em;
             text-transform: uppercase;
         }
 
-        .coffee-accent {
-            display: inline-block;
-            margin: 0 5px;
-            opacity: 0.6;
+        .form-control {
+            min-height: 50px;
+            border: 1px solid #DCCDBF;
+            border-radius: 10px;
+            background: #FFF;
+            color: var(--ink);
+            font-size: 0.94rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
-        /* Responsive */
-        @media (max-width: 480px) {
-            .login-container {
-                padding: 40px 25px;
+        .form-control::placeholder {
+            color: #A8998D;
+        }
+
+        .form-control:focus {
+            border-color: var(--caramel);
+            box-shadow: 0 0 0 4px rgba(167, 111, 60, 0.13);
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper .form-control {
+            padding-right: 3.25rem;
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 0.55rem;
+            transform: translateY(-50%);
+            border: 0;
+            border-radius: 7px;
+            background: transparent;
+            color: var(--coffee);
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.42rem 0.55rem;
+        }
+
+        .toggle-password:hover,
+        .toggle-password:focus-visible {
+            background: #F3E8DA;
+            outline: none;
+        }
+
+        .error-message {
+            margin-top: 0.4rem;
+            color: var(--danger);
+            font-size: 0.78rem;
+        }
+
+        .form-check {
+            margin: 1.15rem 0 1.5rem;
+        }
+
+        .form-check-input {
+            width: 1.1rem;
+            height: 1.1rem;
+            border-color: #BCA894;
+            cursor: pointer;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--coffee);
+            border-color: var(--coffee);
+        }
+
+        .form-check-input:focus {
+            box-shadow: 0 0 0 4px rgba(167, 111, 60, 0.12);
+        }
+
+        .form-check-label {
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 0.86rem;
+        }
+
+        .btn-login {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 52px;
+            border: 0;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #6F4E37, #9A5C31);
+            box-shadow: 0 10px 20px rgba(82, 47, 28, 0.20);
+            color: #FFF;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-login:hover {
+            background: linear-gradient(135deg, #593A28, #864B27);
+            box-shadow: 0 14px 24px rgba(82, 47, 28, 0.27);
+            color: #FFF;
+            transform: translateY(-2px);
+        }
+
+        .btn-login:focus-visible {
+            outline: 3px solid rgba(167, 111, 60, 0.35);
+            outline-offset: 3px;
+        }
+
+        .separator {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin: 1.7rem 0;
+            color: #A09286;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .separator::before,
+        .separator::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #E7DCD1;
+        }
+
+        .btn-google {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            min-height: 52px;
+            border: 1px solid #D9CEC4;
+            border-radius: 10px;
+            background: #FFF;
+            color: #46362D;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .btn-google:hover {
+            border-color: #BFAE9F;
+            background: #FFF9F4;
+            color: #2B1A15;
+            transform: translateY(-1px);
+        }
+
+        .btn-google:focus-visible {
+            outline: 3px solid rgba(66, 133, 244, 0.25);
+            outline-offset: 3px;
+        }
+
+        .google-icon {
+            width: 19px;
+            height: 19px;
+            flex: 0 0 auto;
+        }
+
+        .access-note {
+            margin: 1.25rem auto 0;
+            max-width: 365px;
+            color: #97877A;
+            font-size: 0.75rem;
+            line-height: 1.55;
+            text-align: center;
+        }
+
+        .auth-footer {
+            margin-top: 2.25rem;
+            color: #9A8A7C;
+            font-size: 0.72rem;
+            text-align: center;
+        }
+
+        @media (max-width: 900px) {
+            .login-page {
+                display: block;
             }
 
-            .login-header h1 {
-                font-size: 32px;
+            .brand-panel {
+                display: none;
             }
 
-            .login-header {
-                margin-bottom: 30px;
-                padding-bottom: 20px;
+            .auth-panel {
+                min-height: 100vh;
+                padding: 1.5rem;
+            }
+
+            .auth-heading .mobile-brand {
+                display: flex;
+                align-items: center;
+                gap: 0.55rem;
+                margin-bottom: 2rem;
+                color: var(--coffee);
+                font-family: "Cormorant Garamond", Georgia, serif;
+                font-size: 1.25rem;
+                font-weight: 700;
+                letter-spacing: 0.04em;
+            }
+
+            .auth-heading .mobile-brand span {
+                display: grid;
+                place-items: center;
+                width: 31px;
+                height: 31px;
+                border: 1px solid var(--caramel);
+                border-radius: 50%;
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .auth-panel {
+                padding: 1.25rem;
+            }
+
+            .auth-heading h2 {
+                font-size: 2.45rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
             }
         }
     </style>
 </head>
+
 <body>
-        <div class="login-wrapper">
-    <div class="login-container">
-        <div class="login-header">
-            <div class="logo-text">Densa Niebla</div>
-            <h1>CAFÉ</h1>
-            <p>Gestión Integral de Lotes Especiales</p>
-            <div class="brand-tagline">Premium • Trazabilidad • Excelencia</div>
-        </div>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ 'danger' if category == 'danger' else 'warning' if category == 'warning' else 'success' }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        <form method="POST" novalidate>
-            {{ form.hidden_tag() }}
+    <main class="login-page">
+        <section class="brand-panel" aria-label="Identidad de Densa Niebla">
             
-            <div class="form-group">
-                <label for="email" class="form-label">{{ form.email.label }}</label>
-                {% if form.email.errors %}
-                    {{ form.email(class="form-control is-invalid") }}
-                    <div class="error-message">
-                        {% for error in form.email.errors %}
-                            <div>{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.email(class="form-control") }}
-                {% endif %}
-            </div>
+                <!-- Sustituye esta marca tipográfica por tu logo SVG cuando esté disponible -->
+                <span class="brand-mark" aria-hidden="true">DN</span>
+                <span>
+                    <span class="brand-name">Densa Niebla</span>
+                    <span class="brand-subname">Café de especialidad</span>
+                </span>
+            </a>
 
-            <div class="form-group">
-                <label for="password" class="form-label">{{ form.password.label }}</label>
-                {% if form.password.errors %}
-                    {{ form.password(class="form-control is-invalid") }}
-                    <div class="error-message">
-                        {% for error in form.password.errors %}
-                            <div>{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.password(class="form-control") }}
-                {% endif %}
-            </div>
-
-            <div class="form-check">
-                {{ form.csrf_token() }}
-                <input type="checkbox" class="form-check-input" id="remember" name="remember" value="1">
-                <label class="form-check-label" for="remember">
-                    Recuérdame en este dispositivo
-                </label>
-            </div>
-
-            <div class="d-grid gap-2 mt-4">
-                {{ form.submit(class="btn btn-primary btn-lg") }}
-            </div>
-        </form>
-
-        <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
-            <div class="form-footer">
-                <p class="footer-text">
-                    <span class="coffee-accent">☕</span>
-                    Sistema Seguro de Gestión de Café
-                    <span class="coffee-accent">☕</span>
+            <div class="brand-copy">
+                <span class="eyebrow">Origen · Trazabilidad · Oficio</span>
+                <h1>La precisión detrás de cada taza.</h1>
+                <p>
+                    Acceso interno para gestionar lotes, inventario, ventas y trazabilidad
+                    de Café Especial Densa Niebla.
                 </p>
-                <p style="color: #D2B48C; font-size: 10px; margin-top: 8px; letter-spacing: 1px;">
-                    © Café Densa Niebla | Café de Colombia | Todos los derechos reservados
-                </p>
+                <span class="origin-pill">Clásico y Premium · Café de origen Santander</span>
             </div>
-        </div>
-    </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <p class="brand-footer">
+                © {{ current_year|default(2026) }} Café Especial Densa Niebla · Sistema interno protegido
+            </p>
+        </section>
+
+        <section class="auth-panel" aria-labelledby="login-title">
+            <div class="auth-card">
+                <header class="auth-heading">
+                    <div class="mobile-brand">
+                        <span aria-hidden="true">DN</span> Densa Niebla
+                    </div>
+                    <h2 id="login-title">Bienvenido</h2>
+                    <p>Ingresa tus credenciales para acceder al sistema de gestión.</p>
+                </header>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'danger' else 'warning' if category == 'warning' else 'success' }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar mensaje"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+
+                        {% if form.email.errors %}
+                            {{ form.email(
+                                class="form-control is-invalid",
+                                autocomplete="email",
+                                autofocus=true,
+                                placeholder="correo@densaniebla.com"
+                            ) }}
+                            <div class="error-message">
+                                {% for error in form.email.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.email(
+                                class="form-control",
+                                autocomplete="email",
+                                autofocus=true,
+                                placeholder="correo@densaniebla.com"
+                            ) }}
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-0">
+                        {{ form.password.label(class="form-label") }}
+
+                        <div class="password-wrapper">
+                            {% if form.password.errors %}
+                                {{ form.password(
+                                    class="form-control is-invalid",
+                                    id="password",
+                                    autocomplete="current-password",
+                                    placeholder="Ingresa tu contraseña"
+                                ) }}
+                            {% else %}
+                                {{ form.password(
+                                    class="form-control",
+                                    id="password",
+                                    autocomplete="current-password",
+                                    placeholder="Ingresa tu contraseña"
+                                ) }}
+                            {% endif %}
+
+                            <button
+                                type="button"
+                                class="toggle-password"
+                                id="togglePassword"
+                                aria-label="Mostrar contraseña"
+                                aria-pressed="false">
+                                Ver
+                            </button>
+                        </div>
+
+                        {% if form.password.errors %}
+                            <div class="error-message">
+                                {% for error in form.password.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-check">
+                        <input
+                            type="checkbox"
+                            class="form-check-input"
+                            id="remember"
+                            name="remember"
+                            value="1">
+                        <label class="form-check-label" for="remember">
+                            Mantener mi sesión en este dispositivo
+                        </label>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-login">Ingresar al ERP</button>
+                    </div>
+                </form>
+
+                <div class="separator" aria-hidden="true">o</div>
+
+                <!-- Ajusta auth.google_login al endpoint real de tu Blueprint -->
+                <a href="{{ url_for('auth.google_login') }}" class="btn-google">
+                    <svg class="google-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="#4285F4" d="M21.35 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.24a4.48 4.48 0 0 1-1.94 2.94v2.51h3.14c1.84-1.7 2.91-4.21 2.91-7.28Z"/>
+                        <path fill="#34A853" d="M12 21.75c2.62 0 4.82-.87 6.43-2.36l-3.14-2.51c-.87.58-1.99.92-3.29.92-2.53 0-4.68-1.71-5.45-4.01H3.3v2.59A9.72 9.72 0 0 0 12 21.75Z"/>
+                        <path fill="#FBBC05" d="M6.55 13.79A5.85 5.85 0 0 1 6.25 12c0-.62.11-1.22.3-1.79V7.62H3.3A9.74 9.74 0 0 0 2.25 12c0 1.57.37 3.06 1.05 4.38l3.25-2.59Z"/>
+                        <path fill="#EA4335" d="M12 6.2c1.42 0 2.69.49 3.69 1.45l2.77-2.77C16.81 3.33 14.62 2.25 12 2.25A9.72 9.72 0 0 0 3.3 7.62l3.25 2.59C7.32 7.91 9.47 6.2 12 6.2Z"/>
+                    </svg>
+                    Continuar con Google
+                </a>
+
+                <p class="access-note">
+                    El acceso con Google está disponible únicamente para cuentas autorizadas
+                    por la administración de Densa Niebla.
+                </p>
+
+                <footer class="auth-footer">
+                    Acceso protegido · No compartas tus credenciales
+                </footer>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const togglePassword = document.getElementById("togglePassword");
+        const passwordInput = document.getElementById("password");
+
+        if (togglePassword && passwordInput) {
+            togglePassword.addEventListener("click", function () {
+                const isHidden = passwordInput.type === "password";
+                passwordInput.type = isHidden ? "text" : "password";
+                togglePassword.textContent = isHidden ? "Ocultar" : "Ver";
+                togglePassword.setAttribute("aria-label", isHidden ? "Ocultar contraseña" : "Mostrar contraseña");
+                togglePassword.setAttribute("aria-pressed", String(isHidden));
+            });
+        }
+    </script>
 </body>
 </html>

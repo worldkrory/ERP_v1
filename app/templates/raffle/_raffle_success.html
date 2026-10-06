@@ -3,17 +3,17 @@
 
   <p class="eyebrow">PARTICIPACIÓN CONFIRMADA</p>
 
-  <h2>{{ entry.full_name.split(' ')[0] }}, ya estás dentro.</h2>
+  <h2>Tu lugar está reservado, {{ participant.first_name }}.</h2>
 
-  <p class="success-lead">
-    Tu lugar para vivir el ritual Densa Niebla quedó registrado.
-    Si resultas ganador(a), te contactaremos por WhatsApp.
-  </p>
+<p>
+  Tu código de participación es:
+  <strong>{{ participant.entry_code }}</strong>
+</p>
 
-  <div class="entry-ticket">
-    <span>Tu código de participación</span>
-    <strong>{{ entry.entry_code }}</strong>
-  </div>
+<p>
+  Te escribiremos al WhatsApp terminado en
+  {{ participant.whatsapp_last_four }}.
+</p>
 
   <div class="success-note">
     <p>Guarda este código. Muy pronto podrás descubrir nuevas selecciones, microlotes y rituales nacidos entre montaña y niebla.</p>

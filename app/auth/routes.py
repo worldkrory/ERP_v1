@@ -3,7 +3,7 @@
 import logging
 from datetime import datetime, timezone
 
-from flask import render_template, redirect, url_for, flash, request, jsonify
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_user, logout_user, current_user
 from werkzeug.security import check_password_hash
 
@@ -12,8 +12,9 @@ from app.auth import auth_bp
 from app.auth.forms import LoginForm
 from app.models.user import User
 
-logger = logging.getLogger(__name__)
+from app.sales import sales_admin_bp, sales_bp
 
+logger = logging.getLogger(__name__)
 
 
 @auth_bp.before_request
@@ -27,74 +28,166 @@ def check_user_locked():
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
-    """Ruta de login con validación de credenciales y bloqueo por intentos fallidos.
-    
-    Seguridad:
-    - Rate limiting recomendado en producción (nginx, fail2ban)
-    - Contraseñas hasheadas con Werkzeug
-    - Bloqueo tras 5 intentos fallidos durante 15 minutos
-    - CSRF protection via Flask-WTF
-    """
+    """Login con validación de credenciales y control de cuenta activa."""
+
+    next_page = (
+        request.form.get("next")
+        or request.args.get("next")
+    )
+
+    destination = "/ventas"
+
+    if next_page and _is_safe_url(next_page):
+        destination = next_page
+
+    # Solo redirigir inmediatamente si ya existe una sesión.
     if current_user.is_authenticated:
-        return redirect(url_for("sales_admin.sales_admin_page"))
-    
+        return redirect(destination)
+
     form = LoginForm()
-    
+
     if form.validate_on_submit():
+        email = form.email.data.strip().lower()
+
         user = db.session.scalar(
-            db.select(User).where(User.email == form.email.data.lower())
+            db.select(User).where(User.email == email)
         )
-        
-        if user is None or not check_password_hash(user.password_hash, form.password.data):
-            # Incrementar contador de intentos fallidos
-            if user:
-                user.failed_login_count = (user.failed_login_count or 0) + 1
-                
-                # Bloquear cuenta tras 5 intentos fallidos
+
+        if user is None or not check_password_hash(
+            user.password_hash,
+            form.password.data,
+        ):
+            if user is not None:
+                user.failed_login_count = (
+                    user.failed_login_count or 0
+                ) + 1
+
                 if user.failed_login_count >= 5:
                     user.locked_until = datetime.now(timezone.utc)
                     db.session.commit()
+
                     logger.warning(
                         f"Cuenta {user.email} bloqueada por intentos fallidos",
-                        extra={"user_id": user.id}
+                        extra={"user_id": user.id},
                     )
-                    flash("Tu cuenta está bloqueada por demasiados intentos fallidos.", "danger")
-                    return redirect(url_for("auth.login"))
-                
+
+                    flash(
+                        "Tu cuenta está bloqueada por demasiados "
+                        "intentos fallidos.",
+                        "danger",
+                    )
+
+                    return redirect(
+                        url_for("auth.login", next=next_page)
+                    )
+
                 db.session.commit()
-            
+
             flash("Correo o contraseña incorrectos.", "danger")
+
             logger.info(
-                f"Intento de login fallido para {form.email.data}",
-                extra={"ip": request.remote_addr}
+                f"Intento de login fallido para {email}",
+                extra={"ip": request.remote_addr},
             )
-            return redirect(url_for("auth.login"))
-        
-        # Login exitoso
+
+            return redirect(
+                url_for("auth.login", next=next_page)
+            )
+
         if not user.is_active:
-            flash("Tu cuenta está desactivada. Contacta al administrador.", "danger")
-            return redirect(url_for("auth.login"))
-        
-        # Resetear contador y registrar login
+            flash(
+                "Tu cuenta está desactivada. Contacta al administrador.",
+                "danger",
+            )
+
+            return redirect(
+                url_for("auth.login", next=next_page)
+            )
+
         user.failed_login_count = 0
         user.last_login_at = datetime.now(timezone.utc)
         db.session.commit()
-        
-        login_user(user, remember=request.form.get("remember", False))
-        
+
+        login_user(
+            user,
+            remember=request.form.get("remember") == "1",
+        )
+
         logger.info(
             f"Login exitoso para usuario {user.email}",
-            extra={"user_id": user.id, "ip": request.remote_addr}
+            extra={
+                "user_id": user.id,
+                "ip": request.remote_addr,
+            },
         )
-        
-        next_page = request.args.get("next")
-        if next_page and _is_safe_url(next_page):
-            return redirect(next_page)
-        
-        return redirect(url_for("sales_admin.sales_admin_page"))
-    
+
+        # Redirigir solo después de autenticar correctamente.
+        return redirect(destination)
+
+    # GET inicial o formulario con errores de validación.
     return render_template("auth/login.html", form=form)
 
+
+
+@auth_bp.route("/login/google")
+def google_login():
+    """
+    Envía al usuario a Google para autenticación OAuth/OpenID Connect.
+    """
+    redirect_uri = url_for("auth.google_callback", _external=True)
+
+    return oauth.google.authorize_redirect(redirect_uri)
+
+
+@auth_bp.route("/login/google/callback")
+def google_callback():
+    """
+    Recibe el retorno de Google y permite entrar únicamente
+    a usuarios previamente autorizados dentro del ERP.
+    """
+    try:
+        token = oauth.google.authorize_access_token()
+        user_info = token.get("userinfo")
+
+        if not user_info:
+            user_info = oauth.google.parse_id_token(token)
+
+    except Exception:
+        current_app.logger.exception("Error en autenticación con Google")
+        flash("No fue posible validar tu cuenta de Google. Intenta nuevamente.", "danger")
+        return redirect(url_for("auth.login"))
+
+    google_sub = user_info.get("sub")
+    email = (user_info.get("email") or "").strip().lower()
+    email_verified = user_info.get("email_verified", False)
+
+    if not google_sub or not email or not email_verified:
+        flash("Google no confirmó una cuenta de correo válida.", "danger")
+        return redirect(url_for("auth.login"))
+
+    # Busca primero por Google ID y luego por correo institucional existente.
+    user = User.query.filter(
+        (User.google_sub == google_sub) | (User.email == email)
+    ).first()
+
+    # No crear usuarios automáticamente: solo personal previamente autorizado.
+    if not user or not user.is_active:
+        current_app.logger.warning(
+            "Acceso Google no autorizado para el correo: %s",
+            email
+        )
+        flash("Tu cuenta no está autorizada para ingresar al ERP.", "danger")
+        return redirect(url_for("auth.login"))
+
+    # Primera vinculación segura entre usuario existente y Google.
+    if not user.google_sub:
+        user.google_sub = google_sub
+        db.session.commit()
+
+    login_user(user, remember=True)
+
+    flash(f"Bienvenido, {user.name or user.email}.", "success")
+    return redirect(url_for("dashboard.index"))
 
 @auth_bp.route("/logout")
 def logout():

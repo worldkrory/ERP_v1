@@ -49,7 +49,7 @@
       <div id="lines"></div><div id="notice" class="notice" role="alert"></div>
       <div class="actions"><button type="submit">Guardar compra</button></div>
     </form>
-    <section class="panel"><div class="panel-head"><h2>Compras recientes</h2><span class="helper">Recepciona para crear existencias</span></div><div style="overflow:auto"><table><thead><tr><th>Documento</th><th>Proveedor</th><th>Fecha</th><th>Total</th><th>Estado</th><th></th></tr></thead><tbody id="history"><tr><td colspan="6">Cargando...</td></tr></tbody></table></div></section>
+    <section class="panel"><div class="panel-head"><h2>Compras recientes</h2><span class="helper">Recepciona para crear existencias</span></div><div style="overflow:auto"><table><thead><tr><th>Producto</th><th>Tipo</th><th>Proveedor</th><th>Fecha</th><th>Total</th><th>Estado</th><th></th></tr></thead><tbody id="history"><tr><td colspan="6">Cargando...</td></tr></tbody></table></div></section>
   </main>
   <script>
     let catalog = { products:[], units:[], locations:[], suppliers:[], categories:[] };
@@ -59,7 +59,125 @@
     function addLine() { const row = document.createElement('div'); row.className='line'; row.innerHTML=`<div class="field product"><label>Producto</label><select class="product-id" required>${options(catalog.products,'un producto')}</select></div><div class="field"><label>Cantidad</label><input class="quantity" type="number" min="0.0001" step="any" required></div><div class="field"><label>Unidad</label><select class="unit-id" required>${options(catalog.units,'una unidad')}</select></div><div class="field"><label>Precio unitario</label><input class="price" type="number" min="0" step="0.01" required></div><button class="remove" type="button" aria-label="Eliminar línea">×</button>`; lines.appendChild(row); row.querySelector('.product-id').addEventListener('change',()=>{ const product=catalog.products.find(item=>String(item.id)===row.querySelector('.product-id').value); if(product) row.querySelector('.unit-id').value=product.purchase_unit_id; }); row.querySelector('.remove').addEventListener('click',()=>row.remove()); }
     function show(message, good=false) { notice.textContent=message; notice.style.background=good?'#e8f3ec':'#f8ebe5'; notice.style.color=good?'var(--ok)':'#8c452b'; notice.classList.add('show'); }
     async function load() { const response=await fetch('/api/v1/purchases/catalog'); catalog=await response.json(); document.getElementById('party').innerHTML=options(catalog.suppliers,'un proveedor'); document.getElementById('location').innerHTML=options(catalog.locations,'una bodega'); document.querySelectorAll('.unit-options').forEach(select=>select.innerHTML=options(catalog.units,'una unidad')); addLine(); await loadHistory(); }
-    async function loadHistory() { const response=await fetch('/api/v1/purchases'); const purchases=await response.json(); document.getElementById('history').innerHTML=purchases.length?purchases.map(item=>`<tr><td><strong>${item.purchase_number}</strong></td><td>${item.party_name||'Proveedor #'+item.party_id}</td><td>${item.purchase_date}</td><td>${money(item.total)}</td><td><span class="status">${item.status}</span></td><td>${item.status==='CONFIRMED'?`<button class="receive" data-id="${item.id}" type="button">Recibir</button>`:''}</td></tr>`).join(''):'<tr><td colspan="6">Todavía no hay compras registradas.</td></tr>'; document.querySelectorAll('.receive').forEach(button=>button.addEventListener('click',receive)); }
+    async function loadHistory() {
+  const history = document.getElementById('history');
+
+  // Convierte los datos a texto antes de insertarlos en el HTML.
+  const escapeHtml = value => String(value ?? '').replace(
+    /[&<>"']/g,
+    character => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    })[character]
+  );
+
+  try {
+    const response = await fetch('/api/v1/purchases');
+
+    if (!response.ok) {
+      throw new Error('No fue posible cargar las compras.');
+    }
+
+    const purchases = await response.json();
+
+    if (!Array.isArray(purchases)) {
+      throw new Error('La respuesta no contiene una lista de compras.');
+    }
+
+    history.innerHTML = purchases.length
+      ? purchases.map(purchase => {
+          const items = Array.isArray(purchase.items)
+            ? purchase.items
+            : [];
+
+          const productsHtml = items.length
+            ? items.map(item => {
+                const name = item.product_name
+                  || `Producto #${item.product_id}`;
+
+                return `
+                  <div>
+                    <strong>${escapeHtml(name)}</strong>
+                  </div>
+                `;
+              }).join('')
+            : 'Sin detalle de productos';
+
+          return `
+            <tr>
+              <td>${productsHtml}</td>
+
+              <td>
+                ${escapeHtml(
+                  purchase.purchase_type === 'SUPPLIER'
+                    ? 'Insumo'
+                    : (purchase.purchase_type ?? 'Sin tipo')
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  purchase.party_name
+                  || 'Proveedor #' + purchase.party_id
+                )}
+              </td>
+
+              <td>${escapeHtml(purchase.purchase_date)}</td>
+
+              <td>${money(purchase.total)}</td>
+
+              <td>
+                <span class="status">
+                  ${escapeHtml(purchase.status)}
+                </span>
+              </td>
+
+              <td>
+                ${
+                  purchase.status === 'CONFIRMED'
+                    ? `
+                      <button
+                        class="receive"
+                        data-id="${escapeHtml(purchase.id)}"
+                        type="button"
+                      >
+                        Recibir
+                      </button>
+                    `
+                    : ''
+                }
+              </td>
+            </tr>
+          `;
+        }).join('')
+      : `
+        <tr>
+          <td colspan="7">
+            Todavía no hay compras registradas.
+          </td>
+        </tr>
+      `;
+
+    history.querySelectorAll('.receive').forEach(button => {
+      button.addEventListener('click', receive);
+    });
+  } catch (error) {
+    console.error(error);
+
+    history.innerHTML = `
+      <tr>
+        <td colspan="7">
+          No fue posible cargar las compras.
+        </td>
+      </tr>
+    `;
+
+    show(error.message);
+  }
+}
     async function receive(event) { const response=await fetch(`/api/v1/purchases/${event.target.dataset.id}/receive`,{method:'POST'}); const data=await response.json(); if(!response.ok) return show(data.error||'No fue posible recibir la compra.'); show(`Compra recibida. Lote(s): ${data.batches.join(', ')||'sin lote'}`,true); await loadHistory(); }
     document.getElementById('add-line').addEventListener('click',addLine); document.getElementById('purchase-form').addEventListener('submit',async event=>{ event.preventDefault(); const rows=[...lines.querySelectorAll('.line')]; if(!event.target.reportValidity()||!rows.length) return show('Agrega al menos una línea de compra.'); const payload={purchase_number:document.getElementById('number').value||undefined,party_id:Number(document.getElementById('party').value),destination_location_id:Number(document.getElementById('location').value),purchase_date:document.getElementById('date').value,items:rows.map(row=>({product_id:Number(row.querySelector('.product-id').value),quantity:row.querySelector('.quantity').value,unit_id:Number(row.querySelector('.unit-id').value),unit_price:row.querySelector('.price').value}))}; const response=await fetch('/api/v1/purchases',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); const data=await response.json(); if(!response.ok) return show(data.error||'No fue posible guardar la compra.'); show(`Compra ${data.purchase_number} guardada. Usa Recibir para crear la existencia.`,true); lines.innerHTML=''; addLine(); await loadHistory(); });
     document.querySelectorAll('.setup-form').forEach(form=>form.addEventListener('submit',async event=>{ event.preventDefault(); const payload=Object.fromEntries(new FormData(form).entries()); form.querySelectorAll('[type="checkbox"]').forEach(input=>payload[input.name]=input.checked); for(const key of ['base_unit_id','purchase_unit_id','from_unit_id','to_unit_id']) if(payload[key]) payload[key]=Number(payload[key]); const response=await fetch(form.dataset.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); const data=await response.json(); if(!response.ok) return show(data.error||'No fue posible guardar el catálogo.'); show('Catálogo guardado. Ya está disponible en los selectores.',true); form.reset(); await load(); }));

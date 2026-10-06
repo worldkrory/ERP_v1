@@ -18,6 +18,8 @@ from app.models.unit import UnitConversion, UnitOfMeasure
 from app.services.inventory_service import InventoryError, receive_purchase
 from app.services.units import UnitConversionError, convert_quantity
 
+from sqlalchemy.orm import selectinload
+
 purchases_bp = Blueprint("purchases", __name__, url_prefix="/api/v1")
 purchases_admin_bp = Blueprint(
     "purchases_admin", __name__, template_folder="templates", url_prefix=""
@@ -226,12 +228,55 @@ def create_unit_conversion_route():
 
 @purchases_bp.get("/purchases")
 @login_required
-@require_role("INVENTARIO", "COMPRAS", "CONTABILIDAD", "ADMIN", "CONSULTA")
+@require_role(
+    "INVENTARIO",
+    "COMPRAS",
+    "CONTABILIDAD",
+    "ADMIN",
+    "CONSULTA",
+)
 def list_purchases():
     purchases = db.session.scalars(
-        select(Purchase).order_by(Purchase.purchase_date.desc(), Purchase.id.desc())
+        select(Purchase)
+        .options(
+            selectinload(Purchase.items)
+            .selectinload(PurchaseItem.product)
+        )
+        .order_by(
+            Purchase.purchase_date.desc(),
+            Purchase.id.desc(),
+        )
     ).all()
-    return jsonify([_purchase_payload(purchase) for purchase in purchases])
+
+    result = []
+
+    for purchase in purchases:
+        # Conserva los campos que tu función ya devuelve.
+        payload = _purchase_payload(purchase)
+
+        # Agrega el tipo de compra al diccionario.
+        payload["purchase_type"] = (
+            purchase.purchase_type.value
+            if hasattr(purchase.purchase_type, "value")
+            else purchase.purchase_type
+        )
+
+        # Agrega el detalle de productos al diccionario.
+        payload["items"] = [
+            {
+                "product_id": line.product_id,
+                "product_name": (
+                    line.product.name
+                    if line.product is not None
+                    else None
+                ),
+            }
+            for line in purchase.items
+        ]
+
+        result.append(payload)
+
+    return jsonify(result)
 
 
 @purchases_bp.post("/purchases")
