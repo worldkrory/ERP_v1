@@ -304,3 +304,218 @@
     grid-template-columns: 1fr;
   }
 }
+/* Evita que el contenido ensanche la página. */
+#purchases-workspace {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+#purchases-workspace > *,
+#purchases-workspace .dn-purchase-catalog-grid > *,
+#purchases-workspace .dn-metrics-grid > * {
+  min-width: 0;
+}
+
+#purchase-summary-region,
+#purchase-history-region {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+#purchases-workspace .dn-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* Los importes largos no deben forzar el ancho de la tarjeta. */
+#purchases-workspace .dn-metric-card strong {
+  overflow-wrap: anywhere;
+}
+
+/* Adaptación de interacción y lectura en móvil. */
+@media (max-width: 760px) {
+  #purchases-workspace .dn-purchase-panel > summary {
+    min-height: 58px;
+    gap: 10px;
+    font-size: .95rem;
+  }
+
+  #purchases-workspace .dn-purchase-panel-state {
+    font-size: .78rem;
+  }
+
+  #purchases-workspace .dn-section-note,
+  #purchases-workspace .helper,
+  #purchases-workspace .dn-metric-card small {
+    font-size: .82rem;
+    line-height: 1.5;
+  }
+
+  #purchases-workspace .dn-field input,
+  #purchases-workspace .dn-field select {
+    min-height: 48px;
+    font-size: 16px;
+  }
+
+  #purchases-workspace .dn-button {
+    min-height: 44px;
+  }
+
+  #purchases-workspace .dn-purchase-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #purchases-workspace .dn-metric-card {
+    padding: 14px;
+  }
+
+  #purchases-workspace .dn-metric-label {
+    font-size: .72rem;
+  }
+
+  #purchases-workspace .dn-metric-card strong {
+    font-size: 1.65rem;
+  }
+
+  #purchases-workspace .dn-metric-card-money strong {
+    font-size: 1.35rem;
+  }
+
+  #purchases-workspace .dn-purchase-metrics
+  .dn-metric-card:last-child {
+    grid-column: 1 / -1;
+  }
+
+  #purchases-workspace .dn-purchase-catalog-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #purchases-workspace #purchase-form .fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #purchases-workspace .line {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #purchases-workspace .line .product {
+    grid-column: 1 / -1;
+  }
+
+  #purchases-workspace .line .remove {
+    min-width: 44px;
+    min-height: 44px;
+    justify-self: end;
+  }
+}
+
+@media (max-width: 360px) {
+  #purchases-workspace .dn-purchase-metrics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  #purchase-history-region .dn-table-scroll {
+    overflow: visible;
+  }
+
+  #purchase-history-region .dn-sales-table {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    background: transparent;
+  }
+
+  /* Conserva el encabezado en el HTML sin ocupar espacio visual. */
+  #purchase-history-region .dn-sales-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  #purchase-history-region .dn-sales-table tbody {
+    display: grid;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  #purchase-history-region .dn-purchase-history-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding: 16px;
+    background: var(--dn-cream);
+    border: 1px solid var(--dn-line);
+    border-radius: 12px;
+  }
+
+  #purchase-history-region .dn-purchase-history-row td {
+    display: block;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    font-size: .92rem;
+    overflow-wrap: anywhere;
+  }
+
+  #purchase-history-region
+  .dn-purchase-history-row td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 5px;
+    color: var(--dn-muted);
+    font-size: .7rem;
+    font-weight: 800;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+
+  #purchase-history-region .dn-purchase-history-product {
+    grid-column: 1 / -1;
+  }
+
+  #purchase-history-region
+  .dn-purchase-history-product strong {
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  #purchase-history-region
+  .dn-purchase-history-product > div + div {
+    margin-top: 6px;
+  }
+
+  #purchase-history-region .dn-purchase-history-actions {
+    grid-column: 1 / -1;
+  }
+
+  #purchase-history-region
+  .dn-purchase-history-actions:empty {
+    display: none;
+  }
+
+  #purchase-history-region
+  .dn-purchase-history-actions .dn-button {
+    width: 100%;
+    min-height: 46px;
+  }
+
+  #purchase-history-region .dn-status {
+    font-size: .73rem;
+    min-height: 30px;
+  }
+
+  #purchase-history-region .dn-empty {
+    display: block;
+    padding: 20px !important;
+  }
+}

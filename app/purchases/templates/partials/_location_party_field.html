@@ -1,0 +1,46 @@
+{% if requires_party %}
+<div class="field dn-field">
+  <label for="location-party">
+    {% if location_type == "PROCESSOR" %}
+      Maquilador responsable
+    {% else %}
+      Tercero consignatario
+    {% endif %}
+  </label>
+
+  <select
+    id="location-party"
+    name="party_id"
+    required
+  >
+    <option value="">Selecciona un tercero</option>
+
+    {% for party in parties %}
+      <option value="{{ party.id }}">
+        {{ party.display_name }}
+        {% if party.phone %}
+          · {{ party.phone }}
+        {% endif %}
+        · #{{ party.id }}
+      </option>
+    {% endfor %}
+  </select>
+
+  <small class="helper">
+    {% if parties %}
+      Selecciona el tercero responsable de esta ubicación.
+    {% else %}
+      No hay terceros activos. Registra primero el tercero responsable.
+    {% endif %}
+  </small>
+
+  <a
+    class="dn-button dn-button-outline dn-button-small"
+    href="{{ url_for('parties_admin.customers_admin_page') }}"
+    target="_blank"
+    rel="noopener"
+  >
+    Abrir terceros en otra pestaña
+  </a>
+</div>
+{% endif %}

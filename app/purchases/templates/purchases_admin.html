@@ -19,7 +19,6 @@
 {% endblock %}
 
 {% block content %}
-
 {% call admin_shell(
   active_section="purchases",
   active_module="purchases",
@@ -29,47 +28,36 @@
   admin_user=current_user
 ) %}
 
-  <div class="dn-workspace">
+<div class="dn-workspace">
+  <div
+    id="purchases-workspace"
+    class="dn-workspace-shell"
+  >
     <div
-      id="purchases-workspace"
-      class="dn-workspace-shell"
+      id="purchase-summary-region"
+      aria-live="polite"
+      aria-label="Resumen de compras"
     >
-      <div
-        id="purchase-summary-region"
-        aria-live="polite"
-        aria-label="Resumen de compras"
+      {% include "partials/_purchase_summary.html" %}
+    </div>
+
+    <div class="dn-purchase-actions">
+      <div>
+        <h2>Documento de compra</h2>
+
+        <p class="dn-section-note">
+          Prepara el documento y recibe los productos cuando lleguen.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="dn-button dn-button-primary"
+        data-purchase-open="purchase-document-panel"
       >
-        {% include "partials/_purchase_summary.html" %}
-      </div>
-
-      <div class="dn-purchase-actions">          
-        <div>
-
-          
-          
-          <h2>Registrar una compra</h2>
-
-          <p class="dn-section-note">
-            Prepara el documento y recibe los productos cuando lleguen.
-          </p>
-
-          
-        </div>
-
-        <button
-            type="button"
-            class="dn-button dn-button-primary"
-            data-purchase-open="purchase-document-panel"
-          >
-            + Nueva compra
-          </button> 
-        
-      </div>
-
-    <p class="dn-section-note dn-purchase-help">
-      Abre solo lo que necesites. Puedes trabajar en varios formularios
-      y replegarlos sin perder lo escrito.
-    </p>
+        + Nueva compra
+      </button>
+    </div>
 
     <div id="purchase-notice-region"></div>
 
@@ -89,32 +77,43 @@
 
       {% include "partials/_purchase_form.html" %}
     </details>
-    
-    <div>{% include "partials/_catalog_forms.html" %}</div>
-    
-    <div>{% include "partials/_purchase_history.html" %}</div>
-    
 
+    <div id="catalog-forms-region">
+      {% include "partials/_catalog_forms.html" %}
+    </div>
+
+    <div id="purchase-history-region">
+      {% include "partials/_purchase_history.html" %}
     </div>
   </div>
+</div>
 
 {% endcall %}
-
 {% endblock %}
 
 {% block scripts %}
-  <script>
-    let catalog = { products:[], units:[], locations:[], suppliers:[], categories:[] };
-    const lines = document.getElementById('lines'); const notice = document.getElementById('notice');
-    const money = value => new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(Number(value||0));
-    const options = (items, label) => `<option value="">Selecciona ${label}</option>` + items.map(item => `<option value="${item.id}">${item.name || item.code || item.sku}</option>`).join('');
-    function addLine() { const row = document.createElement('div'); row.className='line'; row.innerHTML=`<div class="field product"><label>Producto</label><select class="product-id" required>${options(catalog.products,'un producto')}</select></div><div class="field"><label>Cantidad</label><input class="quantity" type="number" min="0.0001" step="any" required></div><div class="field"><label>Unidad</label><select class="unit-id" required>${options(catalog.units,'una unidad')}</select></div><div class="field"><label>Precio unitario</label><input class="price" type="number" min="0" step="0.01" required></div><button class="remove" type="button" aria-label="Eliminar línea">×</button>`; lines.appendChild(row); row.querySelector('.product-id').addEventListener('change',()=>{ const product=catalog.products.find(item=>String(item.id)===row.querySelector('.product-id').value); if(product) row.querySelector('.unit-id').value=product.purchase_unit_id; }); row.querySelector('.remove').addEventListener('click',()=>row.remove()); }
-    function show(message, good=false) { notice.textContent=message; notice.style.background=good?'#e8f3ec':'#f8ebe5'; notice.style.color=good?'var(--ok)':'#8c452b'; notice.classList.add('show'); }
-    async function load() { const response=await fetch('/api/v1/purchases/catalog'); catalog=await response.json(); document.getElementById('party').innerHTML=options(catalog.suppliers,'un proveedor'); document.getElementById('location').innerHTML=options(catalog.locations,'una bodega'); document.querySelectorAll('.unit-options').forEach(select=>select.innerHTML=options(catalog.units,'una unidad')); addLine(); await loadHistory(); await refreshPurchaseSummary();}
-    async function loadHistory() {
+<script>
+(() => {
+  let catalog = {
+    products: [],
+    units: [],
+    locations: [],
+    suppliers: [],
+    categories: []
+  };
+
+  const workspace = document.getElementById('purchases-workspace');
+  const purchaseForm = document.getElementById('purchase-form');
+  const lines = document.getElementById('lines');
+  const notice = document.getElementById('notice');
   const history = document.getElementById('history');
 
-  // Convierte los datos a texto antes de insertarlos en el HTML.
+  const money = value => new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    maximumFractionDigits: 0
+  }).format(Number(value || 0));
+
   const escapeHtml = value => String(value ?? '').replace(
     /[&<>"']/g,
     character => ({
@@ -126,180 +125,616 @@
     })[character]
   );
 
-  try {
-    const response = await fetch('/api/v1/purchases');
+  const options = (items, label) =>
+    `<option value="">Selecciona ${escapeHtml(label)}</option>` +
+    items.map(item => `
+      <option value="${escapeHtml(item.id)}">
+        ${escapeHtml(item.name || item.code || item.sku)}
+      </option>
+    `).join('');
+
+  async function requestJson(url, settings = {}) {
+    const response = await fetch(url, settings);
+    const contentType = response.headers.get('content-type') || '';
+
+    if (!contentType.includes('application/json')) {
+      throw new Error(
+        'La respuesta no es JSON. Revisa la sesión y el servidor.'
+      );
+    }
+
+    const data = await response.json();
 
     if (!response.ok) {
-      throw new Error('No fue posible cargar las compras.');
+      throw new Error(data.error || 'No fue posible completar la operación.');
     }
 
-    const purchases = await response.json();
+    return data;
+  }
 
-    if (!Array.isArray(purchases)) {
-      throw new Error('La respuesta no contiene una lista de compras.');
-    }
+  function show(message, good = false) {
+    notice.textContent = message;
+    notice.style.removeProperty('background');
+    notice.style.removeProperty('color');
 
-    history.innerHTML = purchases.length
-      ? purchases.map(purchase => {
-          const items = Array.isArray(purchase.items)
-            ? purchase.items
-            : [];
+    notice.className = good
+      ? 'dn-alert dn-alert-success'
+      : 'dn-alert dn-alert-error';
 
-          const productsHtml = items.length
-            ? items.map(item => {
-                const name = item.product_name
-                  || `Producto #${item.product_id}`;
+    notice.hidden = false;
+  }
 
-                return `
-                  <div>
-                    <strong>${escapeHtml(name)}</strong>
-                  </div>
-                `;
-              }).join('')
-            : 'Sin detalle de productos';
+  document.getElementById('purchase-notice-region').appendChild(notice);
+  notice.className = 'dn-alert';
+  notice.hidden = true;
 
-          return `
-            <tr>
-              <td>${productsHtml}</td>
+  function markPanelDirty(panel) {
+    if (!panel) return;
 
-              <td>
-                ${escapeHtml(
-                  purchase.purchase_type === 'SUPPLIER'
-                    ? 'Insumo'
-                    : (purchase.purchase_type ?? 'Sin tipo')
-                )}
-              </td>
+    panel.dataset.dirty = 'true';
 
-              <td>
-                ${escapeHtml(
-                  purchase.party_name
-                  || 'Proveedor #' + purchase.party_id
-                )}
-              </td>
+    const indicator = panel.querySelector('.dn-purchase-dirty');
+    if (indicator) indicator.hidden = false;
+  }
 
-              <td>${escapeHtml(purchase.purchase_date)}</td>
+  function clearPanelDirty(panel) {
+    if (!panel) return;
 
-              <td>${money(purchase.total)}</td>
+    delete panel.dataset.dirty;
 
-              <td>
-                <span class="dn-status dn-status-confirmed">
-                  ${escapeHtml(purchase.status)}
-                </span>
-              </td>
+    const indicator = panel.querySelector('.dn-purchase-dirty');
+    if (indicator) indicator.hidden = true;
+  }
 
-              <td>
-                ${
-                  purchase.status === 'CONFIRMED'
-                    ? `
-                      <button
-                        class="receive dn-button dn-button-small"
-                        data-id="${escapeHtml(purchase.id)}"
-                        type="button"
-                      >
-                        Recibir
-                      </button>
-                    `
-                    : ''
-                }
-              </td>
-            </tr>
-          `;
-        }).join('')
-      : `
-        <tr>
-          <td colspan="7">
-            Todavía no hay compras registradas.
-          </td>
-        </tr>
-      `;
+  function addLine(markDirty = false) {
+    const row = document.createElement('div');
+    row.className = 'line';
 
-    history.querySelectorAll('.receive').forEach(button => {
-      button.addEventListener('click', receive);
+    row.innerHTML = `
+      <div class="field dn-field product">
+        <label>Producto</label>
+        <select class="product-id" required>
+          ${options(catalog.products, 'un producto')}
+        </select>
+      </div>
+
+      <div class="field dn-field">
+        <label>Cantidad</label>
+        <input
+          class="quantity"
+          type="number"
+          min="0.0001"
+          step="any"
+          required
+        >
+      </div>
+
+      <div class="field dn-field">
+        <label>Unidad</label>
+        <select class="unit-id" required>
+          ${options(catalog.units, 'una unidad')}
+        </select>
+      </div>
+
+      <div class="field dn-field">
+        <label>Precio unitario</label>
+        <input
+          class="price"
+          type="number"
+          min="0"
+          step="0.01"
+          required
+        >
+      </div>
+
+      <button
+        class="remove dn-button dn-button-small"
+        type="button"
+        aria-label="Eliminar línea"
+      >
+        ×
+      </button>
+    `;
+
+    lines.appendChild(row);
+
+    row.querySelector('.product-id').addEventListener('change', event => {
+      const product = catalog.products.find(
+        item => String(item.id) === event.target.value
+      );
+
+      if (product) {
+        row.querySelector('.unit-id').value = product.purchase_unit_id;
+      }
     });
-  } catch (error) {
-    console.error(error);
 
+    row.querySelector('.remove').addEventListener('click', () => {
+      row.remove();
+      markPanelDirty(purchaseForm.closest('.dn-purchase-panel'));
+    });
+
+    if (markDirty) {
+      markPanelDirty(purchaseForm.closest('.dn-purchase-panel'));
+    }
+  }
+
+  function refreshSelect(select, items, label) {
+    const previousValue = select.value;
+
+    select.innerHTML = options(items, label);
+
+    if (items.some(item => String(item.id) === previousValue)) {
+      select.value = previousValue;
+    }
+  }
+
+  async function loadCatalog() {
+    catalog = await requestJson('/api/v1/purchases/catalog');
+
+    refreshSelect(
+      document.getElementById('party'),
+      catalog.suppliers,
+      'un proveedor'
+    );
+
+    refreshSelect(
+      document.getElementById('location'),
+      catalog.locations,
+      'una bodega'
+    );
+
+    workspace.querySelectorAll('.unit-options, #lines .unit-id')
+      .forEach(select => {
+        refreshSelect(select, catalog.units, 'una unidad');
+      });
+
+    workspace.querySelectorAll('#lines .product-id')
+      .forEach(select => {
+        refreshSelect(select, catalog.products, 'un producto');
+      });
+
+    if (!lines.querySelector('.line')) {
+      addLine();
+    }
+  }
+
+  function tableMessage(message) {
     history.innerHTML = `
       <tr>
-        <td colspan="7">
-          No fue posible cargar las compras.
+        <td colspan="7" class="dn-empty">
+          ${escapeHtml(message)}
         </td>
       </tr>
     `;
-
-    show(error.message);
   }
-}
-    async function receive(event) { const response=await fetch(`/api/v1/purchases/${event.target.dataset.id}/receive`,{method:'POST'}); const data=await response.json(); if(!response.ok) return show(data.error||'No fue posible recibir la compra.'); show(`Compra recibida. Lote(s): ${data.batches.join(', ')||'sin lote'}`,true); await loadHistory(); }
-    document.getElementById('add-line').addEventListener('click',addLine); document.getElementById('purchase-form').addEventListener('submit',async event=>{ event.preventDefault(); const rows=[...lines.querySelectorAll('.line')]; if(!event.target.reportValidity()||!rows.length) return show('Agrega al menos una línea de compra.'); const payload={purchase_number:document.getElementById('number').value||undefined,party_id:Number(document.getElementById('party').value),destination_location_id:Number(document.getElementById('location').value),purchase_date:document.getElementById('date').value,items:rows.map(row=>({product_id:Number(row.querySelector('.product-id').value),quantity:row.querySelector('.quantity').value,unit_id:Number(row.querySelector('.unit-id').value),unit_price:row.querySelector('.price').value}))}; const response=await fetch('/api/v1/purchases',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); const data=await response.json(); if(!response.ok) return show(data.error||'No fue posible guardar la compra.'); show(`Compra ${data.purchase_number} guardada. Usa Recibir para crear la existencia.`,true); lines.innerHTML=''; addLine(); await loadHistory(); });
-    document.querySelectorAll('.setup-form').forEach(form=>form.addEventListener('submit',async event=>{ event.preventDefault(); const payload=Object.fromEntries(new FormData(form).entries()); form.querySelectorAll('[type="checkbox"]').forEach(input=>payload[input.name]=input.checked); for(const key of ['base_unit_id','purchase_unit_id','from_unit_id','to_unit_id']) if(payload[key]) payload[key]=Number(payload[key]); const response=await fetch(form.dataset.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); const data=await response.json(); if(!response.ok) return show(data.error||'No fue posible guardar el catálogo.'); show('Catálogo guardado. Ya está disponible en los selectores.',true); form.reset(); await load(); }));
-    document.querySelectorAll(
-      '#purchases-workspace [data-purchase-open]'
-    ).forEach(button => {
+
+  async function loadHistory() {
+    try {
+      const purchases = await requestJson('/api/v1/purchases');
+
+      if (!Array.isArray(purchases)) {
+        throw new Error('La respuesta no contiene una lista de compras.');
+      }
+
+      if (!purchases.length) {
+        tableMessage('Todavía no hay compras registradas.');
+        return;
+      }
+
+      history.innerHTML = purchases.map(purchase => {
+        const items = Array.isArray(purchase.items)
+          ? purchase.items
+          : [];
+
+        const productsHtml = items.length
+          ? items.map(item => `
+              <div>
+                <strong>
+                  ${escapeHtml(
+                    item.product_name || `Producto #${item.product_id}`
+                  )}
+                </strong>
+              </div>
+            `).join('')
+          : 'Sin detalle de productos';
+
+        const statusClasses = {
+          DRAFT: 'dn-status-draft',
+          CONFIRMED: 'dn-status-confirmed',
+          RECEIVED: 'dn-status-confirmed',
+          CANCELLED: 'dn-status-cancelled',
+          RETURNED: 'dn-status-returned'
+        };
+
+        const statusClass = statusClasses[purchase.status] || '';
+
+        const receiveButton = purchase.status === 'CONFIRMED'
+          ? `
+            <button
+              class="receive dn-button dn-button-small"
+              data-id="${escapeHtml(purchase.id)}"
+              type="button"
+            >
+              Recibir
+            </button>
+          `
+          : '';
+
+        return `
+          <tr class="dn-purchase-history-row">
+            <td data-label="Producto" class="dn-purchase-history-product">
+              ${productsHtml}
+            </td>
+
+            <td data-label="Tipo">
+              ${escapeHtml(
+                purchase.purchase_type === 'SUPPLIER'
+                  ? 'Insumo'
+                  : (purchase.purchase_type ?? 'Sin tipo')
+              )}
+            </td>
+
+            <td data-label="Proveedor">
+              ${escapeHtml(
+                purchase.party_name || `Proveedor #${purchase.party_id}`
+              )}
+            </td>
+
+            <td data-label="Fecha">
+              ${escapeHtml(purchase.purchase_date)}
+            </td>
+
+            <td data-label="Total" class="dn-money">
+              ${money(purchase.total)}
+            </td>
+
+            <td data-label="Estado">
+              <span class="dn-status ${statusClass}">
+                ${escapeHtml(purchase.status)}
+              </span>
+            </td>
+
+            <td
+              data-label="Acciones"
+              class="dn-purchase-history-actions"
+            >${receiveButton}</td>
+          </tr>
+        `;
+      }).join('');
+    } catch (error) {
+      console.error(error);
+      tableMessage('No fue posible cargar las compras.');
+      show(error.message);
+    }
+  }
+
+  async function refreshPurchaseSummary() {
+    try {
+      const response = await fetch(
+        "{{ url_for('purchases_admin.purchases_admin_page') }}",
+        {
+          headers: { 'Accept': 'text/html' },
+          cache: 'no-store'
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('El servidor no devolvió el resumen.');
+      }
+
+      const html = await response.text();
+
+      const updatedDocument = new DOMParser()
+        .parseFromString(html, 'text/html');
+
+      const currentRegion = document.getElementById(
+        'purchase-summary-region'
+      );
+
+      const updatedRegion = updatedDocument.getElementById(
+        'purchase-summary-region'
+      );
+
+      if (!currentRegion || !updatedRegion) {
+        throw new Error(
+          'No se encontró purchase-summary-region en la respuesta.'
+        );
+      }
+
+      currentRegion.replaceChildren(
+        ...Array.from(updatedRegion.childNodes).map(node =>
+          document.importNode(node, true)
+        )
+      );
+    } catch (error) {
+      console.error('Error al actualizar el resumen:', error);
+
+      show(
+        'La operación se guardó, pero no se pudo actualizar el resumen. '
+        + 'Recarga la página para comprobarlo.'
+      );
+    }
+  }
+
+  history.addEventListener('click', async event => {
+    const button = event.target.closest('button.receive');
+
+    if (!button || button.disabled) return;
+
+    button.disabled = true;
+
+    try {
+      const data = await requestJson(
+        `/api/v1/purchases/${button.dataset.id}/receive`,
+        { method: 'POST' }
+      );
+
+      show(
+        `Compra recibida. Lote(s): ${
+          (data.batches || []).join(', ') || 'sin lote'
+        }`,
+        true
+      );
+
+      await Promise.all([
+        loadHistory(),
+        refreshPurchaseSummary()
+      ]);
+    } catch (error) {
+      show(error.message);
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  document.getElementById('add-line').addEventListener('click', () => {
+    addLine(true);
+  });
+
+  purchaseForm.addEventListener('submit', async event => {
+    event.preventDefault();
+
+    const rows = [...lines.querySelectorAll('.line')];
+
+    if (!purchaseForm.reportValidity() || !rows.length) {
+      show('Agrega al menos una línea de compra.');
+      return;
+    }
+
+    const submitButton = purchaseForm.querySelector(
+      'button[type="submit"]'
+    );
+
+    if (submitButton.disabled) return;
+    submitButton.disabled = true;
+
+    try {
+      const payload = {
+        purchase_number:
+          document.getElementById('number').value || undefined,
+
+        party_id: Number(document.getElementById('party').value),
+
+        destination_location_id:
+          Number(document.getElementById('location').value),
+
+        purchase_date: document.getElementById('date').value,
+
+        items: rows.map(row => ({
+          product_id: Number(row.querySelector('.product-id').value),
+          quantity: row.querySelector('.quantity').value,
+          unit_id: Number(row.querySelector('.unit-id').value),
+          unit_price: row.querySelector('.price').value
+        }))
+      };
+
+      const data = await requestJson('/api/v1/purchases', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      show(
+        `Compra ${data.purchase_number} guardada. `
+        + 'Usa Recibir para crear la existencia.',
+        true
+      );
+
+      purchaseForm.reset();
+      lines.replaceChildren();
+      addLine();
+
+      clearPanelDirty(
+        purchaseForm.closest('.dn-purchase-panel')
+      );
+
+      await Promise.all([
+        loadHistory(),
+        refreshPurchaseSummary()
+      ]);
+    } catch (error) {
+      show(error.message);
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+
+  workspace.querySelectorAll('.setup-form').forEach(form => {
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+
+      if (!form.reportValidity()) return;
+
+      const submitButton = form.querySelector(
+        'button[type="submit"]'
+      );
+
+      if (submitButton.disabled) return;
+      submitButton.disabled = true;
+
+      try {
+        const payload = Object.fromEntries(
+          new FormData(form).entries()
+        );
+
+        form.querySelectorAll('[type="checkbox"]').forEach(input => {
+          payload[input.name] = input.checked;
+        });
+
+        for (const key of [
+          'base_unit_id',
+          'purchase_unit_id',
+          'from_unit_id',
+          'to_unit_id',
+          'party_id'
+        ]) {
+          if (payload[key]) {
+            payload[key] = Number(payload[key]);
+          }
+        }
+
+        await requestJson(form.dataset.endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        show(
+          'Catálogo guardado. Ya está disponible en los selectores.',
+          true
+        );
+
+        form.reset();
+
+        if (form.id === 'location-setup-form') {
+          document.getElementById('location-party-fields')
+            .replaceChildren();
+        }
+
+        const panel = form.closest('.dn-purchase-panel');
+
+        clearPanelDirty(panel);
+
+        if (panel) {
+          panel.open = false;
+          panel.querySelector('summary').focus({
+            preventScroll: true
+          });
+        }
+
+        try {
+          await loadCatalog();
+        } catch (error) {
+          console.error(error);
+
+          show(
+            'El catálogo se guardó, pero no se pudieron actualizar '
+            + 'los selectores. Recarga la página.'
+          );
+        }
+      } catch (error) {
+        show(error.message);
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+  });
+
+  ['input', 'change'].forEach(eventName => {
+    workspace.addEventListener(eventName, event => {
+      markPanelDirty(
+        event.target.closest('.dn-purchase-panel')
+      );
+    });
+  });
+
+  workspace.querySelectorAll('[data-purchase-open]')
+    .forEach(button => {
       button.addEventListener('click', () => {
         const panel = document.getElementById(
           button.dataset.purchaseOpen
         );
 
-        if (!panel) {
-          console.error(
-            'No existe el panel:',
-            button.dataset.purchaseOpen
-          );
-          return;
-        }
+        if (!panel) return;
+
+        const reduceMotion = window.matchMedia(
+          '(prefers-reduced-motion: reduce)'
+        ).matches;
 
         panel.open = true;
 
-        panel.scrollIntoView({
-          block: 'start',
-          behavior: 'auto'
-        });
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            const summary = panel.querySelector('summary');
+            summary.focus({ preventScroll: true });
 
-        panel.querySelector('summary').focus({
-          preventScroll: true
+            const topbar = document.querySelector(
+              '.dn-admin-topbar'
+            );
+
+            const mobileNav = document.querySelector(
+              '.dn-admin-mobile-nav'
+            );
+
+            const topbarHeight = topbar
+              ? topbar.getBoundingClientRect().height
+              : 0;
+
+            const mobileNavHeight = (
+              mobileNav
+              && getComputedStyle(mobileNav).display !== 'none'
+            )
+              ? mobileNav.getBoundingClientRect().height + 20
+              : 0;
+
+            const usableTop = topbarHeight + 16;
+            const usableBottom =
+              window.innerHeight - mobileNavHeight - 16;
+
+            const usableHeight = Math.max(
+              0,
+              usableBottom - usableTop
+            );
+
+            const bounds = panel.getBoundingClientRect();
+
+            const desiredTop = bounds.height <= usableHeight
+              ? usableTop + (usableHeight - bounds.height) / 2
+              : usableTop;
+
+            window.scrollTo({
+              top: Math.max(
+                0,
+                window.scrollY + bounds.top - desiredTop
+              ),
+              behavior: reduceMotion ? 'instant' : 'smooth'
+            });
+
+            panel.classList.remove(
+              'dn-purchase-panel-highlight'
+            );
+
+            requestAnimationFrame(() => {
+              panel.classList.add(
+                'dn-purchase-panel-highlight'
+              );
+            });
+          });
         });
       });
     });
-    async function refreshPurchaseSummary() {
-  try {
-    const response = await fetch(
-      "{{ url_for('purchases_admin.purchases_admin_page') }}",
-      {
-        headers: {
-          'Accept': 'text/html'
-        },
-        cache: 'no-store'
-      }
-    );
 
-    if (!response.ok) {
-      throw new Error('No fue posible actualizar el resumen.');
-    }
-
-    const html = await response.text();
-
-    const updatedDocument = new DOMParser()
-      .parseFromString(html, 'text/html');
-
-    const currentSummary = document.querySelector(
-      '#purchases-workspace .dn-purchase-metrics'
-    );
-
-    const updatedSummary = updatedDocument.querySelector(
-      '#purchases-workspace .dn-purchase-metrics'
-    );
-
-    if (currentSummary && updatedSummary) {
-      currentSummary.replaceWith(
-        document.importNode(updatedSummary, true)
-      );
-    }
-  } catch (error) {
-    console.error(error);
+  async function initialize() {
+    await Promise.all([
+      loadHistory(),
+      loadCatalog().catch(error => {
+        console.error(error);
+        show(error.message);
+      })
+    ]);
   }
-}
 
-    load();
-  </script>
+  initialize();
+})();
+</script>
 {% endblock %}
