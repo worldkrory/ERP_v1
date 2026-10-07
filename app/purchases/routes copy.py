@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from flask import Blueprint, jsonify, render_template, request
 from flask_login import current_user, login_required
-from sqlalchemy import case, func, or_, select
+from sqlalchemy import or_, select
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.auth.decorators import audit_action, require_role
@@ -108,99 +108,22 @@ def create_supplier_route():
 @audit_action("CREATE_INVENTORY_LOCATION")
 def create_location_route():
     payload = request.get_json(silent=True) or {}
-
     try:
         code = str(payload.get("code") or "").strip().upper()
         name = str(payload.get("name") or "").strip()
-        location_type = str(
-            payload.get("location_type") or "WAREHOUSE"
-        ).strip().upper()
-
-        allowed_types = {
-            "WAREHOUSE",
-            "PROCESSOR",
-            "IN_TRANSIT",
-            "CONSIGNMENT",
-            "CUSTOMER",
-            "SCRAP",
-            "VIRTUAL",
-        }
-
-        if not code or not name:
-            raise ValueError(
-                "El código y el nombre de la ubicación son obligatorios."
-            )
-
-        if location_type not in allowed_types:
-            raise ValueError("El tipo de ubicación no es válido.")
-
-        requires_party = location_type in {
-            "PROCESSOR",
-            "CONSIGNMENT",
-        }
-
-        raw_party_id = payload.get("party_id")
-        party_id = None
-
-        if raw_party_id not in (None, ""):
-            try:
-                party_id = int(raw_party_id)
-            except (TypeError, ValueError):
-                raise ValueError(
-                    "Selecciona un tercero válido."
-                )
-
-            if party_id <= 0:
-                raise ValueError(
-                    "Selecciona un tercero válido."
-                )
-
-            party = db.session.get(Party, party_id)
-
-            if party is None or not party.is_active:
-                raise ValueError(
-                    "El tercero seleccionado no existe o está inactivo."
-                )
-
-        if requires_party and party_id is None:
-            raise ValueError(
-                "Selecciona el tercero responsable de la ubicación "
-                "de maquila o consignación."
-            )
-
-        location = InventoryLocation(
-            code=code,
-            name=name,
-            location_type=location_type,
-            party_id=party_id,
-            notes=payload.get("notes"),
-        )
-
+        location_type = str(payload.get("location_type") or "WAREHOUSE")
+        if not code or not name or location_type not in ("WAREHOUSE", "PROCESSOR", "IN_TRANSIT", "CONSIGNMENT", "CUSTOMER", "SCRAP", "VIRTUAL"):
+            raise ValueError("Código, nombre y tipo de ubicación son obligatorios y válidos.")
+        location = InventoryLocation(code=code, name=name, location_type=location_type, notes=payload.get("notes"))
         db.session.add(location)
         db.session.commit()
-
-        return jsonify({
-            "id": location.id,
-            "code": location.code,
-            "name": location.name,
-            "location_type": location.location_type,
-            "party_id": location.party_id,
-        }), 201
-
-    except SQLAlchemyError:
+        return jsonify({"id": location.id, "code": location.code, "name": location.name}), 201
+    except SQLAlchemyError as e:
+        print("Revisión: ", e)
         db.session.rollback()
-
-        return jsonify({
-            "error": (
-                "No fue posible guardar la ubicación. "
-                "Revisa el código, el tercero y las restricciones "
-                "de la base de datos."
-            )
-        }), 400
-
+        return jsonify({"error": "No fue posible guardar la ubicación. Revisa que el código no esté repetido."}), 400
     except (TypeError, ValueError) as exc:
         db.session.rollback()
-
         return jsonify({"error": str(exc)}), 400
 
 
@@ -472,122 +395,8 @@ def receive_purchase_route(purchase_id: int):
 @login_required
 @require_role("INVENTARIO", "COMPRAS", "ADMIN")
 def purchases_admin_page():
-    return render_template(
-        "purchases_admin.html",
-        today=date.today().isoformat(),
-        metrics=_purchase_metrics(),
-    )
+    return render_template("purchases_admin.html", today=date.today().isoformat())
 
-@purchases_admin_bp.get("/compras/partials/summary")
-@login_required
-@require_role("INVENTARIO", "COMPRAS", "ADMIN")
-def purchase_summary_partial():
-    response = render_template(
-        "partials/_purchase_summary.html",
-        metrics=_purchase_metrics(),
-    )
-
-    return response, 200, {
-        "Cache-Control": "no-store",
-    }
-
-@purchases_admin_bp.get("/compras/partials/location-party")
-@login_required
-@require_role("INVENTARIO", "ADMIN")
-def location_party_field():
-    location_type = str(
-        request.args.get("location_type") or "WAREHOUSE"
-    ).strip().upper()
-
-    requires_party = location_type in {
-        "PROCESSOR",
-        "CONSIGNMENT",
-    }
-
-    parties = []
-
-    if requires_party:
-        parties = db.session.scalars(
-            select(Party)
-            .where(Party.is_active.is_(True))
-            .order_by(Party.legal_name, Party.id)
-        ).all()
-
-    return render_template(
-        "partials/_location_party_field.html",
-        location_type=location_type,
-        requires_party=requires_party,
-        parties=parties,
-    )
-
-def _purchase_metrics() -> dict:
-    today = date.today()
-    month_start = today.replace(day=1)
-
-    if today.month == 12:
-        next_month_start = date(today.year + 1, 1, 1)
-    else:
-        next_month_start = date(
-            today.year,
-            today.month + 1,
-            1,
-        )
-
-    pending_count, received_count = db.session.execute(
-        select(
-            func.count(
-                case(
-                    (Purchase.status == "CONFIRMED", 1)
-                )
-            ),
-            func.count(
-                case(
-                    (Purchase.status == "RECEIVED", 1)
-                )
-            ),
-        )
-    ).one()
-
-    month_count, month_total_cop = db.session.execute(
-        select(
-            func.count(Purchase.id),
-            func.coalesce(
-                func.sum(
-                    case(
-                        (
-                            Purchase.currency == "COP",
-                            Purchase.total,
-                        ),
-                        else_=0,
-                    )
-                ),
-                0,
-            ),
-        )
-        .where(
-            Purchase.purchase_date >= month_start,
-            Purchase.purchase_date < next_month_start,
-            Purchase.status != "CANCELLED",
-        )
-    ).one()
-
-    historical_total_cop = db.session.scalar(
-        select(
-            func.coalesce(func.sum(Purchase.total), 0)
-        )
-        .where(
-            Purchase.currency == "COP",
-            Purchase.status != "CANCELLED",
-        )
-    )
-
-    return {
-        "pending_count": pending_count,
-        "received_count": received_count,
-        "month_count": month_count,
-        "month_total_cop": month_total_cop,
-        "historical_total_cop": historical_total_cop,
-    }
 
 def _supplier_query():
     today = date.today()

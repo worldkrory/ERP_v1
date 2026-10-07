@@ -1,0 +1,72 @@
+<form id="purchase-form" class="dn-card">
+  <header class="dn-card-header">
+    <h2>Documento de compra</h2>
+
+    <span class="dn-section-note">
+      Se guarda confirmada y se recibe después
+    </span>
+  </header>
+
+  <div class="form-body">
+    <div class="fields">
+      <div class="field dn-field">
+        <label for="party">Proveedor / caficultor</label>
+        <select id="party" required></select>
+      </div>
+
+      <div class="field dn-field">
+        <label for="location">Bodega destino</label>
+        <select id="location" required></select>
+      </div>
+
+      <div class="field dn-field">
+        <label for="date">Fecha</label>
+
+        <input
+          id="date"
+          type="date"
+          value="{{ today }}"
+          required
+        >
+      </div>
+
+      <div class="field dn-field">
+        <label for="number">Número interno</label>
+
+        <input
+          id="number"
+          placeholder="Automático"
+        >
+      </div>
+    </div>
+
+    <div class="section-heading-actions">
+      <h3>Líneas</h3>
+
+      <button
+        id="add-line"
+        class="dn-button dn-button-outline"
+        type="button"
+      >
+        + Agregar línea
+      </button>
+    </div>
+
+    <div id="lines"></div>
+
+    <div
+      id="notice"
+      class="notice"
+      role="alert"
+    ></div>
+
+    <div class="form-actions">
+      <button
+        class="dn-button dn-button-primary"
+        type="submit"
+      >
+        Guardar compra
+      </button>
+    </div>
+  </div>
+</form>

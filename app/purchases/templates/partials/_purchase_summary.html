@@ -1,0 +1,40 @@
+<section
+  class="dn-metrics-grid dn-purchase-metrics"
+  aria-label="Resumen de compras"
+>
+  <article class="dn-metric-card">
+    <span class="dn-metric-label">Por recibir</span>
+    <strong>{{ metrics.pending_count }}</strong>
+    <small>Compras confirmadas pendientes de recepción</small>
+  </article>
+
+  <article class="dn-metric-card">
+    <span class="dn-metric-label">Recibidas</span>
+    <strong>{{ metrics.received_count }}</strong>
+    <small>Compras recibidas en todo el historial</small>
+  </article>
+
+  <article class="dn-metric-card">
+    <span class="dn-metric-label">Compras del mes</span>
+    <strong>{{ metrics.month_count }}</strong>
+    <small>Según fecha de compra, sin anuladas</small>
+  </article>
+
+  <article class="dn-metric-card dn-metric-card-money">
+    <span class="dn-metric-label">Comprado este mes</span>
+    <strong>
+      ${{ "{:,.0f}".format(metrics.month_total_cop).replace(",", ".") }}
+    </strong>
+    <small>Total en COP, sin compras anuladas</small>
+  </article>
+
+  <article class="dn-metric-card dn-metric-card-money">
+  <span class="dn-metric-label">Comprado histórico</span>
+
+  <strong>
+    ${{ "{:,.0f}".format(metrics.historical_total_cop).replace(",", ".") }}
+  </strong>
+
+  <small>Compras acumuladas en COP, sin anuladas</small>
+</article>
+</section>

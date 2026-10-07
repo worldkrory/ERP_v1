@@ -1,0 +1,372 @@
+<section class="dn-purchase-catalogs">
+  <div class="dn-purchase-catalog-heading">
+    <h2>Preparar catálogos</h2>
+
+    <span class="helper">
+      Registra aquí los datos que luego aparecerán en la compra
+    </span>
+  </div>
+
+  <div class="dn-purchase-catalog-grid">
+
+    <!-- Proveedor o caficultor -->
+    <details
+      id="catalog-supplier-panel"
+      class="dn-card dn-purchase-panel"
+    >
+      <summary>
+        <span>Proveedor o caficultor</span>
+
+        <span class="dn-purchase-panel-state">
+          <span class="dn-purchase-dirty" hidden>En edición · </span>
+          <span class="dn-purchase-expand">Desplegar</span>
+          <span class="dn-purchase-collapse">Replegar</span>
+        </span>
+      </summary>
+
+      <form
+        class="setup-form"
+        data-endpoint="/api/v1/suppliers"
+      >
+        <div class="field dn-field">
+          <label for="supplier-legal-name">
+            Nombre / razón social
+          </label>
+
+          <input
+            id="supplier-legal-name"
+            name="legal_name"
+            required
+          >
+        </div>
+
+        <div class="field dn-field">
+          <label for="party_type">Tipo de persona</label>
+
+          <select
+            id="party_type"
+            name="party_type"
+            required
+          >
+            <option value="NATURAL">Persona natural</option>
+            <option value="JURIDICA">Empresa</option>
+          </select>
+        </div>
+
+        <div class="field dn-field">
+          <label for="supplier-document">Documento</label>
+
+          <input
+            id="supplier-document"
+            name="document_number"
+            required
+          >
+        </div>
+
+        <label class="check">
+          <input
+            name="is_coffee_grower"
+            type="checkbox"
+          >
+          También es caficultor
+        </label>
+
+        <button
+          type="submit"
+          class="dn-button dn-button-primary"
+        >
+          Guardar proveedor
+        </button>
+      </form>
+    </details>
+
+    <!-- Bodega o ubicación -->
+    <details
+      id="catalog-location-panel"
+      class="dn-card dn-purchase-panel"
+    >
+      <summary>
+        <span>Bodega o ubicación</span>
+
+        <span class="dn-purchase-panel-state">
+          <span class="dn-purchase-dirty" hidden>En edición · </span>
+          <span class="dn-purchase-expand">Desplegar</span>
+          <span class="dn-purchase-collapse">Replegar</span>
+        </span>
+      </summary>
+
+      <form
+        id="location-setup-form"
+        class="setup-form"
+        data-endpoint="/api/v1/inventory/locations"
+      >
+        <div class="field dn-field">
+          <label for="location-code">Código</label>
+
+          <input
+            id="location-code"
+            name="code"
+            placeholder="BODEGA_TUESTE"
+            required
+          >
+        </div>
+
+        <div class="field dn-field">
+          <label for="location-name">Nombre</label>
+
+          <input
+            id="location-name"
+            name="name"
+            required
+          >
+        </div>
+
+        <div class="field dn-field">
+          <label for="location-type">Tipo</label>
+
+          <select
+            id="location-type"
+            name="location_type"
+            hx-get="{{ url_for('purchases_admin.location_party_field') }}"
+            hx-trigger="change"
+            hx-target="#location-party-fields"
+            hx-swap="innerHTML"
+            hx-indicator="#location-party-loading"
+          >
+            <option value="WAREHOUSE">Bodega</option>
+            <option value="PROCESSOR">Maquilador</option>
+            <option value="CONSIGNMENT">Consignación</option>
+            <option value="SCRAP">Merma</option>
+          </select>
+        </div>
+
+        <small
+          id="location-party-loading"
+          class="htmx-indicator"
+          role="status"
+        >
+          Cargando terceros…
+        </small>
+
+        <div
+          id="location-party-fields"
+          aria-live="polite"
+        ></div>
+
+        <button
+          type="submit"
+          class="dn-button dn-button-primary"
+        >
+          Guardar ubicación
+        </button>
+      </form>
+    </details>
+
+    <!-- Producto o insumo -->
+    <details
+      id="catalog-product-panel"
+      class="dn-card dn-purchase-panel"
+    >
+      <summary>
+        <span>Producto o insumo</span>
+
+        <span class="dn-purchase-panel-state">
+          <span class="dn-purchase-dirty" hidden>En edición · </span>
+          <span class="dn-purchase-expand">Desplegar</span>
+          <span class="dn-purchase-collapse">Replegar</span>
+        </span>
+      </summary>
+
+      <form
+        class="setup-form"
+        data-endpoint="/api/v1/products"
+      >
+        <div class="field dn-field">
+          <label for="product-sku">SKU</label>
+
+          <input
+            id="product-sku"
+            name="sku"
+            required
+          >
+        </div>
+
+        <div class="field dn-field">
+          <label for="product-name">Nombre</label>
+
+          <input
+            id="product-name"
+            name="name"
+            required
+          >
+        </div>
+
+        <div class="field dn-field">
+          <label for="product-base-unit">Unidad base</label>
+
+          <select
+            id="product-base-unit"
+            class="unit-options"
+            name="base_unit_id"
+            required
+          ></select>
+        </div>
+
+        <div class="field dn-field">
+          <label for="product-purchase-unit">
+            Unidad de compra
+          </label>
+
+          <select
+            id="product-purchase-unit"
+            class="unit-options"
+            name="purchase_unit_id"
+            required
+          ></select>
+        </div>
+
+        <button
+          type="submit"
+          class="dn-button dn-button-primary"
+        >
+          Guardar producto
+        </button>
+      </form>
+    </details>
+
+    <!-- Nueva unidad -->
+    <details
+      id="catalog-unit-panel"
+      class="dn-card dn-purchase-panel"
+    >
+      <summary>
+        <span>Nueva unidad</span>
+
+        <span class="dn-purchase-panel-state">
+          <span class="dn-purchase-dirty" hidden>En edición · </span>
+          <span class="dn-purchase-expand">Desplegar</span>
+          <span class="dn-purchase-collapse">Replegar</span>
+        </span>
+      </summary>
+
+      <form
+        class="setup-form"
+        data-endpoint="/api/v1/units"
+      >
+        <div class="field dn-field">
+          <label for="unit-code">Código</label>
+
+          <input
+            id="unit-code"
+            name="code"
+            placeholder="BULTO"
+            required
+          >
+        </div>
+
+        <div class="field dn-field">
+          <label for="unit-name">Nombre</label>
+
+          <input
+            id="unit-name"
+            name="name"
+            required
+          >
+        </div>
+
+        <div class="field dn-field">
+          <label for="unit-dimension">Dimensión</label>
+
+          <select
+            id="unit-dimension"
+            name="dimension"
+          >
+            <option value="MASS">Peso</option>
+            <option value="COUNT">Conteo</option>
+            <option value="VOLUME">Volumen</option>
+            <option value="TIME">Tiempo</option>
+          </select>
+        </div>
+
+        <label class="check">
+          <input
+            name="is_base_for_dimension"
+            type="checkbox"
+          >
+          Usar esta medida por defecto.
+        </label>
+
+        <button
+          type="submit"
+          class="dn-button dn-button-primary"
+        >
+          Guardar unidad
+        </button>
+      </form>
+    </details>
+
+    <!-- Conversión de unidades -->
+    <details
+      id="catalog-conversion-panel"
+      class="dn-card dn-purchase-panel"
+    >
+      <summary>
+        <span>Conversión</span>
+
+        <span class="dn-purchase-panel-state">
+          <span class="dn-purchase-dirty" hidden>En edición · </span>
+          <span class="dn-purchase-expand">Desplegar</span>
+          <span class="dn-purchase-collapse">Replegar</span>
+        </span>
+      </summary>
+
+      <form
+        class="setup-form"
+        data-endpoint="/api/v1/units/conversions"
+      >
+        <div class="field dn-field">
+          <label for="conversion-from-unit">Desde</label>
+
+          <select
+            id="conversion-from-unit"
+            class="unit-options"
+            name="from_unit_id"
+            required
+          ></select>
+        </div>
+
+        <div class="field dn-field">
+          <label for="conversion-to-unit">Hacia</label>
+
+          <select
+            id="conversion-to-unit"
+            class="unit-options"
+            name="to_unit_id"
+            required
+          ></select>
+        </div>
+
+        <div class="field dn-field">
+          <label for="conversion-factor">Factor</label>
+
+          <input
+            id="conversion-factor"
+            name="factor"
+            type="number"
+            min="0.0000001"
+            step="any"
+            placeholder="1 unidad = factor"
+            required
+          >
+        </div>
+
+        <button
+          type="submit"
+          class="dn-button dn-button-primary"
+        >
+          Guardar conversión
+        </button>
+      </form>
+    </details>
+
+  </div>

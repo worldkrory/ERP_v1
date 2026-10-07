@@ -1,0 +1,306 @@
+#purchases-workspace {
+  display: grid;
+  gap: 18px;
+}
+
+#purchases-workspace .dn-purchase-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+#purchases-workspace .dn-purchase-help {
+  margin: 0;
+}
+
+#purchases-workspace .dn-purchase-catalog-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+#purchases-workspace .dn-purchase-catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
+}
+
+#purchases-workspace .dn-purchase-panel {
+  min-width: 0;
+  margin: 0;
+  scroll-margin-top: 90px;
+}
+
+#purchases-workspace .dn-purchase-panel > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+  cursor: pointer;
+  list-style: none;
+  color: var(--dn-forest);
+  font-weight: 800;
+}
+
+#purchases-workspace .dn-purchase-panel > summary::-webkit-details-marker {
+  display: none;
+}
+
+#purchases-workspace .dn-purchase-panel > summary:focus-visible {
+  outline: 2px solid var(--dn-earth);
+  outline-offset: -4px;
+}
+
+#purchases-workspace .dn-purchase-panel[open] > summary {
+  border-bottom: 1px solid var(--dn-line);
+}
+
+#purchases-workspace .dn-purchase-panel-state {
+  flex-shrink: 0;
+  color: var(--dn-muted);
+  font-size: .72rem;
+  font-weight: 600;
+}
+
+#purchases-workspace .dn-purchase-collapse {
+  display: none;
+}
+
+#purchases-workspace .dn-purchase-panel[open] > summary .dn-purchase-expand {
+  display: none;
+}
+
+#purchases-workspace .dn-purchase-panel[open] > summary .dn-purchase-collapse {
+  display: inline;
+}
+
+#purchases-workspace .setup-form {
+  padding: 20px;
+}
+
+#purchases-workspace .setup-form > button[type="submit"] {
+  width: 100%;
+  margin-top: 12px;
+}
+
+#purchases-workspace .check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 12px 0;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+#purchases-workspace .check input {
+  width: 18px;
+  min-height: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--dn-forest);
+}
+
+#purchases-workspace #purchase-form {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+#purchases-workspace #purchase-form .form-body {
+  margin: 0;
+  padding: 20px;
+}
+
+#purchases-workspace #lines {
+  margin-top: 16px;
+}
+
+#purchases-workspace .line {
+  display: grid;
+  grid-template-columns:
+    minmax(180px, 2fr)
+    repeat(3, minmax(90px, 1fr))
+    auto;
+  align-items: end;
+  gap: 12px;
+  padding: 16px 0;
+  border-top: 1px solid var(--dn-line);
+}
+
+#purchases-workspace .line .field {
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+#purchases-workspace .line .remove {
+  align-self: end;
+}
+
+#purchases-workspace #purchase-notice-region:empty {
+  display: none;
+}
+
+#purchases-workspace #purchase-notice-region .dn-alert {
+  margin: 0;
+}
+
+@media (max-width: 1100px) {
+  #purchases-workspace .line {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #purchases-workspace .line .product {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 680px) {
+  #purchases-workspace .dn-purchase-catalog-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #purchases-workspace .dn-purchase-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #purchases-workspace .dn-purchase-actions .dn-button-primary {
+    grid-column: 1 / -1;
+  }
+
+  #purchases-workspace .dn-purchase-actions .dn-button {
+    width: 100%;
+  }
+
+  #purchases-workspace .dn-purchase-panel > summary {
+    padding: 16px;
+  }
+
+  #purchases-workspace .setup-form,
+  #purchases-workspace #purchase-form .form-body {
+    padding: 16px;
+  }
+}
+#purchases-workspace .dn-purchase-metrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 0;
+}
+
+#purchases-workspace .dn-purchase-metrics .dn-metric-card {
+  min-height: 118px;
+}
+
+#purchases-workspace .dn-purchase-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+#purchases-workspace .dn-purchase-actions h2 {
+  margin: 0;
+}
+
+#purchases-workspace .dn-purchase-actions p {
+  margin-bottom: 0;
+}
+
+#purchases-workspace .dn-purchase-panel[open] > form {
+  animation: dn-purchase-content-enter .2s ease-out;
+}
+
+#purchases-workspace .dn-purchase-panel-highlight {
+  animation: dn-purchase-panel-highlight .7s ease-out;
+}
+
+@keyframes dn-purchase-content-enter {
+  from {
+    opacity: .65;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dn-purchase-panel-highlight {
+  from {
+    outline: 2px solid var(--dn-earth);
+    outline-offset: 2px;
+  }
+
+  to {
+    outline: 2px solid transparent;
+    outline-offset: 5px;
+  }
+}
+
+@media (max-width: 1000px) {
+  #purchases-workspace .dn-purchase-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  #purchases-workspace .dn-purchase-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  #purchases-workspace .dn-purchase-actions .dn-button {
+    width: 100%;
+  }
+
+  #purchases-workspace .dn-purchase-metrics .dn-metric-card {
+    min-height: 110px;
+    padding: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  #purchases-workspace .dn-purchase-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #purchases-workspace .dn-purchase-panel[open] > form,
+  #purchases-workspace .dn-purchase-panel-highlight {
+    animation: none;
+  }
+}
+#purchases-workspace .dn-purchase-metrics {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+@media (max-width: 1200px) {
+  #purchases-workspace .dn-purchase-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  #purchases-workspace .dn-purchase-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #purchases-workspace .dn-purchase-metrics
+  .dn-metric-card:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 360px) {
+  #purchases-workspace .dn-purchase-metrics {
+    grid-template-columns: 1fr;
+  }
+}
