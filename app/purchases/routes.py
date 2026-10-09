@@ -347,6 +347,9 @@ def list_purchases():
                     if line.product is not None
                     else None
                 ),
+                "quantity": str(line.quantity),
+                "unit_id": line.unit_id,
+                "unit_price": str(line.unit_price),
             }
             for line in purchase.items
         ]

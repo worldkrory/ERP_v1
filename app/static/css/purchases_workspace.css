@@ -519,3 +519,46 @@
     padding: 20px !important;
   }
 }
+/* Producto y cantidad dentro del historial. */
+#purchase-history-region .dn-purchase-product-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+#purchase-history-region .dn-purchase-product-line + .dn-purchase-product-line {
+  margin-top: 10px;
+}
+
+#purchase-history-region .dn-purchase-product-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+#purchase-history-region .dn-purchase-product-quantity {
+  display: inline-flex;
+  align-items: baseline;
+  flex-shrink: 0;
+  gap: 5px;
+  color: var(--dn-muted);
+  font-size: .76rem;
+  white-space: nowrap;
+}
+
+#purchase-history-region .dn-purchase-product-quantity b {
+  color: var(--dn-forest);
+  font-weight: 800;
+}
+
+@media (max-width: 760px) {
+  #purchase-history-region .dn-purchase-product-line {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+
+  #purchase-history-region .dn-purchase-product-quantity {
+    font-size: .82rem;
+  }
+}

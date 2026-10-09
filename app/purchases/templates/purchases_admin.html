@@ -327,15 +327,42 @@
           : [];
 
         const productsHtml = items.length
-          ? items.map(item => `
-              <div>
-                <strong>
-                  ${escapeHtml(
-                    item.product_name || `Producto #${item.product_id}`
-                  )}
-                </strong>
-              </div>
-            `).join('')
+          ? items.map(item => {
+              const productName = item.product_name
+                || `Producto #${item.product_id}`;
+
+              const rawQuantity = item.quantity;
+
+              const hasQuantity = rawQuantity !== null
+                && rawQuantity !== undefined
+                && rawQuantity !== ''
+                && Number.isFinite(Number(rawQuantity));
+
+              const quantityText = hasQuantity
+                ? new Intl.NumberFormat('es-CO', {
+                    maximumFractionDigits: 6
+                  }).format(Number(rawQuantity))
+                : null;
+
+              return `
+                <div class="dn-purchase-product-line">
+                  <strong class="dn-purchase-product-name">
+                    ${escapeHtml(productName)}
+                  </strong>
+
+                  ${
+                    quantityText !== null
+                      ? `
+                        <span class="dn-purchase-product-quantity">
+                          <span>Cantidad:</span>
+                          <b>${escapeHtml(quantityText)}</b>
+                        </span>
+                      `
+                      : ''
+                  }
+                </div>
+              `;
+            }).join('')
           : 'Sin detalle de productos';
 
         const statusClasses = {
