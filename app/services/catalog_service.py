@@ -101,10 +101,10 @@ PUBLIC_COFFEES: dict[str, PublicCoffeeDefinition] = {
             "que conocen la tierra."
         ),
         product_ids=(34, 35),
-        hero_image="img/products/bourbon-rosado/bolsa-frontal.jpg",
+        hero_image="img/products/bourbon-rosado/bolsa-frontal.png",
         gallery=(
             {
-                "src": "img/products/bourbon-rosado/bolsa-frontal.jpg",
+                "src": "img/products/bourbon-rosado/bolsa-frontal.png",
                 "alt": "Bolsa de Bourbon Rosado de Densa Niebla",
             },
         ),
