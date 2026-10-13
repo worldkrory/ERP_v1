@@ -21,11 +21,43 @@
 
     {% set summary = preview.summary %}
 
+    <section class="form-body">
+        <h3>Materias primas de origen</h3>
+
+        <div class="table-wrap">
+            <table>
+            <thead>
+                <tr>
+                <th>Producto</th>
+                <th>Lote</th>
+                <th>Ubicación</th>
+                <th>Consumo</th>
+                <th>Costo / KG</th>
+                <th>Costo asignado</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for source in preview.sources %}
+                <tr>
+                <td>{{ source.product_name or "Origen simulado" }}</td>
+                <td>{{ source.batch_code or "Sin lote real" }}</td>
+                <td>{{ source.location_name or "Simulación" }}</td>
+                <td>{{ source.processed_quantity_base }} kg</td>
+                <td>${{ source.source_unit_cost }}</td>
+                <td>${{ source.source_input_cost }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            </table>
+        </div>
+        </section>
+
     <div class="metrics-grid">
         <article class="metric">
             <span class="metric-label">Insumo origen</span>
             <strong class="metric-value">
-                {{ summary.source_quantity_base }}
+                {{ summary.source_quantity_base }} kg
             </strong>
         </article>
 
@@ -91,7 +123,7 @@
                     <td>${{ summary.cost_per_finished_kg }}</td>
                 </tr>
                 <tr>
-                    <th>Costo por unidad terminada</th>
+                    <th>Costo promedio por paquete</th>
                     <td>${{ summary.cost_per_finished_unit }}</td>
                 </tr>
             </tbody>
@@ -110,25 +142,20 @@
     </section>
     {% endif %}
 
-    <section class="alert alert-info">
-        <strong>Próxima etapa:</strong>
-        la confirmación estará deshabilitada hasta que implementemos el endpoint
-        transaccional que cree la orden, consuma los lotes y genere los lotes
-        terminados.
-    </section>
-
-    <div class="form-actions">
-        <button
-            type="button"
-            class="button button-primary"
-            hx-post="{{ url_for('production.production_confirm_partial') }}"
-            hx-include="#production-form"
-            hx-target="#production-preview"
-            hx-swap="innerHTML"
-            hx-confirm="¿Confirmas la producción {{ preview.order_number }}? Esta acción descontará los insumos seleccionados y creará los lotes terminados en la ubicación destino."
-            hx-disabled-elt="this">
-            Confirmar producción
-        </button>
-    </div>
+    {% if preview.mode != "SIMULATION" %}
+        <div class="form-actions">
+            <button
+                type="button"
+                class="button button-primary"
+                hx-post="{{ url_for('production.production_confirm_partial') }}"
+                hx-include="#production-form"
+                hx-target="#production-preview"
+                hx-swap="innerHTML"
+                hx-confirm="¿Confirmas la producción {{ preview.order_number }}? Esta acción descontará los insumos seleccionados y creará los lotes terminados en la ubicación destino."
+                hx-disabled-elt="this">
+                Confirmar producción
+            </button>
+        </div>
+    {% endif %}
 </section>
 {% endif %}

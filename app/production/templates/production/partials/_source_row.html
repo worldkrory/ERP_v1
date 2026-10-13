@@ -1,0 +1,158 @@
+<section
+  class="production-source-row card card-subtle"
+  data-source-index="{{ row_index }}"
+>
+  <header class="section-heading section-heading-actions">
+    <h3>Origen {{ row_index + 1 }}</h3>
+
+    <button
+      type="button"
+      class="button button-danger"
+      data-remove-source
+    >
+      Quitar origen
+    </button>
+  </header>
+
+  <div class="form-grid">
+    <div class="field">
+      <label for="sources-{{ row_index }}-product_id">
+        Producto origen
+      </label>
+
+      <select
+        id="sources-{{ row_index }}-product_id"
+        name="sources-{{ row_index }}-product_id"
+        required
+        hx-get="{{ url_for('production.production_source_row_batches_partial') }}"
+        hx-trigger="change"
+        hx-include="closest .production-source-row"
+        hx-vals='{"row_index": {{ row_index }}}'
+        hx-target="#source-batches-{{ row_index }}"
+        hx-swap="innerHTML"
+      >
+        <option value="">Selecciona el café de origen</option>
+
+        {% for product in products %}
+        <option value="{{ product.id }}">
+          {{ product.sku }} — {{ product.name }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="sources-{{ row_index }}-location_id">
+        Ubicación de origen
+      </label>
+
+      <select
+        id="sources-{{ row_index }}-location_id"
+        name="sources-{{ row_index }}-location_id"
+        required
+        hx-get="{{ url_for('production.production_source_row_batches_partial') }}"
+        hx-trigger="change"
+        hx-include="closest .production-source-row"
+        hx-vals='{"row_index": {{ row_index }}}'
+        hx-target="#source-batches-{{ row_index }}"
+        hx-swap="innerHTML"
+      >
+        <option value="">Selecciona una ubicación</option>
+
+        {% for location in locations %}
+        <option value="{{ location.id }}">
+          {{ location.code }} — {{ location.name }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div
+      id="source-batches-{{ row_index }}"
+      class="field"
+    >
+      {% with balances=[] %}
+        {% include "production/partials/_source_row_batch_options.html" %}
+      {% endwith %}
+    </div>
+
+    <div class="field">
+      <label for="sources-{{ row_index }}-unit_id">
+        Unidad de entrada
+      </label>
+
+      <select
+        id="sources-{{ row_index }}-unit_id"
+        name="sources-{{ row_index }}-unit_id"
+        required
+      >
+        <option value="">Selecciona KG</option>
+
+        {% for unit in units %}
+          {% if unit.code|upper == "KG" and unit.dimension == "MASS" %}
+          <option value="{{ unit.id }}" selected>
+            {{ unit.name }} ({{ unit.code }})
+          </option>
+          {% endif %}
+        {% endfor %}
+      </select>
+
+      <small>
+        Esta versión utiliza KG como unidad de origen.
+      </small>
+    </div>
+
+    <div class="field">
+      <label for="sources-{{ row_index }}-quantity">
+        Cantidad a procesar
+      </label>
+
+      <input
+        id="sources-{{ row_index }}-quantity"
+        name="sources-{{ row_index }}-quantity"
+        class="production-source-quantity"
+        type="number"
+        min="0.0001"
+        step="0.0001"
+        placeholder="Ej.: 10"
+        required
+      >
+
+      <small>
+        Cantidad de este lote, no el total de la orden.
+      </small>
+    </div>
+
+    <div class="field">
+      <label for="sources-{{ row_index }}-estimated_unit_cost">
+        Costo estimado por KG
+      </label>
+
+      <input
+        id="sources-{{ row_index }}-estimated_unit_cost"
+        name="sources-{{ row_index }}-estimated_unit_cost"
+        type="number"
+        min="0"
+        step="0.0001"
+        placeholder="Solo para simulación"
+      >
+
+      <small>
+        En producción real se utiliza el costo del inventario.
+      </small>
+    </div>
+
+    <div class="field field-full">
+      <label for="sources-{{ row_index }}-notes">
+        Observaciones de este origen
+      </label>
+
+      <input
+        id="sources-{{ row_index }}-notes"
+        name="sources-{{ row_index }}-notes"
+        type="text"
+        placeholder="Compra anterior, caficultor, selección del lote…"
+      >
+    </div>
+  </div>
+</section>

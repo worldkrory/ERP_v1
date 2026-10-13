@@ -167,110 +167,46 @@ Nueva producción | Densa Niebla ERP
     </section>
 
     <section class="card">
-        <div class="section-heading">
+        <div class="section-heading section-heading-actions">
             <div>
-                <p class="eyebrow">Paso 2</p>
-                <h2>Materia prima de origen</h2>
+            <p class="eyebrow">Paso 2</p>
+            <h2>Materia prima de origen</h2>
+
+            <p class="muted">
+                Agrega una línea por lote consumido en esta producción.
+                Cada origen conserva su cantidad, ubicación y costo.
+            </p>
             </div>
+
+            <button
+            type="button"
+            class="button button-secondary"
+            hx-get="{{ url_for('production.production_source_row_partial') }}"
+            hx-target="#production-sources"
+            hx-swap="beforeend"
+            hx-vals='js:{"index": window.dnProductionSourceIndex++}'
+            hx-disabled-elt="this"
+            >
+            + Agregar lote de origen
+            </button>
         </div>
 
-        <div class="form-grid">
-            <div class="field">
-                <label for="source_product_id">Producto origen</label>
-
-                <select
-                    id="source_product_id"
-                    name="source_product_id"
-                    required
-                    hx-get="{{ url_for('production.production_source_batches_partial') }}"
-                    hx-target="#source-batch-container"
-                    hx-swap="innerHTML"
-                    hx-trigger="change"
-                    hx-include="#source_location_id">
-                    <option value="">Selecciona el café de origen</option>
-
-                    {% for product in products %}
-                    <option value="{{ product.id }}">
-                        {{ product.sku }} — {{ product.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="field">
-                <label for="source_location_id">Ubicación de origen</label>
-
-                <select
-                    id="source_location_id"
-                    name="source_location_id"
-                    required
-                    hx-get="{{ url_for('production.production_source_batches_partial') }}"
-                    hx-target="#source-batch-container"
-                    hx-swap="innerHTML"
-                    hx-trigger="change"
-                    hx-include="#source_product_id">
-                    <option value="">Selecciona una ubicación</option>
-
-                    {% for location in locations %}
-                    <option value="{{ location.id }}">
-                        {{ location.code }} — {{ location.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div
-                id="source-batch-container"
-                class="field">
-                {% include "production/partials/_source_batch_options.html" %}
-            </div>
-
-            <div class="field">
-                <label for="source_unit_id">Unidad de entrada</label>
-
-                <select id="source_unit_id" name="source_unit_id">
-                    <option value="">Selecciona una unidad</option>
-
-                    {% for unit in units %}
-                    <option value="{{ unit.id }}">
-                        {{ unit.name }} ({{ unit.code }})
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="field">
-                <label for="source_quantity">Cantidad de entrada</label>
-
-                <input
-                    id="source_quantity"
-                    name="source_quantity"
-                    type="number"
-                    min="0.0001"
-                    step="0.0001"
-                    placeholder="Ej.: 67.5000"
-                    required>
-            </div>
-
-            <div class="field">
-                <label for="source_quantity_base">Cantidad base</label>
-
-                <input
-                    id="source_quantity_base"
-                    name="source_quantity_base"
-                    type="number"
-                    min="0.0001"
-                    step="0.0001"
-                    placeholder="Ej.: 67.50"
-                    required>
-
-                <small>
-                    Para pergamino almacenado en KG, normalmente coincide con
-                    la cantidad de entrada.
-                </small>
-            </div>
+        <div class="form-body">
+            <p
+            id="production-source-summary"
+            class="muted"
+            aria-live="polite"
+            >
+            1 origen · Total: 0 kg
+            </p>
         </div>
-    </section>
+
+        <div id="production-sources">
+            {% with row_index=0 %}
+            {% include "production/partials/_source_row.html" %}
+            {% endwith %}
+        </div>
+        </section>
 
     <section class="card">
         <div class="section-heading section-heading-actions">
@@ -418,19 +354,6 @@ Nueva producción | Densa Niebla ERP
         </div>
 
         <div class="form-grid">
-            <div class="field">
-                <label for="estimated_source_unit_cost">
-                    Costo estimado de origen
-                </label>
-
-                <input
-                    id="estimated_source_unit_cost"
-                    name="estimated_source_unit_cost"
-                    type="number"
-                    min="0"
-                    step="0.0001"
-                    placeholder="Solo para simulaciones">
-            </div>
 
             <div class="field field-full">
                 <label for="notes">Notas de la producción</label>
@@ -468,4 +391,101 @@ Nueva producción | Densa Niebla ERP
 </div>
 
 {% endcall %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(() => {
+  const form = document.getElementById('production-form');
+  const container = document.getElementById('production-sources');
+  const summary = document.getElementById('production-source-summary');
+  const preview = document.getElementById('production-preview');
+
+  window.dnProductionSourceIndex = 1;
+
+  function invalidatePreview() {
+    if (!preview.children.length) return;
+
+    preview.replaceChildren();
+
+    const message = document.createElement('p');
+    message.className = 'muted';
+    message.textContent =
+      'Los datos cambiaron. Calcula nuevamente el preview antes de confirmar.';
+
+    preview.appendChild(message);
+  }
+
+  function updateSourceSummary() {
+    const rows = container.querySelectorAll(
+      '.production-source-row'
+    );
+
+    let total = 0;
+
+    rows.forEach(row => {
+      const input = row.querySelector(
+        '.production-source-quantity'
+      );
+
+      const value = Number(input.value);
+
+      if (Number.isFinite(value) && value > 0) {
+        total += value;
+      }
+
+      const removeButton = row.querySelector(
+        '[data-remove-source]'
+      );
+
+      removeButton.disabled = rows.length <= 1;
+    });
+
+    const formatted = new Intl.NumberFormat('es-CO', {
+      maximumFractionDigits: 4
+    }).format(total);
+
+    summary.textContent =
+      `${rows.length} ${rows.length === 1 ? 'origen' : 'orígenes'}`
+      + ` · Total: ${formatted} kg`;
+  }
+
+  container.addEventListener('click', event => {
+    const button = event.target.closest('[data-remove-source]');
+
+    if (!button || button.disabled) return;
+
+    const row = button.closest('.production-source-row');
+
+    row.remove();
+
+    updateSourceSummary();
+    invalidatePreview();
+  });
+
+  form.addEventListener('input', () => {
+    updateSourceSummary();
+    invalidatePreview();
+  });
+
+  form.addEventListener('change', () => {
+    updateSourceSummary();
+    invalidatePreview();
+  });
+
+  document.body.addEventListener('htmx:afterSwap', event => {
+    const target = event.detail.target;
+
+    if (
+      target === container
+      || container.contains(target)
+    ) {
+      updateSourceSummary();
+      invalidatePreview();
+    }
+  });
+
+  updateSourceSummary();
+})();
+</script>
 {% endblock %}

@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime
-from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from decimal import Decimal, InvalidOperation, ROUND_DOWN, ROUND_HALF_UP
 from typing import Any, Literal, Sequence
+from app.models.unit import UnitOfMeasure
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
@@ -123,6 +124,20 @@ class ProductionInputPreviewRequest:
     estimated_unit_cost: Decimal | None = None
     notes: str | None = None
 
+@dataclass(frozen=True)
+class ProductionSourcePreviewRequest:
+    """Materia prima de origen de una producción."""
+
+    product_id: int | None
+    batch_id: int | None
+    location_id: int | None
+
+    quantity: Decimal
+    unit_id: int | None
+    quantity_base: Decimal
+
+    estimated_unit_cost: Decimal | None = None
+    notes: str | None = None
 
 @dataclass(frozen=True)
 class ProductionPreviewRequest:
@@ -156,6 +171,7 @@ class ProductionPreviewRequest:
     currency: str = "COP"
     notes: str | None = None
     historical_reconstruction: bool = False
+    sources: tuple[ProductionSourcePreviewRequest, ...] = ()
 
 
 def _decimal(
@@ -899,6 +915,301 @@ def historical_microlot_preview(payload: dict[str, Any] | None) -> dict[str, Any
         "warnings": warnings,
     }
 
+def _production_source_requests(
+    request: ProductionPreviewRequest,
+) -> tuple[ProductionSourcePreviewRequest, ...]:
+    if request.sources:
+        return request.sources
+
+    return (
+        ProductionSourcePreviewRequest(
+            product_id=request.source_product_id,
+            batch_id=request.source_batch_id,
+            location_id=request.source_location_id,
+            quantity=request.source_quantity,
+            unit_id=request.source_unit_id,
+            quantity_base=request.source_quantity_base,
+            estimated_unit_cost=request.estimated_source_unit_cost,
+        ),
+    )
+
+
+def _resolve_production_sources(
+    session: Session,
+    request: ProductionPreviewRequest,
+    *,
+    lock_balances: bool = False,
+) -> list[dict[str, Any]]:
+    requests = _production_source_requests(request)
+    results: list[dict[str, Any]] = []
+    seen_batches: set[int] = set()
+
+    # Orden estable para adquirir bloqueos de inventario.
+    ordered_requests = sorted(
+        requests,
+        key=lambda item: (
+            item.product_id or 0,
+            item.batch_id or 0,
+            item.location_id or 0,
+        ),
+    )
+
+    for source in ordered_requests:
+        quantity = _preview_decimal(
+            source.quantity,
+            "cantidad de materia prima",
+            allow_zero=False,
+        )
+        quantity_base = _preview_decimal(
+            source.quantity_base,
+            "cantidad base de materia prima",
+            allow_zero=False,
+        )
+
+        if not quantity.is_finite() or not quantity_base.is_finite():
+            raise ProductionPreviewValidationError(
+                "Las cantidades de origen deben ser números finitos."
+            )
+
+        quantity = _quantity(quantity)
+        quantity_base = _quantity(quantity_base)
+
+        if quantity <= ZERO or quantity_base <= ZERO:
+            raise ProductionPreviewValidationError(
+                "La cantidad de origen debe ser positiva "
+                "con la precisión de inventario."
+            )
+
+        # Esta primera versión trabaja con origen en KG.
+        if quantity != quantity_base:
+            raise ProductionPreviewValidationError(
+                "Esta versión requiere origen en KG: "
+                "cantidad y cantidad base deben coincidir."
+            )
+
+        product = None
+        batch = None
+        location = None
+        balance = None
+        unit_id = source.unit_id
+
+        if request.mode != "SIMULATION":
+            product = _preview_required_record(
+                session, Product, source.product_id, "el producto origen"
+            )
+            batch = _preview_required_record(
+                session, Batch, source.batch_id, "el lote origen"
+            )
+            location = _preview_required_record(
+                session,
+                InventoryLocation,
+                source.location_id,
+                "la ubicación origen",
+            )
+
+            if batch.product_id != product.id:
+                raise ProductionPreviewValidationError(
+                    f"El lote '{batch.batch_code}' no pertenece "
+                    f"al producto '{product.name}'."
+                )
+
+            if batch.id in seen_batches:
+                raise ProductionPreviewValidationError(
+                    f"El lote '{batch.batch_code}' está repetido. "
+                    "Usa una sola línea por lote de origen."
+                )
+
+            seen_batches.add(batch.id)
+
+            unit_id = unit_id or product.base_unit_id
+            unit = _preview_required_record(
+                session, UnitOfMeasure, unit_id, "la unidad de origen"
+            )
+
+            if (
+                unit.code.upper() != "KG"
+                or unit.dimension != "MASS"
+                or unit_id != product.base_unit_id
+            ):
+                raise ProductionPreviewValidationError(
+                    f"'{product.name}' debe utilizar KG "
+                    "como unidad base en esta versión."
+                )
+
+            statement = select(InventoryBalance).where(
+                InventoryBalance.product_id == product.id,
+                InventoryBalance.batch_id == batch.id,
+                InventoryBalance.location_id == location.id,
+            )
+
+            if lock_balances:
+                statement = (
+                    statement
+                    .with_for_update()
+                    .execution_options(populate_existing=True)
+                )
+
+            balance = session.scalar(statement)
+
+            if balance is None:
+                raise ProductionPreviewValidationError(
+                    f"No existe saldo del lote '{batch.batch_code}' "
+                    f"en '{location.name}'."
+                )
+
+            if request.mode == "REAL" or lock_balances:
+                if batch.status != "ACTIVE":
+                    raise ProductionPreviewValidationError(
+                        f"El lote '{batch.batch_code}' no está activo."
+                    )
+
+                if quantity_base > Decimal(balance.quantity_base):
+                    raise ProductionPreviewValidationError(
+                        f"El lote '{batch.batch_code}' no tiene saldo "
+                        "suficiente para el consumo solicitado."
+                    )
+
+            unit_cost = Decimal(balance.average_unit_cost)
+
+        else:
+            # Compatibilidad con las simulaciones anteriores,
+            # cuyo contrato también expresa el origen en KG.
+            unit_cost = _preview_decimal(
+                source.estimated_unit_cost,
+                "costo unitario estimado del origen",
+                allow_zero=True,
+            )
+
+            if unit_id is not None:
+                unit = _preview_required_record(
+                    session,
+                    UnitOfMeasure,
+                    unit_id,
+                    "la unidad de origen",
+                )
+
+                if unit.code.upper() != "KG" or unit.dimension != "MASS":
+                    raise ProductionPreviewValidationError(
+                        "La simulación de origen debe usar KG."
+                    )
+
+        if not unit_cost.is_finite() or unit_cost < ZERO:
+            raise ProductionPreviewValidationError(
+                "El costo del origen debe ser finito y no negativo."
+            )
+
+        results.append({
+            "product": product,
+            "batch": batch,
+            "location": location,
+            "balance": balance,
+            "quantity": quantity,
+            "quantity_base": quantity_base,
+            "unit_id": unit_id,
+            "unit_cost": unit_cost,
+            "line_cost": _money(quantity_base * unit_cost),
+            "notes": source.notes,
+        })
+
+    return results
+
+
+def _serialize_production_source(
+    source: dict[str, Any],
+) -> dict[str, Any]:
+    product = source["product"]
+    batch = source["batch"]
+    location = source["location"]
+    balance = source["balance"]
+
+    return {
+        "product_id": product.id if product else None,
+        "product_name": product.name if product else None,
+        "batch_id": batch.id if batch else None,
+        "batch_code": batch.batch_code if batch else None,
+        "location_id": location.id if location else None,
+        "location_name": location.name if location else None,
+        "quantity": _serialize_decimal(source["quantity"]),
+        "unit_id": source["unit_id"],
+        "processed_quantity_base": _serialize_decimal(
+            source["quantity_base"]
+        ),
+        "available_quantity_base": (
+            _serialize_decimal(_quantity(Decimal(balance.quantity_base)))
+            if balance is not None
+            else None
+        ),
+        "source_unit_cost": _serialize_decimal(source["unit_cost"]),
+        "source_input_cost": _serialize_decimal(source["line_cost"]),
+        "notes": source["notes"],
+    }
+
+
+def _split_production_amount(
+    total: Decimal,
+    weights: Sequence[Decimal],
+    *,
+    quantum: Decimal = QUANTITY_QUANTUM,
+) -> list[Decimal]:
+    if not weights or any(weight <= ZERO for weight in weights):
+        raise ProductionConfirmationError(
+            "No se puede distribuir un importe sin pesos positivos."
+        )
+
+    weight_total = sum(weights, ZERO)
+    normalized_total = total.quantize(
+        quantum,
+        rounding=ROUND_HALF_UP,
+    )
+
+    parts: list[Decimal] = []
+    allocated = ZERO
+
+    for index, weight in enumerate(weights):
+        if index == len(weights) - 1:
+            part = normalized_total - allocated
+        else:
+            part = (
+                normalized_total * weight / weight_total
+            ).quantize(
+                quantum,
+                rounding=ROUND_DOWN,
+            )
+            allocated += part
+
+        parts.append(part)
+
+    return parts
+
+
+def _common_batch_origin(
+    sources: list[dict[str, Any]],
+) -> dict[str, Any]:
+    fields = (
+        "origin_party_id",
+        "origin_address_id",
+        "farm_name",
+        "municipality_name",
+        "harvest_year",
+        "harvest_period",
+    )
+
+    result = {}
+
+    for field in fields:
+        values = [
+            getattr(source["batch"], field)
+            for source in sources
+        ]
+
+        result[field] = (
+            values[0]
+            if all(value == values[0] for value in values)
+            else None
+        )
+
+    return result
+
 def preview_production(
     session: Session,
     request: ProductionPreviewRequest,
@@ -928,47 +1239,30 @@ def preview_production(
             "Debes registrar al menos un producto de salida."
         )
 
-    source_product = None
-    source_batch = None
-    source_location = None
-    source_balance = None
-    source_unit_cost = ZERO
+    source_rows = _resolve_production_sources(
+        session,
+        request,
+    )
 
-    if request.mode != "SIMULATION":
-        source_product = _preview_required_record(
-            session,
-            Product,
-            request.source_product_id,
-            "el producto origen",
-        )
-        source_batch = _preview_required_record(
-            session,
-            Batch,
-            request.source_batch_id,
-            "el lote origen",
-        )
-        source_location = _preview_required_record(
-            session,
-            InventoryLocation,
-            request.source_location_id,
-            "la ubicación origen",
-        )
+    source_quantity_base = sum(
+        (source["quantity_base"] for source in source_rows),
+        ZERO,
+    )
 
-        if source_batch.product_id != source_product.id:
-            raise ProductionPreviewValidationError(
-                "El lote origen no pertenece al producto origen."
-            )
+    source_input_cost = _money(sum(
+        (source["line_cost"] for source in source_rows),
+        ZERO,
+    ))
 
-        source_balance = _preview_source_balance(
-            session,
-            product_id=source_product.id,
-            batch_id=source_batch.id,
-            location_id=source_location.id,
-        )
+    source_unit_cost = _safe_ratio(
+        source_input_cost,
+        source_quantity_base,
+    )
 
-        source_unit_cost = Decimal(source_balance.average_unit_cost)
-
-    process = None
+    serialized_sources = [
+        _serialize_production_source(source)
+        for source in source_rows
+    ]
     executor = None
     processor_location = None
     destination_location = None
@@ -1026,32 +1320,6 @@ def preview_production(
                 "La producción REAL necesita ubicación destino."
             )
 
-    source_quantity_base = _preview_decimal(
-        request.source_quantity_base,
-        "cantidad base del insumo origen",
-        allow_zero=False,
-    )
-
-    if source_balance is not None:
-        available_source = Decimal(source_balance.quantity_base)
-
-        if request.mode == "REAL" and source_quantity_base > available_source:
-            raise ProductionPreviewValidationError(
-                "La cantidad a procesar supera el saldo del lote origen."
-            )
-
-        source_input_cost = _money(
-            source_quantity_base * source_unit_cost
-        )
-    else:
-        source_unit_cost = _preview_decimal(
-            request.estimated_source_unit_cost,
-            "costo unitario estimado del insumo",
-            allow_zero=True,
-        )
-        source_input_cost = _money(
-            source_quantity_base * source_unit_cost
-        )
 
     serialized_outputs: list[dict[str, Any]] = []
     output_weight_kg = ZERO
@@ -1144,6 +1412,31 @@ def preview_production(
             allow_zero=False,
         )
 
+        waste_unit = _preview_required_record(
+            session,
+            UnitOfMeasure,
+            waste.unit_id,
+            "la unidad de merma",
+        )
+
+        if (
+            waste_unit.code.upper() != "KG"
+            or waste_unit.dimension != "MASS"
+        ):
+            raise ProductionPreviewValidationError(
+                "Esta versión requiere registrar la merma en KG."
+            )
+
+        if not quantity.is_finite() or not quantity_base.is_finite():
+            raise ProductionPreviewValidationError(
+                "Las cantidades de merma deben ser finitas."
+            )
+
+        if _quantity(quantity) != _quantity(quantity_base):
+            raise ProductionPreviewValidationError(
+                "La cantidad y cantidad base de merma deben coincidir en KG."
+            )
+
         waste_quantity_base += quantity_base
 
         serialized_wastes.append(
@@ -1195,6 +1488,18 @@ def preview_production(
             material.location_id,
             "la ubicación de un insumo",
         )
+
+        source_batch_ids = {
+            source["batch"].id
+            for source in source_rows
+            if source["batch"] is not None
+        }
+
+        if material.batch_id in source_batch_ids:
+            raise ProductionPreviewValidationError(
+                "Un lote de materia prima no puede registrarse también "
+                "como empaque o insumo adicional."
+            )
 
         quantity = _preview_decimal(
             material.quantity,
@@ -1367,26 +1672,25 @@ def preview_production(
         "mode": request.mode,
         "historical_reconstruction": request.historical_reconstruction,
         "order_number": request.order_number.strip(),
-        "source": {
-            "product_id": source_product.id if source_product else None,
-            "product_name": source_product.name if source_product else None,
-            "batch_id": source_batch.id if source_batch else None,
-            "batch_code": source_batch.batch_code if source_batch else None,
-            "location_id": source_location.id if source_location else None,
-            "location_name": source_location.name if source_location else None,
-            "available_quantity_base": (
-                _serialize_decimal(
-                    _quantity(Decimal(source_balance.quantity_base))
-                )
-                if source_balance
-                else None
-            ),
-            "processed_quantity_base": _serialize_decimal(
-                _quantity(source_quantity_base)
-            ),
-            "source_unit_cost": _serialize_decimal(source_unit_cost),
-            "source_input_cost": _serialize_decimal(source_input_cost),
-        },
+        "sources": serialized_sources,
+        "source": (
+            serialized_sources[0]
+            if len(serialized_sources) == 1
+            else {
+                "product_id": None,
+                "product_name": "Múltiples orígenes",
+                "batch_id": None,
+                "batch_code": None,
+                "location_id": None,
+                "location_name": None,
+                "available_quantity_base": None,
+                "processed_quantity_base": _serialize_decimal(
+                    _quantity(source_quantity_base)
+                ),
+                "source_unit_cost": _serialize_decimal(source_unit_cost),
+                "source_input_cost": _serialize_decimal(source_input_cost),
+            }
+        ),
         "processor": {
             "process_id": process.id if process else None,
             "process_name": process.name if process else None,
@@ -1521,29 +1825,45 @@ def _validate_confirmation_request(
 
     if abs(difference) > Decimal("0.0001"):
         raise ProductionConfirmationError(
-            "No se puede confirmar la producción porque existe una "
-            "diferencia de masa sin clasificar."
+            "No se puede confirmar la producción porque existe "
+            "una diferencia de masa sin clasificar."
         )
 
     if not request.destination_location_id:
         raise ProductionConfirmationError(
-            "Debes seleccionar una ubicación destino para el producto terminado."
+            "Debes seleccionar una ubicación destino."
         )
 
-    if not request.source_product_id:
+    sources = preview.get("sources") or []
+
+    if not sources:
         raise ProductionConfirmationError(
-            "Debes seleccionar el producto origen."
+            "Debes registrar al menos un origen."
         )
 
-    if not request.source_batch_id:
-        raise ProductionConfirmationError(
-            "Debes seleccionar el lote origen."
-        )
+    for index, source in enumerate(sources, start=1):
+        if not all((
+            source.get("product_id"),
+            source.get("batch_id"),
+            source.get("location_id"),
+            source.get("unit_id"),
+        )):
+            raise ProductionConfirmationError(
+                f"El origen #{index} necesita producto, lote, "
+                "ubicación y unidad."
+            )
 
-    if not request.source_location_id:
-        raise ProductionConfirmationError(
-            "Debes seleccionar la ubicación origen."
-        )
+        available = source.get("available_quantity_base")
+
+        if available is None:
+            raise ProductionConfirmationError(
+                f"No se pudo verificar el saldo del origen #{index}."
+            )
+
+        if Decimal(source["processed_quantity_base"]) > Decimal(available):
+            raise ProductionConfirmationError(
+                f"El origen #{index} no tiene saldo suficiente."
+            )
 
     if request.mode == "REAL":
         missing = []
@@ -1559,7 +1879,9 @@ def _validate_confirmation_request(
 
         if missing:
             raise ProductionConfirmationError(
-                "La producción REAL requiere: " + ", ".join(missing) + "."
+                "La producción REAL requiere: "
+                + ", ".join(missing)
+                + "."
             )
 
 
@@ -1624,20 +1946,29 @@ def confirm_production(
     created_by_id: int | None = None,
 ) -> dict[str, Any]:
     """
-    Confirma una producción genérica usando el mismo contrato del preview.
+    Confirma una producción con uno o varios orígenes.
 
-    Esta función:
-    - Recalcula y revalida el preview.
-    - Crea orden, ejecución, inputs, outputs, merma y costos.
-    - Crea lotes terminados y linaje.
-    - Genera movimientos OUT_PRODUCTION e IN_PRODUCTION.
-    - Actualiza balances exclusivamente mediante inventory_service.
-
-    No hace commit ni rollback. La ruta HTTP controla el límite transaccional.
+    Revalida el preview y crea los registros y movimientos.
+    No hace commit ni rollback: la ruta controla la transacción.
     """
 
+    if request.mode not in ("REAL", "HISTORICAL"):
+        raise ProductionConfirmationError(
+            "Las simulaciones no pueden confirmar inventario."
+        )
+
     try:
-        preview = preview_production(session, request)
+        source_rows = _resolve_production_sources(
+            session,
+            request,
+            lock_balances=True,
+        )
+
+        preview = preview_production(
+            session,
+            request,
+        )
+
     except ProductionPreviewValidationError as exc:
         raise ProductionConfirmationError(str(exc)) from exc
 
@@ -1668,40 +1999,23 @@ def confirm_production(
                 "ya existe."
             )
 
-    source_product = session.get(Product, request.source_product_id)
-    source_batch = session.get(Batch, request.source_batch_id)
-    source_location = session.get(
-        InventoryLocation,
-        request.source_location_id,
-    )
     destination_location = session.get(
         InventoryLocation,
         request.destination_location_id,
     )
 
-    if (
-        source_product is None
-        or source_batch is None
-        or source_location is None
-        or destination_location is None
-    ):
+    if destination_location is None:
         raise ProductionConfirmationError(
-            "No fue posible recuperar los datos de origen o destino."
+            "No fue posible recuperar la ubicación destino."
         )
 
-    occurred_at = _confirmation_datetime(request)
-    produced_on = _confirmation_date(request)
+    source_quantity_base = sum(
+        (source["quantity_base"] for source in source_rows),
+        ZERO,
+    )
 
-    source_quantity = _preview_decimal(
-        request.source_quantity,
-        "cantidad del insumo origen",
-        allow_zero=False,
-    )
-    source_quantity_base = _preview_decimal(
-        request.source_quantity_base,
-        "cantidad base del insumo origen",
-        allow_zero=False,
-    )
+    origin_snapshot = _common_batch_origin(source_rows)
+    produced_on = _confirmation_date(request)
 
     allocated_outputs = _allocate_confirmation_costs(preview)
 
@@ -1796,39 +2110,46 @@ def confirm_production(
         session.add(execution)
         session.flush()
 
-    source_input = ProductionInput(
-        production_order_id=order.id,
-        process_execution_id=execution.id if execution else None,
-        product_id=source_product.id,
-        batch_id=source_batch.id,
-        quantity=source_quantity,
-        unit_id=request.source_unit_id or source_product.base_unit_id,
-        quantity_base=source_quantity_base,
-        unit_cost=Decimal(preview["source"]["source_unit_cost"]),
-        total_cost=Decimal(preview["source"]["source_input_cost"]),
-        currency=request.currency or "COP",
-        consumed_at=occurred_at,
-        notes="Insumo origen de la producción.",
-    )
-    session.add(source_input)
-    session.flush()
+    input_records: list[ProductionInput] = []
+    source_movement_ids: list[int] = []
 
-    source_movement = create_production_input_movement(
-        session,
-        product_id=source_product.id,
-        location_id=source_location.id,
-        quantity=source_quantity,
-        unit_id=request.source_unit_id or source_product.base_unit_id,
-        quantity_base=source_quantity_base,
-        batch_id=source_batch.id,
-        reference_id=source_input.id,
-        occurred_at=occurred_at,
-        created_by_id=created_by_id,
-        notes="Consumo de lote origen en producción.",
-    )
-    source_input.movement_id = source_movement.id
+    for source in source_rows:
+        source_input = ProductionInput(
+            production_order_id=order.id,
+            process_execution_id=execution.id if execution else None,
+            product_id=source["product"].id,
+            batch_id=source["batch"].id,
+            quantity=source["quantity"],
+            unit_id=source["unit_id"],
+            quantity_base=source["quantity_base"],
+            unit_cost=source["unit_cost"],
+            total_cost=source["line_cost"],
+            currency=request.currency or "COP",
+            consumed_at=occurred_at,
+            notes=source["notes"] or "Materia prima de origen.",
+        )
 
-    input_records: list[ProductionInput] = [source_input]
+        session.add(source_input)
+        session.flush()
+
+        movement = create_production_input_movement(
+            session,
+            product_id=source["product"].id,
+            location_id=source["location"].id,
+            quantity=source["quantity"],
+            unit_id=source["unit_id"],
+            quantity_base=source["quantity_base"],
+            batch_id=source["batch"].id,
+            reference_id=source_input.id,
+            occurred_at=occurred_at,
+            created_by_id=created_by_id,
+            notes=source_input.notes,
+        )
+
+        source_input.movement_id = movement.id
+
+        input_records.append(source_input)
+        source_movement_ids.append(movement.id)
 
     for material in preview["inputs"]:
         production_input = ProductionInput(
@@ -1867,29 +2188,54 @@ def confirm_production(
     waste_records: list[ProductionWaste] = []
 
     for waste in preview["wastes"]:
-        quantity = Decimal(waste["quantity"])
-        quantity_base = Decimal(waste["quantity_base"])
+        source_weights = [
+        source["quantity_base"]
+        for source in source_rows
+    ]
 
-        waste_record = ProductionWaste(
-            production_order_id=order.id,
-            process_execution_id=execution.id if execution else None,
-            product_id=source_product.id,
-            batch_id=source_batch.id,
-            quantity=quantity,
-            unit_id=int(waste["unit_id"]),
-            quantity_base=quantity_base,
-            waste_type=waste["waste_type"],
-            is_expected=bool(waste["is_expected"]),
-            is_recoverable=bool(waste["is_recoverable"]),
-            recovered_product_id=waste["recovered_product_id"],
-            cost_treatment=waste["cost_treatment"],
-            cost_amount=Decimal("0"),
-            occurred_at=occurred_at,
-            notes=waste.get("notes"),
+    for waste in preview["wastes"]:
+        allocations = _split_production_amount(
+            Decimal(waste["quantity_base"]),
+            source_weights,
         )
-        session.add(waste_record)
-        session.flush()
-        waste_records.append(waste_record)
+
+        for source, allocated_quantity in zip(
+            source_rows,
+            allocations,
+        ):
+            if allocated_quantity <= ZERO:
+                continue
+
+            allocation_note = waste.get("notes") or ""
+
+            if len(source_rows) > 1:
+                allocation_note = (
+                    allocation_note
+                    + " | Merma distribuida proporcionalmente "
+                    "por KG de origen; no es una medición individual."
+                ).strip(" |")
+
+            waste_record = ProductionWaste(
+                production_order_id=order.id,
+                process_execution_id=execution.id if execution else None,
+                product_id=source["product"].id,
+                batch_id=source["batch"].id,
+                quantity=allocated_quantity,
+                unit_id=int(waste["unit_id"]),
+                quantity_base=allocated_quantity,
+                waste_type=waste["waste_type"],
+                is_expected=bool(waste["is_expected"]),
+                is_recoverable=bool(waste["is_recoverable"]),
+                recovered_product_id=waste["recovered_product_id"],
+                cost_treatment=waste["cost_treatment"],
+                cost_amount=Decimal("0"),
+                occurred_at=occurred_at,
+                notes=allocation_note or None,
+            )
+
+            session.add(waste_record)
+            session.flush()
+            waste_records.append(waste_record)
 
     cost_records: list[ProductionCost] = []
 
@@ -1924,7 +2270,29 @@ def confirm_production(
 
     output_records: list[dict[str, Any]] = []
 
-    for output_data in allocated_outputs:
+    output_weights = [
+        output["net_weight_kg"]
+        for output in allocated_outputs
+    ]
+
+    source_output_allocations = [
+        _split_production_amount(
+            source["quantity_base"],
+            output_weights,
+        )
+        for source in source_rows
+    ]
+
+    source_contributions = _split_production_amount(
+        Decimal("1"),
+        [
+            source["quantity_base"]
+            for source in source_rows
+        ],
+        quantum=PERCENT_QUANTUM,
+    )
+
+    for output_index, output_data in enumerate(allocated_outputs):
         output_product = session.get(
             Product,
             output_data["product_id"],
@@ -1939,12 +2307,12 @@ def confirm_production(
             batch_code=output_data["batch_code"],
             product_id=output_product.id,
             batch_type="PRODUCED",
-            origin_party_id=source_batch.origin_party_id,
-            origin_address_id=source_batch.origin_address_id,
-            farm_name=source_batch.farm_name,
-            municipality_name=source_batch.municipality_name,
-            harvest_year=source_batch.harvest_year,
-            harvest_period=source_batch.harvest_period,
+            origin_party_id=origin_snapshot["origin_party_id"],
+            origin_address_id=origin_snapshot["origin_address_id"],
+            farm_name=origin_snapshot["farm_name"],
+            municipality_name=origin_snapshot["municipality_name"],
+            harvest_year=origin_snapshot["harvest_year"],
+            harvest_period=origin_snapshot["harvest_period"],
             production_order_id=order.id,
             initial_quantity=output_data["quantity"],
             unit_id=output_data["unit_id"],
@@ -1999,24 +2367,31 @@ def confirm_production(
         )
         output_record.movement_id = output_movement.id
 
-        contribution_pct = Decimal(
+        output_allocation_pct = Decimal(
             output_data["cost_allocation_pct"]
         )
 
-        lineage = BatchLineage(
-            child_batch_id=finished_batch.id,
-            parent_batch_id=source_batch.id,
-            quantity_consumed=(
-                source_quantity_base * contribution_pct
-            ).quantize(
-                QUANTITY_QUANTUM,
-                rounding=ROUND_HALF_UP,
-            ),
-            unit_id=source_product.base_unit_id,
-            contribution_pct=contribution_pct,
-            production_order_id=order.id,
-        )
-        session.add(lineage)
+        for source_index, source in enumerate(source_rows):
+            attributed_quantity = source_output_allocations[
+                source_index
+            ][output_index]
+
+            if attributed_quantity <= ZERO:
+                raise ProductionConfirmationError(
+                    "Una contribución de origen queda por debajo de "
+                    "la precisión de inventario. Revisa las cantidades."
+                )
+
+            lineage = BatchLineage(
+                child_batch_id=finished_batch.id,
+                parent_batch_id=source["batch"].id,
+                quantity_consumed=attributed_quantity,
+                unit_id=source["unit_id"],
+                contribution_pct=source_contributions[source_index],
+                production_order_id=order.id,
+            )
+
+            session.add(lineage)
 
         output_records.append(
             {
@@ -2038,7 +2413,13 @@ def confirm_production(
         "total_cost": preview["summary"]["total_cost"],
         "destination_location_id": destination_location.id,
         "destination_location_name": destination_location.name,
-        "source_movement_id": source_movement.id,
+        "source_movement_id": (
+            source_movement_ids[0]
+            if len(source_movement_ids) == 1
+            else None
+        ),
+        "source_movement_ids": source_movement_ids,
+        "source_count": len(source_rows),
         "input_count": len(input_records),
         "waste_count": len(waste_records),
         "cost_count": len(cost_records),

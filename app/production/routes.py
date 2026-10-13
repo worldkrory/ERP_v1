@@ -36,6 +36,7 @@ from app.services.production_service import (
     confirm_production,
     historical_microlot_preview,
     preview_production,
+    ProductionSourcePreviewRequest,
 )
 
 from flask_login import current_user
@@ -432,6 +433,64 @@ def new_production_page():
         **_production_catalog_context(),
     )
 
+@production_bp.get("/produccion/partials/source-row")
+@login_required
+@require_role("INVENTARIO", "ADMIN")
+def production_source_row_partial():
+    row_index = _htmx_optional_int(
+        request.args.get("index")
+    )
+
+    if row_index is None or row_index < 0:
+        return "El índice del origen no es válido.", 400
+
+    return render_template(
+        "production/partials/_source_row.html",
+        row_index=row_index,
+        **_production_catalog_context(),
+    )
+
+
+@production_bp.get("/produccion/partials/source-row-batches")
+@login_required
+@require_role("INVENTARIO", "ADMIN")
+def production_source_row_batches_partial():
+    row_index = _htmx_optional_int(
+        request.args.get("row_index")
+    )
+
+    if row_index is None or row_index < 0:
+        return "El índice del origen no es válido.", 400
+
+    product_id = _htmx_optional_int(
+        request.args.get(f"sources-{row_index}-product_id")
+    )
+    location_id = _htmx_optional_int(
+        request.args.get(f"sources-{row_index}-location_id")
+    )
+
+    balances = []
+
+    if product_id and location_id:
+        balances = (
+            db.session.query(InventoryBalance)
+            .join(Batch, Batch.id == InventoryBalance.batch_id)
+            .filter(
+                InventoryBalance.product_id == product_id,
+                InventoryBalance.location_id == location_id,
+                InventoryBalance.quantity_base > 0,
+                Batch.status == "ACTIVE",
+            )
+            .order_by(Batch.batch_code.asc())
+            .all()
+        )
+
+    return render_template(
+        "production/partials/_source_row_batch_options.html",
+        row_index=row_index,
+        balances=balances,
+    )
+
 
 @production_bp.get("/produccion/partials/lotes-origen")
 @login_required
@@ -559,67 +618,181 @@ def production_input_batches_partial():
         balances=balances,
     )
 
+def _parse_sources() -> tuple[ProductionSourcePreviewRequest, ...]:
+    rows = _form_rows("sources")
+    results: list[ProductionSourcePreviewRequest] = []
+
+    for index in sorted(rows):
+        row = rows[index]
+
+        quantity = _htmx_decimal(
+            row.get("quantity"),
+            f"la cantidad del origen #{index + 1}",
+            allow_zero=False,
+        )
+
+        if not quantity.is_finite():
+            raise ProductionPreviewValidationError(
+                f"La cantidad del origen #{index + 1} "
+                "debe ser un número finito."
+            )
+
+        results.append(
+            ProductionSourcePreviewRequest(
+                product_id=_htmx_required_int(
+                    row.get("product_id"),
+                    f"el producto del origen #{index + 1}",
+                ),
+                batch_id=_htmx_optional_int(
+                    row.get("batch_id"),
+                ),
+                location_id=_htmx_required_int(
+                    row.get("location_id"),
+                    f"la ubicación del origen #{index + 1}",
+                ),
+                quantity=quantity,
+                unit_id=_htmx_required_int(
+                    row.get("unit_id"),
+                    f"la unidad del origen #{index + 1}",
+                ),
+                # Primera versión: el origen se registra en KG.
+                # No confiamos en una cantidad base enviada por el navegador.
+                quantity_base=quantity,
+                estimated_unit_cost=_htmx_decimal(
+                    row.get("estimated_unit_cost"),
+                    f"el costo estimado del origen #{index + 1}",
+                    required=False,
+                ),
+                notes=(row.get("notes") or "").strip() or None,
+            )
+        )
+
+    return tuple(results)
+
 def _build_production_preview_request() -> ProductionPreviewRequest:
-    return ProductionPreviewRequest(
-        mode=(request.form.get("mode") or "HISTORICAL").strip(),
-        order_number=(request.form.get("order_number") or "").strip(),
-        source_product_id=_htmx_optional_int(
+    sources = _parse_sources()
+
+    if sources:
+        first_source = sources[0]
+
+        # Campos singulares conservados por compatibilidad.
+        # El servicio utiliza la colección sources cuando existe.
+        source_product_id = first_source.product_id
+        source_batch_id = first_source.batch_id
+        source_location_id = first_source.location_id
+        source_unit_id = first_source.unit_id
+
+        source_quantity = sum(
+            (source.quantity for source in sources),
+            Decimal("0"),
+        )
+
+        # Esta versión registra todos los orígenes en KG.
+        source_quantity_base = source_quantity
+
+        estimated_source_unit_cost = (
+            first_source.estimated_unit_cost
+        )
+
+    else:
+        # Compatibilidad con el formulario antiguo.
+        source_product_id = _htmx_optional_int(
             request.form.get("source_product_id"),
-        ),
-        source_batch_id=_htmx_optional_int(
+        )
+
+        source_batch_id = _htmx_optional_int(
             request.form.get("source_batch_id"),
-        ),
-        source_location_id=_htmx_optional_int(
+        )
+
+        source_location_id = _htmx_optional_int(
             request.form.get("source_location_id"),
-        ),
-        source_quantity=_htmx_decimal(
+        )
+
+        source_unit_id = _htmx_optional_int(
+            request.form.get("source_unit_id"),
+        )
+
+        source_quantity = _htmx_decimal(
             request.form.get("source_quantity"),
             "Cantidad del insumo origen",
             allow_zero=False,
-        ),
-        source_unit_id=_htmx_optional_int(
-            request.form.get("source_unit_id"),
-        ),
-        source_quantity_base=_htmx_decimal(
+        )
+
+        source_quantity_base = _htmx_decimal(
             request.form.get("source_quantity_base"),
             "Cantidad base del insumo origen",
             allow_zero=False,
-        ),
-        estimated_source_unit_cost=_htmx_decimal(
+        )
+
+        estimated_source_unit_cost = _htmx_decimal(
             request.form.get("estimated_source_unit_cost"),
             "Costo estimado del insumo origen",
             required=False,
-        ),
+        )
+
+    return ProductionPreviewRequest(
+        mode=(
+            request.form.get("mode") or "HISTORICAL"
+        ).strip(),
+
+        order_number=(
+            request.form.get("order_number") or ""
+        ).strip(),
+
+        source_product_id=source_product_id,
+        source_batch_id=source_batch_id,
+        source_location_id=source_location_id,
+        source_quantity=source_quantity,
+        source_unit_id=source_unit_id,
+        source_quantity_base=source_quantity_base,
+        estimated_source_unit_cost=estimated_source_unit_cost,
+
+        sources=sources,
+
         process_id=_htmx_optional_int(
             request.form.get("process_id"),
         ),
+
         executor_party_id=_htmx_optional_int(
             request.form.get("executor_party_id"),
         ),
+
         processor_location_id=_htmx_optional_int(
             request.form.get("processor_location_id"),
         ),
+
         destination_location_id=_htmx_optional_int(
             request.form.get("destination_location_id"),
         ),
+
         started_at=_htmx_optional_datetime(
             request.form.get("started_at"),
             "Fecha de inicio",
         ),
+
         completed_at=_htmx_optional_datetime(
             request.form.get("completed_at"),
             "Fecha de terminación",
         ),
+
         received_at=_htmx_optional_datetime(
             request.form.get("received_at"),
             "Fecha de recepción",
         ),
+
         outputs=_parse_outputs(),
         wastes=_parse_wastes(),
         inputs=_parse_inputs(),
         manual_costs=_parse_manual_costs(),
-        currency=(request.form.get("currency") or "COP").strip(),
-        notes=(request.form.get("notes") or "").strip() or None,
+
+        currency=(
+            request.form.get("currency") or "COP"
+        ).strip(),
+
+        notes=(
+            request.form.get("notes") or ""
+        ).strip() or None,
+
         historical_reconstruction=(
             request.form.get("historical_reconstruction") == "true"
         ),
