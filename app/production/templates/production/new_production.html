@@ -1,24 +1,41 @@
 {% extends "base.html" %}
 
-{% block title %}Nueva producción | Densa Niebla ERP{% endblock %}
+{% from "admin/_admin_shell.html" import admin_shell %}
+
+{% block title %}
+Nueva producción | Densa Niebla ERP
+{% endblock %}
+
+{% block head_extra %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/sales_workspace.css') }}"
+>
+{% endblock %}
 
 {% block content %}
-<section class="page-header">
-    <div>
-        <p class="eyebrow">Producción</p>
-        <h1>Nueva producción</h1>
-        <p class="muted">
-            Registra los datos físicos del lote, agrega los empaques consumidos
-            y calcula el preview antes de confirmar movimientos de inventario.
-        </p>
-    </div>
 
-    <a
-        class="button button-secondary"
-        href="{{ url_for('production.historical_microlot_page') }}">
-        Reconstrucción histórica
-    </a>
-</section>
+{% call admin_shell(
+  active_section="production",
+  active_module="production",
+  page_kicker="Densa Niebla · Producción",
+  page_title="Nueva producción",
+  page_hint="Registra los datos físicos del lote, agrega los empaques consumidos y calcula el preview antes de confirmar movimientos de inventario.",
+  admin_user=current_user
+) %}
+
+<div
+  id="production-workspace"
+  class="dn-workspace-shell"
+>
+<div class="dn-filter-panel">
+  <a
+    class="dn-button dn-button-outline"
+    href="{{ url_for('production.historical_microlot_page') }}"
+  >
+    Reconstrucción histórica
+  </a>
+</div>
 
 <form
     id="production-form"
@@ -443,8 +460,12 @@
 </form>
 
 <section
-    id="production-preview"
-    class="production-preview-region"
-    aria-live="polite">
-</section>
+  id="production-preview"
+  class="production-preview-region"
+  aria-live="polite"
+></section>
+
+</div>
+
+{% endcall %}
 {% endblock %}
