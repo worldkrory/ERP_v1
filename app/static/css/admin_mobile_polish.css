@@ -1,0 +1,68 @@
+/* Complemento movil: mantiene la paleta y el shell existentes. */
+.dn-mobile-menu-scrim { display:none; }
+@media (max-width:980px) {
+  [data-admin-app] .dn-mobile-nav-v2 {
+    left:max(12px, env(safe-area-inset-left, 0px));
+    right:max(12px, env(safe-area-inset-right, 0px));
+    bottom:calc(12px + env(safe-area-inset-bottom, 0px));
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:4px; padding:7px; border-radius:20px;
+    background:var(--dn-nav-forest-deep);
+    border:1px solid var(--dn-nav-line);
+    box-shadow:0 8px 24px rgba(12,39,31,.22);
+  }
+  [data-admin-app] .dn-mobile-nav-v2 > a,
+  [data-admin-app] .dn-mobile-nav-v2 > button {
+    position:relative; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    min-width:44px; min-height:60px; gap:5px; padding:7px 3px;
+    border-radius:13px; color:var(--dn-nav-light);
+    -webkit-tap-highlight-color:transparent; touch-action:manipulation;
+  }
+  [data-admin-app] .dn-mobile-nav-v2 small {
+    color:inherit; font-size:11px; font-weight:650; line-height:1.25;
+    letter-spacing:0; text-transform:none;
+  }
+  [data-admin-app] .dn-mobile-icon {
+    display:grid; width:26px; height:26px; place-items:center;
+    color:inherit; font:inherit; flex-shrink:0;
+  }
+  [data-admin-app] .dn-mobile-icon svg { display:block; width:24px; height:24px; }
+  [data-admin-app] .dn-mobile-nav-v2 .is-active {
+    background:var(--dn-nav-cream); color:var(--dn-nav-forest-deep);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);
+  }
+  [data-admin-app] .dn-mobile-nav-v2 .is-active .dn-mobile-icon { color:var(--dn-nav-forest-deep); }
+  [data-admin-app] .dn-mobile-nav-v2 :focus-visible {
+    outline:2px solid var(--dn-nav-copper); outline-offset:2px;
+  }
+  [data-admin-app] .dn-mobile-menu-open { display:none; }
+  [data-admin-app] .dn-mobile-menu-closed { display:block; }
+  body.dn-admin-menu-open [data-admin-app] .dn-mobile-menu-open { display:block; }
+  body.dn-admin-menu-open [data-admin-app] .dn-mobile-menu-closed { display:none; }
+  body.dn-admin-menu-open [data-admin-app] .dn-mobile-nav-v2 > button {
+    background:var(--dn-nav-forest-hover);
+  }
+  [data-admin-app].dn-mobile-polish .dn-admin-main {
+    padding-bottom:calc(110px + env(safe-area-inset-bottom, 0px));
+  }
+  /* Mejora los iconos del cajon solo en movil. */
+  [data-admin-app].dn-mobile-polish .dn-admin-nav-icon {
+    display:grid; width:24px; height:24px; place-items:center;
+  }
+  [data-admin-app].dn-mobile-polish .dn-admin-nav-icon svg { width:21px; height:21px; }
+  [data-admin-app].dn-mobile-polish .dn-admin-nav-link { min-height:46px; }
+  [data-admin-app].dn-mobile-polish .dn-admin-sidebar { pointer-events:none; visibility:hidden; }
+  body.dn-admin-menu-open [data-admin-app].dn-mobile-polish .dn-admin-sidebar {
+    pointer-events:auto; visibility:visible;
+  }
+  [data-admin-app] .dn-mobile-menu-scrim:not([hidden]) {
+    display:block; position:fixed; inset:0; z-index:35;
+    width:100%; height:100%; padding:0; border:0; border-radius:0;
+    background:rgba(12,39,31,.30); cursor:pointer;
+  }
+  [data-admin-app] .dn-mobile-menu-scrim[hidden] { display:none; }
+}
+@media (prefers-reduced-motion:reduce) {
+  [data-admin-app].dn-mobile-polish .dn-admin-sidebar { transition:none; }
+}

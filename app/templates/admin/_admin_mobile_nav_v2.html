@@ -1,0 +1,21 @@
+{% from 'admin/_mobile_icons_v2.html' import mobile_icon %}
+
+<nav class="dn-admin-mobile-nav dn-mobile-nav-v2" data-dn-mobile-nav aria-label="Navegación móvil del ERP">
+  <a href="{{ url_for('sales_admin.sales_workspace') }}" class="{% if active_section == 'sales' %}is-active{% endif %}" {% if active_section == 'sales' %}aria-current="page"{% endif %}>
+    <span class="dn-mobile-icon">{{ mobile_icon('sales') }}</span><small>Ventas</small>
+  </a>
+  <a href="{{ url_for('inventory_admin.workspace') }}" class="{% if active_section == 'inventory' %}is-active{% endif %}" {% if active_section == 'inventory' %}aria-current="page"{% endif %}>
+    <span class="dn-mobile-icon">{{ mobile_icon('inventory') }}</span><small>Inventario</small>
+  </a>
+  <a
+    href="{{ url_for('production.new_production_page') }}" class="{% if active_section == 'production' %}is-active{% endif %}" {% if active_section == 'production' %}aria-current="page"{% endif %}>
+    <span class="dn-mobile-icon"> {{ mobile_icon('production') }}</span><small>Producción</small>
+  </a>
+  <button type="button" aria-label="Abrir o cerrar menú completo" aria-expanded="false" data-admin-menu-toggle>
+    <span class="dn-mobile-icon"><span class="dn-mobile-menu-closed">{{ mobile_icon('menu') }}</span><span class="dn-mobile-menu-open">{{ mobile_icon('close') }}</span></span><small>Menú</small>
+  </button>
+  {% for key in ['home','parties','purchases','inventory','production','sales','dispatch','collections','balances','reports','traceability'] %}
+  <template data-dn-icon="{{ key }}">{{ mobile_icon(key) }}</template>
+  {% endfor %}
+</nav>
+<button type="button" class="dn-mobile-menu-scrim" data-dn-mobile-scrim aria-label="Cerrar menú completo" hidden></button>

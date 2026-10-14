@@ -573,6 +573,11 @@
     href="{{ url_for('static', filename='css/admin_navigation_motion.css') }}"
   >
 
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/admin_mobile_polish.css') }}"
+  >
+
   {% block extra_css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -607,6 +612,11 @@
       }
     });
   </script>
+
+  <script
+    src="{{ url_for('static', filename='js/admin_mobile_polish.js') }}"
+    defer
+  ></script>
 
   {% block scripts %}{% endblock %}
 </body>
