@@ -1,0 +1,21 @@
+<section class="dn-inventory-detail-body" data-inventory-detail>
+  <header class="dn-inventory-detail-heading"><h3>{{ product.name }}</h3><button type="button" class="dn-button dn-button-small" data-inventory-close>Cerrar detalle</button></header>
+  <p class="dn-section-note">Todas las ubicaciones del producto. Puede diferir del filtro de la lista.</p>
+  <h4>Lotes y ubicaciones con saldo</h4>
+  {% for balance in balances %}
+  <div class="dn-inventory-balance"><strong>{{ balance.quantity_base|inventory_quantity }} {{ product.base_unit.code }}</strong>
+    <span>{{ balance.location.code }} · {{ balance.location.name }} · {{ balance.location.location_type }}</span>
+    <span>{{ balance.batch.batch_code if balance.batch else 'Sin manejo de lote' }}</span>
+    {% if balance.batch %}<span class="dn-table-muted">Estado: {{ balance.batch.status }}{% if balance.batch.expiry_date %} · Vence: {{ balance.batch.expiry_date }}{% if balance.batch.expiry_date < today %} · Vencido{% endif %}{% endif %}</span>{% endif %}
+    {% if balance.quantity_base < 0 %}<span class="dn-status dn-status-cancelled">Revisar saldo negativo</span>{% endif %}
+  </div>
+  {% else %}<p class="dn-section-note">Sin posiciones con saldo distinto de cero.</p>{% endfor %}
+  <h4>Últimos 20 movimientos</h4>
+  {% for movement in movements %}
+  <div class="dn-inventory-movement"><strong>{{ '+' if movement.direction == 1 else '−' }}{{ movement.quantity|inventory_quantity }} {{ movement.unit.code }}</strong>
+    <span>{{ movement.movement_type }} · {{ movement.occurred_at.strftime('%d/%m/%Y %H:%M') }}</span>
+    <span>{{ movement.location.name }}{% if movement.batch %} · {{ movement.batch.batch_code }}{% endif %}</span>
+    {% if movement.reference_type %}<span class="dn-table-muted">{{ movement.reference_type }} #{{ movement.reference_id }}</span>{% endif %}
+  </div>
+  {% else %}<p class="dn-section-note">Sin movimientos registrados.</p>{% endfor %}
+</section>

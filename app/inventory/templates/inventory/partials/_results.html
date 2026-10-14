@@ -1,0 +1,16 @@
+<section class="dn-metrics-grid dn-inventory-metrics" aria-label="Resumen del resultado filtrado">
+  {% for label, value, hint in [('Con existencia', summary.positive, 'Productos con saldo neto positivo'), ('Sin existencia', summary.empty, 'Productos con saldo neto cero'), ('Bajo mínimo', summary.low, 'Saldo positivo igual o inferior al mínimo'), ('Revisar saldos', summary.negative, 'Productos con alguna posición negativa')] %}
+  <article class="dn-metric-card" data-inventory-metric><span class="dn-metric-label">{{ label }}</span><strong>{{ value }}</strong><small>{{ hint }}</small></article>
+  {% endfor %}
+</section>
+<header class="dn-inventory-results-heading"><h2>{{ summary.total }} productos encontrados</h2><span class="dn-section-note">Resumen de todos los resultados filtrados · Página {{ page }} de {{ pages }}</span></header>
+<div class="dn-inventory-grid">
+  {% for card in cards %}{% include "inventory/partials/_product_card.html" %}{% else %}
+  <section class="dn-card dn-inventory-empty"><h3>Sin productos para estos filtros</h3><p>Prueba otra búsqueda, ubicación o estado de existencia.</p></section>
+  {% endfor %}
+</div>
+<nav class="dn-inventory-pagination" aria-label="Páginas del inventario">
+  {% if links.previous %}<a class="dn-button dn-button-outline" href="{{ links.previous }}" hx-get="{{ links.previous }}" hx-target="#inventory-results" hx-swap="innerHTML" hx-sync="#inventory-filters:replace" hx-include="#inventory-filters">Anterior</a>{% endif %}
+  <span class="dn-section-note">{{ page }} / {{ pages }}</span>
+  {% if links.next %}<a class="dn-button dn-button-outline" href="{{ links.next }}" hx-get="{{ links.next }}" hx-target="#inventory-results" hx-swap="innerHTML" hx-sync="#inventory-filters:replace" hx-include="#inventory-filters">Siguiente</a>{% endif %}
+</nav>

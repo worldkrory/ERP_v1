@@ -1,0 +1,22 @@
+/* Complemento del shell existente. No oculta contenido por defecto. */
+[data-admin-app] .dn-admin-motion-progress {
+  position:fixed; inset:0 0 auto; height:3px; z-index:2000;
+  overflow:hidden; pointer-events:none;
+  background:var(--dn-line, transparent);
+}
+[data-admin-app] .dn-admin-motion-progress-bar {
+  display:block; width:36%; height:100%;
+  background:var(--dn-forest, currentColor);
+}
+[data-admin-app] .dn-admin-motion-status {
+  position:absolute; width:1px; height:1px; padding:0;
+  margin:-1px; overflow:hidden; clip:rect(0,0,0,0);
+  white-space:nowrap; border:0;
+}
+[data-admin-app] .dn-admin-motion-pending {
+  outline:1px solid var(--dn-line, currentColor);
+  outline-offset:2px;
+}
+@media (prefers-reduced-motion:reduce) {
+  [data-admin-app] .dn-admin-motion-progress { display:none; }
+}

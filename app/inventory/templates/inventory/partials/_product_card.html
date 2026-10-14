@@ -1,0 +1,21 @@
+<article class="dn-card dn-inventory-card" data-inventory-card>
+  <div class="dn-inventory-card-body">
+    <div class="dn-inventory-product-heading">
+      <div class="dn-inventory-thumbnail">
+        <span class="dn-inventory-photo-fallback" {% if card.image %}hidden{% endif %}>Sin foto</span>
+        {% if card.image %}<img src="{{ card.image }}" alt="{{ card.product.name }}" title="{{ card.image_label }}" width="88" height="104" loading="lazy" decoding="async" data-inventory-image>{% endif %}
+      </div>
+      <div class="dn-inventory-product-copy"><span class="dn-panel-kicker">{{ card.kind_label }}</span>
+        <h3>{{ card.product.name }}</h3><span class="dn-table-muted">{{ card.product.sku }}</span>
+        {% if not card.product.is_active %}<span class="dn-status dn-status-draft">Producto inactivo</span>{% endif %}
+      </div>
+    </div>
+    <div class="dn-inventory-quantity"><span>Existencia registrada</span><strong>{{ card.quantity|inventory_quantity }} <small>{{ card.product.base_unit.code }}</small></strong></div>
+    <div class="dn-inventory-card-meta"><span>{{ card.lots }} lotes con saldo positivo</span><span>{{ card.locations }} ubicaciones con saldo</span></div>
+    <span class="dn-status {% if card.status == 'negative' %}dn-status-cancelled{% elif card.status in ('low','empty') %}dn-status-draft{% else %}dn-status-confirmed{% endif %}">{{ card.label }}</span>
+    <a class="dn-button dn-button-outline dn-inventory-detail-button" href="{{ url_for('inventory_admin.product_detail', product_id=card.product.id) }}"
+       hx-get="{{ url_for('inventory_admin.product_detail', product_id=card.product.id) }}" hx-target="#inventory-detail-{{ card.product.id }}" hx-swap="innerHTML"
+       hx-disabled-elt="this" data-inventory-open aria-controls="inventory-detail-{{ card.product.id }}" aria-expanded="false">Ver lotes y movimientos</a>
+  </div>
+  <div id="inventory-detail-{{ card.product.id }}" class="dn-inventory-detail-slot" data-inventory-detail-slot></div>
+</article>

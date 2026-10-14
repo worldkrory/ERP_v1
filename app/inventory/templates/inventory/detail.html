@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% from "admin/_admin_shell.html" import admin_shell %}
+{% block title %}{{ product.name }} | Inventario{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/sales_workspace.css') }}">{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/inventory_workspace.css') }}">{% endblock %}
+{% block content %}
+{% call admin_shell(active_section="inventory", active_module="inventory", page_kicker="Densa Niebla · Inventario", page_title="Detalle de producto", page_hint=product.name, admin_user=current_user) %}
+<div id="inventory-workspace" class="dn-workspace-shell">
+<a class="dn-button dn-button-outline" href="{{ url_for('inventory_admin.workspace') }}">Volver al inventario</a>
+<div class="dn-card dn-inventory-standalone">{% include "inventory/partials/_detail.html" %}</div>
+</div>
+{% endcall %}
+{% endblock %}

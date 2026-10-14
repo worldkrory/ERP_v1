@@ -73,14 +73,15 @@
     <span>Origen y compras</span>
   </a>
 
-  <a href="#"
-     class="dn-admin-nav-link is-disabled"
-     aria-disabled="true"
-     tabindex="-1"
-     title="La consola de inventario será la próxima estación operativa">
+  <a
+    href="{{ url_for('inventory_admin.workspace') }}"
+    class="dn-admin-nav-link {% if active_section == 'inventory' %}is-active{% endif %}"
+    {% if active_section == 'inventory' %}
+      aria-current="page"
+    {% endif %}
+  >
     <span class="dn-admin-nav-icon" aria-hidden="true">▦</span>
     <span>Inventario</span>
-    <small data-admin-badge="inventory">Próx.</small>
   </a>
 
   <a href="{{ url_for('production.new_production_page') }}"

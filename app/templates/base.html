@@ -568,6 +568,11 @@
   <link rel="stylesheet"
       href="{{ url_for('static', filename='css/admin_shell.css') }}">
 
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/admin_navigation_motion.css') }}"
+  >
+
   {% block extra_css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -588,6 +593,11 @@
   <script
     src="{{ url_for('static', filename='js/admin_shell.js') }}"
     defer></script>
+
+  <script
+    src="{{ url_for('static', filename='js/admin_navigation_motion.js') }}"
+    defer
+  ></script>
 
   <script>
     document.body.addEventListener("htmx:beforeSwap", function (event) {

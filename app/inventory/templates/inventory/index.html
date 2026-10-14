@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "admin/_admin_shell.html" import admin_shell %}
+{% block title %}Inventario | Densa Niebla{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sales_workspace.css') }}">
+{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/inventory_workspace.css') }}">
+{% endblock %}
+{% block content %}
+{% call admin_shell(active_section="inventory", active_module="inventory", page_kicker="Densa Niebla · Inventario", page_title="Inventario y trazabilidad", page_hint="Cada producto, en su lote y ubicación. Consulta existencias sin modificar inventario.", admin_user=current_user) %}
+<div id="inventory-workspace" class="dn-workspace-shell">
+  <section class="dn-filter-panel">
+    <form id="inventory-filters" class="dn-inventory-filters" method="get"
+          action="{{ url_for('inventory_admin.workspace') }}"
+          hx-get="{{ url_for('inventory_admin.workspace') }}"
+          hx-target="#inventory-results" hx-swap="innerHTML"
+          hx-trigger="submit, input changed delay:350ms from:input[name='q'], change from:select"
+          hx-sync="this:replace" hx-indicator="#inventory-loading">
+      <label class="dn-field"><span>Buscar producto, SKU o lote</span>
+        <input type="search" name="q" value="{{ filters.q }}" placeholder="Bourbon, bolsas, CP-…" maxlength="120">
+      </label>
+      <label class="dn-field"><span>Tipo</span><select name="kind">
+        <option value="">Todos los productos físicos</option>
+        {% for code, label in kinds.items() %}<option value="{{ code }}" {% if filters.kind == code %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select></label>
+      <label class="dn-field"><span>Ubicación</span><select name="location">
+        <option value="">Bodegas, maquila, consignación y tránsito</option>
+        {% for location in locations %}<option value="{{ location.id }}" {% if filters.location == location.id %}selected{% endif %}>{{ location.code }} · {{ location.name }}{% if not location.is_active %} · Inactiva{% endif %}</option>{% endfor %}
+      </select></label>
+      <label class="dn-field"><span>Existencia</span><select name="stock">
+        {% for code, label in [('', 'Todos los estados'), ('positive', 'Con saldo positivo'), ('empty', 'Saldo cero'), ('low', 'Bajo mínimo'), ('negative', 'Algún saldo negativo')] %}
+        <option value="{{ code }}" {% if filters.stock == code %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select></label>
+      <div class="dn-inventory-actions"><button type="submit" class="dn-button dn-button-primary">Buscar</button>
+        <a class="dn-button dn-button-outline" href="{{ url_for('inventory_admin.workspace') }}">Limpiar</a></div>
+    </form>
+    <p class="dn-section-note">Existencia registrada, no disponibilidad comercial ni reservas. Los servicios no se incluyen.</p>
+    <span id="inventory-loading" class="htmx-indicator" role="status">Consultando inventario…</span>
+    <p id="inventory-request-error" class="dn-alert dn-alert-error" hidden></p>
+  </section>
+  <div id="inventory-results" aria-live="polite">{% include "inventory/partials/_results.html" %}</div>
+</div>
+{% endcall %}
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js"></script>
+<script src="{{ url_for('static', filename='js/inventory_workspace.js') }}"></script>
+{% endblock %}
