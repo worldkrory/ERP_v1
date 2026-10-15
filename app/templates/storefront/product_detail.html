@@ -3,6 +3,63 @@
 {% block title %}{{ product.seo.title }}{% endblock %}
 {% block meta_description %}{{ product.seo.description }}{% endblock %}
 
+{% block head %}
+  {% set product_url = url_for(
+      'storefront.product_detail',
+      slug=product.slug,
+      _external=True
+  ) %}
+
+  {% set schema = namespace(offers=[]) %}
+
+  {% for variant in product.variants %}
+    {% if variant.price_cop is not none %}
+      {% set offer = {
+          "@type": "Offer",
+          "name": product.name ~ " — " ~ variant.label,
+          "sku": variant.id|string,
+          "url": product_url,
+          "price": variant.price_cop|string,
+          "priceCurrency": "COP",
+          "availability": (
+              "https://schema.org/InStock"
+              if variant.available
+              else "https://schema.org/OutOfStock"
+          ),
+          "itemCondition": "https://schema.org/NewCondition"
+      } %}
+
+      {% set schema.offers = schema.offers + [offer] %}
+    {% endif %}
+  {% endfor %}
+
+  {% if schema.offers %}
+    {% set product_schema = {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": product.name,
+        "description": product.seo.description,
+        "url": product_url,
+        "image": [
+            url_for(
+                'static',
+                filename=product.gallery[0].src,
+                _external=True
+            )
+        ],
+        "brand": {
+            "@type": "Brand",
+            "name": "Densa Niebla"
+        },
+        "offers": schema.offers
+    } %}
+
+    <script type="application/ld+json">
+      {{ product_schema | tojson }}
+    </script>
+  {% endif %}
+{% endblock %}
+
 {% block content %}
 <section class="product-detail">
   <div class="product-gallery">
@@ -114,7 +171,7 @@
           </label>
 
           <div class="current-price">
-            <span>Precio</span>
+            <span>Precio en cop</span>
             <strong id="selected-variant-price">
               {% set first_variant = product.variants[0] %}
               {% if first_variant.price_cop is not none %}
