@@ -2017,6 +2017,23 @@ def confirm_production(
     origin_snapshot = _common_batch_origin(source_rows)
     produced_on = _confirmation_date(request)
 
+    # Fecha común para los registros y movimientos de la confirmación.
+    # Conserva el día elegido por la lógica existente.
+    occurred_at = datetime.combine(
+        produced_on,
+        datetime.min.time(),
+    )
+
+    # Si hay una fecha con hora para ese mismo día, conservarla.
+    for candidate in (
+        request.received_at,
+        request.completed_at,
+        request.started_at,
+    ):
+        if candidate is not None and candidate.date() == produced_on:
+            occurred_at = candidate
+            break
+
     allocated_outputs = _allocate_confirmation_costs(preview)
 
     order = ProductionOrder(
@@ -2187,8 +2204,7 @@ def confirm_production(
 
     waste_records: list[ProductionWaste] = []
 
-    for waste in preview["wastes"]:
-        source_weights = [
+    source_weights = [
         source["quantity_base"]
         for source in source_rows
     ]
