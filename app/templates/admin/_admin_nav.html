@@ -1,3 +1,5 @@
+{% from 'admin/_mobile_icons_v2.html' import mobile_icon as admin_icon %}
+
 <aside class="dn-admin-sidebar"
        aria-label="Mapa operativo">
 
@@ -55,13 +57,17 @@
 
   <a href="{{ url_for('index') }}"
      class="dn-admin-nav-link {% if active_section == 'dashboard' %}is-active{% endif %}">
-    <span class="dn-admin-nav-icon" aria-hidden="true">⌂</span>
+    <span class="dn-admin-nav-icon" aria-hidden="true">
+      {{ admin_icon('home') }}
+    </span>
     <span>Resumen</span>
   </a>
 
   <a href="{{ url_for('parties_admin.customers_admin_page') }}"
      class="dn-admin-nav-link {% if active_section == 'parties' %}is-active{% endif %}">
-    <span class="dn-admin-nav-icon" aria-hidden="true">◌</span>
+    <span class="dn-admin-nav-icon" aria-hidden="true">
+      {{ admin_icon('parties') }}
+    </span>
     <span>Terceros</span>
   </a>
 
@@ -69,7 +75,9 @@
 
   <a href="{{ url_for('purchases_admin.purchases_admin_page') }}"
      class="dn-admin-nav-link {% if active_section == 'purchases' %}is-active{% endif %}">
-    <span class="dn-admin-nav-icon" aria-hidden="true">↙</span>
+    <span class="dn-admin-nav-icon" aria-hidden="true">
+      {{ admin_icon('purchases') }}
+    </span>
     <span>Origen y compras</span>
   </a>
 
@@ -80,25 +88,33 @@
       aria-current="page"
     {% endif %}
   >
-    <span class="dn-admin-nav-icon" aria-hidden="true">▦</span>
+    <span class="dn-admin-nav-icon" aria-hidden="true">
+      {{ admin_icon('inventory') }}
+    </span>
     <span>Inventario</span>
   </a>
 
   <a href="{{ url_for('production.new_production_page') }}"
      class="dn-admin-nav-link {% if active_section == 'production' %}is-active{% endif %}">
-    <span class="dn-admin-nav-icon" aria-hidden="true">◉</span>
+    <span class="dn-admin-nav-icon" aria-hidden="true">
+      {{ admin_icon('production') }}
+    </span>
     <span>Producción</span>
   </a>
 
   <a href="{{ url_for('sales_admin.sales_workspace') }}"
      class="dn-admin-nav-link {% if active_section == 'sales' %}is-active{% endif %}">
-    <span class="dn-admin-nav-icon" aria-hidden="true">↗</span>
+    <span class="dn-admin-nav-icon" aria-hidden="true">
+      {{ admin_icon('sales') }}
+    </span>
     <span>Ventas</span>
   </a>
 
   <a href="{{ url_for('sales_admin.sales_workspace', status='CONFIRMED') }}"
      class="dn-admin-nav-link {% if active_section == 'dispatch' %}is-active{% endif %}">
-    <span class="dn-admin-nav-icon" aria-hidden="true">→</span>
+    <span class="dn-admin-nav-icon" aria-hidden="true">
+      {{ admin_icon('dispatch') }}
+    </span>
     <span>Despacho</span>
   </a>
 
@@ -107,7 +123,9 @@
      aria-disabled="true"
      tabindex="-1"
      title="El módulo de recaudo se conectará a payments y payment_allocations">
-    <span class="dn-admin-nav-icon" aria-hidden="true">↓</span>
+    <span class="dn-admin-nav-icon" aria-hidden="true">
+      {{ admin_icon('collections') }}
+    </span>
     <span>Recaudo</span>
     <small data-admin-badge="collections">Próx.</small>
   </a>
@@ -119,7 +137,9 @@
      aria-disabled="true"
      tabindex="-1"
      title="Balances de inventario, cartera y margen">
-    <span class="dn-admin-nav-icon" aria-hidden="true">≈</span>
+    <span class="dn-admin-nav-icon" aria-hidden="true">
+      {{ admin_icon('balances') }}
+    </span>
     <span>Balances</span>
     <small>Próx.</small>
   </a>
@@ -129,7 +149,9 @@
      aria-disabled="true"
      tabindex="-1"
      title="Reportes comerciales y operativos">
-    <span class="dn-admin-nav-icon" aria-hidden="true">⌁</span>
+    <span class="dn-admin-nav-icon" aria-hidden="true">
+      {{ admin_icon('reports') }}
+    </span>
     <span>Reportes</span>
   </a>
 
@@ -138,7 +160,9 @@
      aria-disabled="true"
      tabindex="-1"
      title="Recorrido de lotes desde origen hasta cliente">
-    <span class="dn-admin-nav-icon" aria-hidden="true">⌘</span>
+    <span class="dn-admin-nav-icon" aria-hidden="true">
+      {{ admin_icon('traceability') }}
+    </span>
     <span>Trazabilidad</span>
   </a>
 </nav>

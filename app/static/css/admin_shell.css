@@ -630,3 +630,22 @@
     height: 40px;
   }
 }
+
+/* Iconografía uniforme del menú lateral en escritorio */
+@media (min-width: 981px) {
+  .dn-admin-sidebar .dn-admin-nav-icon {
+    display: grid;
+    width: 23px;
+    height: 24px;
+    place-items: center;
+    line-height: 1;
+  }
+
+  .dn-admin-sidebar .dn-admin-nav-icon svg {
+    display: block;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    stroke-width: 1.8;
+  }
+}
