@@ -35,6 +35,10 @@ from app.services.sale_services import (
 )
 from app.services.telegram_service import TelegramError, notify_sale, send_receipt
 
+from app.services.sale_product_summary import (
+    build_sale_product_summaries,
+)
+
 
 sales_bp = Blueprint("sales", __name__, url_prefix="/api/v1")
 sales_admin_bp = Blueprint("sales_admin", __name__, template_folder="templates", url_prefix="")
@@ -315,7 +319,11 @@ def sales_workspace():
 
     statement = (
         select(Sale)
-        .options(selectinload(Sale.party))
+        .options(
+            selectinload(Sale.party),
+            selectinload(Sale.items).joinedload(SaleItem.product),
+            selectinload(Sale.items).joinedload(SaleItem.unit),
+        )
         .order_by(Sale.sale_date.desc(), Sale.id.desc())
     )
 
@@ -375,6 +383,7 @@ def sales_workspace():
         metrics=metrics,
         filters=filters,
         today=today,
+        sale_product_summaries=build_sale_product_summaries(sales),
     )
 
 @sales_admin_bp.get("/ventas/<int:sale_id>")

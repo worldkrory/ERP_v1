@@ -8,6 +8,11 @@
 <link rel="stylesheet"
       href="{{ url_for('static', filename='css/sales_workspace.css') }}">
 
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/sales_product_summary.css') }}"
+>
+
 {% endblock %}
 
 {% block content %}
@@ -32,7 +37,36 @@
   admin_user=current_user
 ) %}
 
-  <div class="dn-workspace-shell">
+  <div id="sales-results" class="dn-workspace-shell">
+
+    <p
+      class="dn-sales-request-status htmx-indicator"
+      role="status"
+    >
+      Actualizando ventas…
+    </p>
+
+    <p
+      id="sales-filter-feedback"
+      class="dn-sales-filter-feedback"
+      role="status"
+      hidden
+    ></p>
+
+    <a
+      class="dn-button dn-button-outline"
+      href="{{ url_for('sales_admin.sales_workspace') }}"
+      hx-get="{{ url_for('sales_admin.sales_workspace') }}"
+      hx-target="#sales-results"
+      hx-select="#sales-results"
+      hx-swap="outerHTML"
+      hx-push-url="true"
+      hx-sync="#sales-results:replace"
+      hx-indicator="#sales-results"
+    >
+      Limpiar
+    </a>
+
 
     <section class="dn-metrics-grid">
       <article class="dn-metric-card">
@@ -67,8 +101,18 @@
     </section>
 
     <section class="dn-filter-panel">
-      <form method="get"
-            class="dn-filter-form">
+      <form
+          method="get"
+          action="{{ url_for('sales_admin.sales_workspace') }}"
+          class="dn-filter-form"
+          hx-get="{{ url_for('sales_admin.sales_workspace') }}"
+          hx-target="#sales-results"
+          hx-select="#sales-results"
+          hx-swap="outerHTML"
+          hx-push-url="true"
+          hx-sync="#sales-results:replace"
+          hx-indicator="#sales-results"
+        >
         <label class="dn-field dn-search-field">
           <span>Buscar</span>
           <input type="search"
@@ -145,6 +189,7 @@
             <tr>
               <th>Venta</th>
               <th>Cliente</th>
+              <th>Productos</th>
               <th>Canal</th>
               <th>Fecha</th>
               <th>Operación</th>
@@ -156,7 +201,7 @@
 
           <tbody>
             {% for sale in sales %}
-            <tr>
+            <tr data-sale-summary-row>
               <td>
                 <strong>{{ sale.sale_number }}</strong>
                 <span class="dn-table-muted">#{{ sale.id }}</span>
@@ -167,6 +212,10 @@
                 <span class="dn-table-muted">
                   {{ sale.party.document_type }} {{ sale.party.document_full }}
                 </span>
+              </td>
+
+              <td class="dn-sale-products-cell">
+                {% include "sales/partials/_sale_products_summary.html" %}
               </td>
 
               <td>{{ sale.channel|replace("_", " ")|title }}</td>
@@ -198,7 +247,7 @@
             </tr>
             {% else %}
             <tr>
-              <td colspan="8" class="dn-empty">
+              <td colspan="9" class="dn-empty">
                 No encontramos ventas con los filtros aplicados.
               </td>
             </tr>
@@ -209,4 +258,11 @@
     </section>
 </div>
 {% endcall %}
+{% endblock %}
+
+{% block scripts %}
+<script
+  src="{{ url_for('static', filename='js/sales_product_summary.js') }}"
+  defer
+></script>
 {% endblock %}

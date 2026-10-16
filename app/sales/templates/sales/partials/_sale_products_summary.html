@@ -1,0 +1,28 @@
+{% macro product_line(line) -%}
+<div class="dn-sale-product-line">
+  <span class="dn-sale-product-thumb" aria-hidden="true">
+    <span class="dn-sale-product-placeholder" {% if line.image %}hidden{% endif %}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="m12 3 9 5-9 5-9-5 9-5ZM3 8v9l9 5 9-5V8M12 13v9"/></svg>
+    </span>
+    {% if line.image %}<img src="{{ line.image }}" alt="" width="44" height="52" loading="lazy" decoding="async" data-sale-product-image>{% endif %}
+  </span>
+  <span class="dn-sale-product-copy">
+    <span class="dn-sale-product-name">{{ line.name }}</span>
+    <span class="dn-sale-product-quantity">{{ line.quantity }} {{ line.unit }}</span>
+    {% if line.sku %}<span class="dn-sale-product-sku">{{ line.sku }}</span>{% endif %}
+  </span>
+</div>
+{%- endmacro %}
+{% set products = sale_product_summaries.get(sale.id, []) %}
+<div class="dn-sale-products" aria-label="Productos de la venta {{ sale.sale_number }}">
+  {% for line in products[:2] %}{{ product_line(line) }}{% endfor %}
+  {% if products|length > 2 %}
+  <details class="dn-sale-products-more" data-sale-products-more>
+    <summary><span class="dn-sale-products-show">Ver {{ products|length - 2 }} más</span><span class="dn-sale-products-hide">Mostrar menos</span></summary>
+    <div class="dn-sale-products-extra">
+      {% for line in products[2:] %}{{ product_line(line) }}{% endfor %}
+    </div>
+  </details>
+  {% endif %}
+  {% if not products %}<span class="dn-table-muted">Sin líneas registradas</span>{% endif %}
+</div>

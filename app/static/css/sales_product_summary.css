@@ -1,0 +1,23 @@
+#sales-results .dn-sale-products-cell { min-width:240px; }
+#sales-results .dn-sale-products { display:grid; gap:10px; max-width:330px; }
+#sales-results .dn-sale-product-line { display:flex; gap:10px; align-items:center; }
+#sales-results .dn-sale-product-thumb { display:grid; place-items:center; flex:0 0 44px; width:44px; height:52px; overflow:hidden; background:var(--dn-nav-cream); color:var(--dn-nav-muted); border:1px solid var(--dn-line, #d4d6cc); border-radius:8px; }
+#sales-results .dn-sale-product-thumb img { display:block; width:100%; height:100%; object-fit:contain; padding:2px; }
+#sales-results .dn-sale-product-placeholder { display:grid; place-items:center; }
+#sales-results [hidden] { display:none !important; }
+#sales-results .dn-sale-product-copy { display:grid; gap:3px; min-width:0; }
+#sales-results .dn-sale-product-name { color:var(--dn-nav-forest); font-size:.79rem; font-weight:650; line-height:1.35; overflow-wrap:anywhere; }
+#sales-results .dn-sale-product-quantity { color:var(--dn-nav-text); font-size:.77rem; font-weight:750; }
+#sales-results .dn-sale-product-sku { color:var(--dn-nav-muted); font-size:.65rem; overflow-wrap:anywhere; }
+#sales-results .dn-sale-products-more summary { width:fit-content; min-height:32px; padding:6px 4px; color:var(--dn-nav-forest); cursor:pointer; font-size:.74rem; font-weight:700; }
+#sales-results .dn-sale-products-extra { display:grid; gap:10px; margin-top:8px; }
+#sales-results .dn-sale-products-hide { display:none; }
+#sales-results details[open] .dn-sale-products-hide { display:inline; }
+#sales-results details[open] .dn-sale-products-show { display:none; }
+#sales-results .dn-sale-products-more summary:focus-visible { outline:2px solid var(--dn-nav-copper); outline-offset:2px; border-radius:4px; }
+#sales-results .dn-sales-request-status { margin:0 0 12px; color:var(--dn-nav-muted); font-size:.8rem; }
+#sales-results.htmx-request .dn-sales-table { opacity:.65; }
+#sales-results .dn-sales-filter-feedback { color:var(--dn-danger, #a0443c); font-size:.8rem; margin:10px 0; }
+@media(max-width:980px) {
+ #sales-results .dn-sale-products-more summary { min-height:44px; display:flex; align-items:center; }
+}
