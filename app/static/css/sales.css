@@ -670,3 +670,33 @@
     width: 100%;
   }
 }
+/* El formulario utiliza el espacio del admin compartido. */
+.dn-admin-workspace .dn-sales-create-integrated {
+  min-height: auto;
+  padding: 0;
+  background: transparent;
+}
+
+.dn-admin-workspace
+.dn-sales-create-integrated
+.dn-sales-shell {
+  width: 100%;
+  margin: 0;
+}
+
+.dn-admin-workspace
+.dn-sales-create-integrated
+.dn-summary-panel {
+  top: calc(var(--dn-nav-topbar-height, 66px) + 18px);
+}
+
+/* Evita comprimir las líneas al añadir el menú lateral. */
+@media (min-width: 761px) and (max-width: 1600px) {
+  .dn-sales-create-integrated .dn-sale-line-main {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dn-sales-create-integrated .dn-product-field {
+    grid-column: span 2;
+  }
+}

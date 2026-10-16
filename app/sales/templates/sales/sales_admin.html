@@ -1,33 +1,39 @@
 {% extends "base.html" %}
 
+{% from "admin/_admin_shell.html" import admin_shell %}
+
 {% block title %}Ventas | Densa Niebla{% endblock %}
 
 {% block head_extra %}
 <link rel="stylesheet"
       href="{{ url_for('static', filename='css/sales.css') }}">
 
-<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+
 {% endblock %}
 
 {% block content %}
-<main class="dn-sales-page">
+
+{% set sale_create_actions %}
+  <a
+    class="dn-button dn-button-outline"
+    href="{{ url_for('sales_admin.sales_workspace') }}"
+  >
+    Volver a ventas
+  </a>
+{% endset %}
+
+{% call admin_shell(
+  active_section="sales",
+  active_module="sales",
+  page_kicker="Densa Niebla · Comercial",
+  page_title="Nueva venta",
+  page_hint="Registra el cliente, la fecha y los productos. Guardar crea un borrador; la confirmación de inventario es independiente.",
+  page_actions=sale_create_actions,
+  admin_user=current_user
+) %}
+
+<div class="dn-sales-page dn-sales-create-integrated">
   <div class="dn-sales-shell">
-
-    <header class="dn-sales-header">
-      <div class="dn-sales-brand">
-        <p class="dn-eyebrow">Densa Niebla · Comercial</p>
-        <h1>Registrar una venta<br>sin perder el origen.</h1>
-        <p class="dn-sales-intro">
-          Cada venta conserva el cliente, el precio aplicado y la historia
-          del café que salió de la finca.
-        </p>
-      </div>
-
-      <div class="dn-sales-context">
-        <span>Guavatá, Santander</span>
-        <span>Café de finca colombiano</span>
-      </div>
-    </header>
 
     {% if demo_mode %}
     <div class="dn-demo-banner" role="status">
@@ -205,7 +211,9 @@
       </div>
     </section>
   </div>
-</main>
+</div>
+
+{% endcall %}
 
 <script>
   function money(value) {
