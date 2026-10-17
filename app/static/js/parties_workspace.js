@@ -35,6 +35,12 @@
     const natural = type.value === 'NATURAL';
 
     document
+      .querySelectorAll('[data-customer-company-field]')
+      .forEach(node => {
+        node.hidden = natural;
+      });
+
+    document
       .querySelectorAll('[data-customer-person-name]')
       .forEach(node => {
         node.hidden = !natural;
@@ -125,7 +131,10 @@
       party_type:value('party_type'), document_type:value('document_type'),
       document_number:value('document_number'), legal_name:value('legal_name'),
       verification_digit:value('document_type') === 'NIT' ? value('verification_digit') || null : null,
-      trade_name:value('trade_name'), email:value('email'), phone:value('phone'),
+      trade_name: value('party_type') === 'JURIDICA'
+       ? value('trade_name')
+       : null,
+      email:value('email'), phone:value('phone'),
       whatsapp:value('whatsapp'), payment_term_days:value('payment_term_days'),
       roles:[...currentForm.querySelectorAll('input[name="roles"]:checked')].map(input => input.value)
     };
