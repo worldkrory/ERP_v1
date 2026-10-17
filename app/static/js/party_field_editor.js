@@ -138,7 +138,7 @@
       first?.focus({ preventScroll:true });
     }
     if (target.hasAttribute('data-party-saved')) window.DNAdminUI?.highlight(target);
-    else if (!error) window.DNAdminUI?.reveal(target,'[data-party-edit-body]');
+    else if (!error) window.DNAdminUI?.reveal(target,'[data-party-edit-body] > .dn-ui-field');
   });
   document.addEventListener('htmx:afterRequest', event => {
     const form = event.detail.elt;
@@ -151,6 +151,22 @@
   document.addEventListener('htmx:sendError', event => {
     if (event.detail.target?.hasAttribute('data-party-field')) message('No se pudo confirmar la respuesta. Recarga los valores actuales antes de volver a guardar.',true);
   });
+  document.addEventListener('toggle', event => {
+  const section = event.target;
+
+  if (
+    !(section instanceof HTMLDetailsElement)
+    || !section.id.startsWith('party-section-')
+  ) {
+    return;
+  }
+
+  if (section.open) {
+    window.DNAdminUI?.expandDetails(section);
+  } else {
+    window.DNAdminUI?.cleanup(section);
+  }
+}, true);
   const root = document.getElementById('party-editor');
   if (root) enhanceLists(root);
   window.dnPartyFieldEditor = { enhanceLists };

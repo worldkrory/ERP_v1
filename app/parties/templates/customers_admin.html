@@ -27,7 +27,9 @@
             <label class="dn-ui-field"><span>Tipo de documento</span><select id="document_type" name="document_type" class="dn-ui-input">{% for document_type in document_types %}<option value="{{ document_type }}">{{ document_type }}</option>{% endfor %}</select></label>
             <label class="dn-ui-field"><span>Número de documento</span><input id="document_number" name="document_number" class="dn-ui-input" maxlength="30" required></label>
             <label class="dn-ui-field"><span>Dígito de verificación</span><input id="verification_digit" name="verification_digit" class="dn-ui-input" type="number" min="0" max="9" step="1" aria-describedby="customer-dv-hint"><small id="customer-dv-hint" class="dn-ui-muted">Obligatorio únicamente para NIT.</small></label>
-            <label class="dn-ui-field dn-ui-field-wide"><span>Nombre completo / razón social</span><input id="legal_name" name="legal_name" class="dn-ui-input" maxlength="200" autocomplete="name" required></label>
+            <label class="dn-ui-field" data-customer-person-name hidden><span>Nombres</span><input id="first_name" name="first_name" class="dn-ui-input" maxlength="100" autocomplete="given-name"></label>
+            <label class="dn-ui-field" data-customer-person-name hidden><span>Apellidos</span><input id="last_name" name="last_name" class="dn-ui-input" maxlength="100" autocomplete="family-name"></label>
+            <input id="legal_name" name="legal_name" class="dn-ui-input" maxlength="200" autocomplete="name" required></label>
             <label class="dn-ui-field"><span>Nombre comercial</span><input id="trade_name" name="trade_name" class="dn-ui-input" maxlength="200" autocomplete="organization"></label>
             <label class="dn-ui-field"><span>Correo electrónico</span><input id="email" name="email" class="dn-ui-input" type="email" maxlength="255" autocomplete="email"></label>
             <label class="dn-ui-field"><span>Teléfono</span><input id="phone" name="phone" class="dn-ui-input" type="tel" maxlength="30" autocomplete="tel"></label>
@@ -65,6 +67,6 @@
 {% endcall %}
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/admin_ui.js', v='1') }}" defer></script>
-<script src="{{ url_for('static', filename='js/parties_workspace.js', v='1') }}" defer></script>
+<script src="{{ url_for('static', filename='js/admin_ui.js', v='3') }}" defer></script>
+<script src="{{ url_for('static', filename='js/parties_workspace.js', v='3') }}" defer></script>
 {% endblock %}

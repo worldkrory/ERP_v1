@@ -22,7 +22,53 @@
     const nit = documentType.value === 'NIT';
     dv.required = nit;
     dv.disabled = !nit;
+    syncPersonNames();
   }
+  function syncPersonNames() {
+    const type = document.getElementById('party_type');
+    const first = document.getElementById('first_name');
+    const last = document.getElementById('last_name');
+    const legal = document.getElementById('legal_name');
+
+    if (!type || !first || !last || !legal) return;
+
+    const natural = type.value === 'NATURAL';
+
+    document
+      .querySelectorAll('[data-customer-person-name]')
+      .forEach(node => {
+        node.hidden = !natural;
+      });
+
+    first.required = natural;
+    last.required = false;
+
+    first.disabled = !natural;
+    last.disabled = !natural;
+
+    legal.readOnly = natural;
+
+    if (natural) {
+      legal.value = [
+        first.value.trim(),
+        last.value.trim()
+      ].filter(Boolean).join(' ');
+    }
+  }
+  document.addEventListener('input', event => {
+  if (
+    event.target.id === 'first_name'
+    || event.target.id === 'last_name'
+  ) {
+    syncPersonNames();
+  }
+  });
+
+  document.addEventListener('change', event => {
+    if (event.target.id === 'party_type') {
+      syncPersonNames();
+    }
+  });
   function initialize() {
     const nextRoot = document.getElementById('parties-workspace');
     if (!nextRoot || nextRoot === root) return;
@@ -69,6 +115,13 @@
     if (saving || !currentForm.reportValidity()) return;
     const value = name => currentForm.elements.namedItem(name).value.trim();
     const payload = {
+      first_name: value('party_type') === 'NATURAL'
+        ? value('first_name')
+        : null,
+
+      last_name: value('party_type') === 'NATURAL'
+        ? value('last_name')
+        : null,
       party_type:value('party_type'), document_type:value('document_type'),
       document_number:value('document_number'), legal_name:value('legal_name'),
       verification_digit:value('document_type') === 'NIT' ? value('verification_digit') || null : null,

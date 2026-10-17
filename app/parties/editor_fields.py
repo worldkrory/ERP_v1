@@ -68,7 +68,12 @@ SECTIONS = (("identificacion", "Identificación"), ("contacto", "Contacto"),
             ("comercial", "Condiciones comerciales"), ("notas", "Notas"), ("estado", "Estado"))
 HINTS = {
     "documento": "Tipo, número y dígito se guardan juntos. Corrige datos del mismo tercero; si es otra persona o empresa, crea un registro nuevo.",
-    "persona": "Para persona natural se requieren nombres y apellidos. La razón social no se recalcula automáticamente.",
+    "persona": (
+        "Para persona natural se requieren nombres. "
+        "Los apellidos son opcionales. "
+        "El nombre completo no se recalcula automáticamente "
+        "desde este editor."
+    ),
     "tax_regime": "Opciones admitidas por tu modelo. Selecciona el valor documentado del tercero; no se determina su situación fiscal automáticamente.",
     "tax_responsibilities": "Añade cada código como texto. No se incluye un catálogo fiscal oficial. Los elementos existentes conservan su tipo si no los eliminas.",
     "ubicacion": "CO utiliza departamento de 2 dígitos y municipio de 5. Se comprueba formato y prefijo, no existencia en un catálogo geográfico.",
@@ -155,20 +160,71 @@ def parse_value(name, raw):
 
 def proposed_values(party, key, submitted):
     names = EDITORS[key][2]
-    result = {name: getattr(party, name) for name in FIELDS}
+
+    # Copia los valores actuales sin modificar todavía el modelo.
+    result = {
+        name: getattr(party, name)
+        for name in FIELDS
+    }
+
+    # Aplica todos los campos recibidos del editor.
     for name in names:
         if name not in submitted:
-            raise EditValidationError(f"Falta el campo {FIELDS[name].label}.")
-        result[name] = parse_value(name, submitted[name])
-    if result["party_type"] == "NATURAL" and (not result["first_name"] or not result["last_name"]):
-        raise EditValidationError("Una persona natural necesita nombres y apellidos. Usa el editor de tipo de persona.")
-    if result["document_type"] == "NIT" and result["verification_digit"] is None:
-        raise EditValidationError("El documento NIT requiere dígito de verificación.")
-    # Validate geographic coupling only when editing that group, not unrelated legacy data.
+            raise EditValidationError(
+                f"Falta el campo {FIELDS[name].label}."
+            )
+
+        result[name] = parse_value(
+            name,
+            submitted[name],
+        )
+
+    # Este bloque va DESPUÉS del for, no dentro.
+    if result["party_type"] == "NATURAL":
+        if not result["first_name"]:
+            raise EditValidationError(
+                "Una persona natural necesita al menos sus nombres."
+            )
+
+        if "last_name" in names:
+            # Conserva el apellido recibido.
+            # Solo convierte la ausencia en cadena vacía.
+            result["last_name"] = (
+                result["last_name"]
+                if result["last_name"] is not None
+                else ""
+            )
+
+    if (
+        result["document_type"] == "NIT"
+        and result["verification_digit"] is None
+    ):
+        raise EditValidationError(
+            "El documento NIT requiere dígito de verificación."
+        )
+
     if key == "ubicacion":
-        country, department, municipality = (result[n] for n in ("country_code", "department_code", "municipality_code"))
+        country = result["country_code"]
+        department = result["department_code"]
+        municipality = result["municipality_code"]
+
         if country != "CO" and (department or municipality):
-            raise EditValidationError("Para otro país, quita los códigos locales de departamento y municipio.")
-        if municipality and (not department or not municipality.startswith(department)):
-            raise EditValidationError("El municipio debe comenzar por el código del departamento seleccionado.")
-    return {name: result[name] for name in names}
+            raise EditValidationError(
+                "Para otro país, quita los códigos locales "
+                "de departamento y municipio."
+            )
+
+        if municipality and (
+            not department
+            or not municipality.startswith(department)
+        ):
+            raise EditValidationError(
+                "El municipio debe comenzar por el código "
+                "del departamento seleccionado."
+            )
+
+    # Devuelve los valores nuevos, no los originales de party.
+    return {
+        name: result[name]
+        for name in names
+    }
