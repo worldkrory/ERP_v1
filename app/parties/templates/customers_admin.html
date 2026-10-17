@@ -4,7 +4,7 @@
 {% from 'admin/_mobile_icons_v2.html' import mobile_icon %}
 {% block title %}Terceros · Clientes | Densa Niebla{% endblock %}
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_ui.css', v='2') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_ui.css', v='5') }}">
 {% endblock %}
 {% block content %}
 {% set workspace_actions %}
@@ -28,9 +28,9 @@
             <label class="dn-ui-field"><span>Número de documento</span><input id="document_number" name="document_number" class="dn-ui-input" maxlength="30" required></label>
             <label class="dn-ui-field"><span>Dígito de verificación</span><input id="verification_digit" name="verification_digit" class="dn-ui-input" type="number" min="0" max="9" step="1" aria-describedby="customer-dv-hint"><small id="customer-dv-hint" class="dn-ui-muted">Obligatorio únicamente para NIT.</small></label>
             <label class="dn-ui-field" data-customer-person-name hidden><span>Nombres</span><input id="first_name" name="first_name" class="dn-ui-input" maxlength="100" autocomplete="given-name"></label>
-            <label class="dn-ui-field" data-customer-person-name hidden><span>Apellidos</span><input id="last_name" name="last_name" class="dn-ui-input" maxlength="100" autocomplete="family-name"></label>
-            <input id="legal_name" name="legal_name" class="dn-ui-input" maxlength="200" autocomplete="name" required></label>
-            <label class="dn-ui-field"><span>Nombre comercial</span><input id="trade_name" name="trade_name" class="dn-ui-input" maxlength="200" autocomplete="organization"></label>
+            <label class="dn-ui-field " data-customer-person-name hidden><span>Apellidos</span><input id="last_name" name="last_name" class="dn-ui-input" maxlength="100" autocomplete="family-name"></label>
+            <section id="customer-identity-preview" class="dn-ui-identity dn-ui-field-wide" aria-label="Vista previa del nombre completo" hidden><span class="dn-ui-identity-avatar" data-identity-avatar aria-hidden="true"><svg viewBox="28 0 155 138" width="40" height="40" fill="none" focusable="false"><g stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M89 90 40 36 106 48 133 98 54 121 89 90Z" /><path d="M63 40 46 10 106 48" /><path d="M63 40 89 90 115 68" /><path d="M89 90 141 48 171 59 151 63 133 98" /><path d="M153 51 151 63" /><path d="M89 90 75 126 54 121" /></g><circle cx="143" cy="57" r="1.8" fill="currentColor"/></svg></span><div class="dn-ui-identity-copy"><p class="dn-ui-kicker">Vista previa · Identidad del cliente</p><p class="dn-ui-identity-name"><span data-identity-first></span><span class="dn-ui-identity-last" data-identity-last hidden></span><span class="dn-ui-identity-placeholder" data-identity-placeholder>El nombre toma forma aquí</span></p><span class="dn-ui-identity-rule" data-identity-rule aria-hidden="true"></span><p class="dn-ui-muted" data-identity-caption>Escribe los nombres. El apellido se puede completar después.</p></div></section>
+            <label class="dn-ui-field dn-ui-field-wide" for="legal_name" data-customer-legal-field><span>Nombre completo / razón social</span><input id="legal_name" name="legal_name" class="dn-ui-input" maxlength="200" autocomplete="name" required></label>
             <label class="dn-ui-field"><span>Correo electrónico</span><input id="email" name="email" class="dn-ui-input" type="email" maxlength="255" autocomplete="email"></label>
             <label class="dn-ui-field"><span>Teléfono</span><input id="phone" name="phone" class="dn-ui-input" type="tel" maxlength="30" autocomplete="tel"></label>
             <label class="dn-ui-field"><span>WhatsApp</span><input id="whatsapp" name="whatsapp" class="dn-ui-input" type="tel" maxlength="30"></label>
@@ -69,4 +69,5 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/admin_ui.js', v='3') }}" defer></script>
 <script src="{{ url_for('static', filename='js/parties_workspace.js', v='3') }}" defer></script>
+<script src="{{ url_for('static', filename='js/party_identity_preview.js', v='2') }}" defer></script>
 {% endblock %}

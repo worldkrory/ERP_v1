@@ -96,3 +96,70 @@
 .dn-ui .dn-ui-record-link { display:inline-block; color:var(--dn-ui-primary); text-decoration:none; }
 .dn-ui .dn-ui-record-link:hover strong { text-decoration:underline; }
 .dn-ui .dn-ui-record-link:focus-visible { outline:2px solid var(--dn-ui-accent); outline-offset:3px; border-radius:3px; }
+
+/* Componente compartido: vista previa de identidad, no campo editable. */
+.dn-ui .dn-ui-identity {
+  display:grid;
+  grid-template-columns:52px minmax(0,1fr);
+  align-items:start;
+  gap:16px;
+  padding:18px 0;
+  border-top:1px solid var(--dn-ui-border);
+  border-bottom:1px solid var(--dn-ui-border);
+}
+.dn-ui .dn-ui-identity-avatar {
+  display: grid;
+  place-items: center;
+
+  width: 52px;
+  height: 58px;
+
+  color: #d8bd77;
+  background: var(--dn-ui-primary-deep);
+  border: 1px solid var(--dn-ui-primary);
+  border-radius: 15px 15px 15px 4px;
+}
+
+.dn-ui .dn-ui-identity-avatar svg {
+  display: block;
+  width: 40px;
+  height: 40px;
+  transform-origin: center;
+}
+.dn-ui .dn-ui-identity-copy { min-width:0; }
+.dn-ui .dn-ui-identity-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: .22em;
+  row-gap: 2px;
+
+  margin: 7px 0 10px;
+  color: var(--dn-ui-primary);
+  font: 600 clamp(1.3rem, 2vw, 1.8rem)/1.25 Georgia, serif;
+  letter-spacing: -.02em;
+  overflow-wrap: anywhere;
+}
+.dn-ui .dn-ui-identity-name > span {
+  display: inline-block;
+  min-width: 0;
+  max-width: 100%;
+}
+.dn-ui .dn-ui-identity-last { color:var(--dn-ui-accent); }
+.dn-ui .dn-ui-identity-placeholder { color:var(--dn-ui-muted); font-weight:400; }
+.dn-ui .dn-ui-identity-rule {
+  display:block; width:56px; height:2px; margin:0 0 10px;
+  background:var(--dn-ui-accent); transform-origin:left center;
+}
+.dn-ui .dn-ui-identity[data-empty="true"] .dn-ui-identity-rule { opacity:.35; }
+@media(max-width:680px) {
+  .dn-ui .dn-ui-identity-avatar {
+    width: 44px;
+    height: 50px;
+  }
+
+  .dn-ui .dn-ui-identity-avatar svg {
+    width: 34px;
+    height: 34px;
+  }
+}
