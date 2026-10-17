@@ -1,0 +1,38 @@
+<section id="party-field-{{ key }}" class="dn-ui-edit-row" data-party-field>
+  <header class="dn-ui-row-heading"><h3>Editar · {{ title }}</h3></header>
+  {% if hint %}<p class="dn-ui-muted">{{ hint }}</p>{% endif %}
+  {% if error %}<div class="dn-ui-alert" data-tone="error" role="alert" tabindex="-1">{{ error }}</div>{% endif %}
+  <form method="post" action="{{ url_for('parties_editor.edit_field', party_id=party.id, key=key) }}" data-party-edit-form data-dirty="{{ '1' if error else '0' }}"
+        hx-post="{{ url_for('parties_editor.edit_field', party_id=party.id, key=key) }}" hx-target="#party-field-{{ key }}" hx-swap="outerHTML" hx-sync="this:drop">
+    <input type="hidden" name="revision" value="{{ revision }}">
+    <input type="hidden" name="editor_csrf" value="{{ editor_csrf }}">
+    {% if global_csrf %}<input type="hidden" name="csrf_token" value="{{ global_csrf }}">{% endif %}
+    <fieldset class="dn-ui-fieldset" data-party-edit-controls><legend class="dn-ui-sr-only">{{ title }}</legend>
+      <div class="dn-ui-field-grid" data-party-edit-body>
+      {% for field in inputs %}
+        {% set container_tag = "div" if field.kind == "list" else "label" %}
+        <{{ container_tag }} class="dn-ui-field {% if field.kind in ('textarea','list') %}dn-ui-field-wide{% endif %}">
+          <span>{{ field.label }}</span>
+          {% if field.kind in ('select','bool','price') %}
+          <select class="dn-ui-input" name="{{ field.name }}" {% if not field.nullable %}required{% endif %}>
+            {% if field.nullable %}<option value="">Sin registrar / quitar valor</option>{% endif %}
+            {% for value,label in field.options %}<option value="{{ value }}" {% if value|string == field.value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+          {% elif field.kind in ('textarea','list') %}
+          <textarea class="dn-ui-input" aria-label="{{ field.label }}" name="{{ field.name }}" rows="{{ 5 if field.kind == 'textarea' else 3 }}" {% if field.maximum %}maxlength="{{ field.maximum }}"{% endif %} {% if field.kind == 'list' %}data-party-list-source{% endif %}>{{ field.value }}</textarea>
+          {% else %}
+          <input class="dn-ui-input" name="{{ field.name }}" type="{{ 'email' if field.kind == 'email' else 'text' }}" value="{{ field.value }}" {% if field.maximum %}maxlength="{{ field.maximum }}"{% endif %} {% if not field.nullable %}required{% endif %} {% if field.kind == 'money' %}inputmode="decimal"{% elif field.kind in ('digit','days') %}inputmode="numeric"{% endif %}>
+          {% endif %}
+          {% if field.nullable and field.kind not in ('select','price') %}<small class="dn-ui-muted">Dejar vacío quita este dato opcional.</small>{% endif %}
+        </{{ container_tag }}>
+      {% endfor %}
+      </div>
+      {% if sensitive %}<label class="dn-ui-choice"><input type="checkbox" name="confirm_sensitive" value="yes" required><span>Confirmo que he verificado este cambio de identificación, condiciones o estado.</span></label>{% endif %}
+      <div class="dn-ui-actions dn-ui-actions-end">
+        {% if not conflict %}<button class="dn-ui-button dn-ui-button-primary" type="submit">Guardar cambio</button>{% endif %}
+        <a class="dn-ui-button" href="{{ url_for('parties_editor.read_field', party_id=party.id, key=key) }}" hx-get="{{ url_for('parties_editor.read_field', party_id=party.id, key=key) }}" hx-target="#party-field-{{ key }}" hx-swap="outerHTML" data-discard-edit>Cancelar</a>
+        <a class="dn-ui-button" href="{{ url_for('parties_editor.edit_field', party_id=party.id, key=key) }}" hx-get="{{ url_for('parties_editor.edit_field', party_id=party.id, key=key) }}" hx-target="#party-field-{{ key }}" hx-swap="outerHTML" data-discard-edit>Recargar valores actuales</a>
+      </div>
+    </fieldset>
+  </form>
+</section>

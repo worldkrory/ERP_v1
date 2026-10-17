@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% from 'admin/_admin_shell.html' import admin_shell %}
+{% block title %}Ficha de tercero | Densa Niebla{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_ui.css', v='2') }}">{% endblock %}
+{% block content %}
+{% set actions %}<div class="dn-ui"><a class="dn-ui-button" href="{{ url_for('parties_admin.customers_admin_page') }}">Volver al directorio</a></div>{% endset %}
+{% call admin_shell(active_section='parties', active_module='parties', page_kicker='Densa Niebla · Relaciones comerciales', page_title='Ficha de tercero', page_hint='Consulta los datos y abre únicamente el editor que necesitas.', page_actions=actions, admin_user=current_user) %}
+<div id="party-editor" class="dn-ui dn-ui-stack">
+  <div id="party-editor-feedback" class="dn-ui-alert" data-tone="info" role="status" aria-live="polite" hidden></div>
+  {% include 'parties/editor/_meta.html' %}
+  <nav class="dn-ui-actions" aria-label="Secciones de la ficha">{% for group in groups %}<a class="dn-ui-button dn-ui-button-small" href="#party-section-{{ group.key }}" data-party-section-link>{{ group.label }}</a>{% endfor %}</nav>
+  <p class="dn-ui-muted">Solo hay un editor abierto a la vez. Guardar afecta el maestro del tercero, no reescribe importes, condiciones ni movimientos de documentos existentes.</p>
+  {% for group in groups %}
+  <details id="party-section-{{ group.key }}" class="dn-ui-panel" {% if group.open %}open{% endif %}>
+    <summary class="dn-ui-disclosure">{{ group.label }}</summary>
+    <div class="dn-ui-panel-body dn-ui-stack">
+      {% for entry in group['items'] %}
+        {% with party=entry.party, key=entry.key, title=entry.title, inputs=entry.inputs, sensitive=entry.sensitive, can_edit=entry.can_edit, hint=entry.hint, revision=entry.revision, editor_csrf=entry.editor_csrf, global_csrf=entry.global_csrf, error=entry.error, conflict=entry.conflict, saved=False %}
+          {% if key == editing %}{% include 'parties/editor/_form.html' %}{% else %}{% include 'parties/editor/_field.html' %}{% endif %}
+        {% endwith %}
+      {% endfor %}
+    </div>
+  </details>
+  {% endfor %}
+</div>
+{% endcall %}
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin_ui.js', v='1') }}" defer></script>
+<script src="{{ url_for('static', filename='js/party_field_editor.js', v='1') }}" defer></script>
+{% endblock %}

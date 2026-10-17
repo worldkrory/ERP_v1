@@ -1,0 +1,8 @@
+<section id="party-field-{{ key }}" class="dn-ui-edit-row" data-party-field {% if saved|default(false) %}data-party-saved="true"{% endif %}>
+  <header class="dn-ui-row-heading"><h3>{{ title }}</h3>
+    {% if can_edit %}<a class="dn-ui-button dn-ui-button-small" href="{{ url_for('parties_editor.edit_field', party_id=party.id, key=key) }}" hx-get="{{ url_for('parties_editor.edit_field', party_id=party.id, key=key) }}" hx-target="#party-field-{{ key }}" hx-swap="outerHTML">Editar</a>
+    {% else %}<span class="dn-ui-muted">Edición reservada al administrador</span>{% endif %}
+  </header>
+  <dl class="dn-ui-field-grid dn-ui-definition">{% for field in inputs %}<div>{% if inputs|length > 1 %}<dt class="dn-ui-label">{{ field.label }}</dt>{% else %}<dt class="dn-ui-sr-only">{{ field.label }}</dt>{% endif %}<dd class="dn-ui-value">{{ field.display }}</dd></div>{% endfor %}</dl>
+  {% if saved|default(false) %}<p class="dn-ui-muted" role="status">Cambio guardado correctamente.</p>{% endif %}
+</section>

@@ -15,7 +15,11 @@
       <tbody>
       {% for customer in customers %}
       <tr data-customer-row data-customer-id="{{ customer.id }}">
-        <td><strong>{{ customer.display_name }}</strong>
+        <td><a class="dn-ui-record-link"
+              href="{{ url_for('parties_editor.detail', party_id=customer.id) }}">
+              <strong>{{ customer.display_name }}</strong>
+              <span class="dn-ui-muted">Ver ficha / Editar</span>
+            </a>
           {% if customer.trade_name and customer.trade_name != customer.legal_name %}<span class="dn-ui-muted">{{ customer.legal_name }}</span>{% endif %}
           <span class="dn-ui-muted">{{ 'Empresa' if customer.party_type == 'JURIDICA' else 'Persona natural' }}</span>
           <div class="dn-ui-badges">{% for label in profiles.get(customer.id, []) %}{{ ui_badge(label) }}{% endfor %}</div>

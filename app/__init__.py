@@ -12,7 +12,7 @@ from app.storefront import storefront_bp
 from app.raffle import raffle_bp
 from app.inventory import inventory_admin_bp
 
-
+from app.parties.field_editor import parties_editor_bp
 
 
 from app import models
@@ -141,6 +141,7 @@ def register_blueprints(app):
     app.register_blueprint(sales_admin_bp)
     app.register_blueprint(parties_bp)
     app.register_blueprint(parties_admin_bp)
+    app.register_blueprint(parties_editor_bp)
     app.register_blueprint(purchases_bp)
     app.register_blueprint(purchases_admin_bp)
     app.register_blueprint(production_bp)

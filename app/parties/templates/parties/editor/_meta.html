@@ -1,0 +1,15 @@
+<section id="party-editor-meta" class="dn-ui-panel" {% if meta_oob|default(false) %}hx-swap-oob="outerHTML"{% endif %}>
+  <header class="dn-ui-panel-heading"><div><p class="dn-ui-kicker">Tercero #{{ party.id }}</p><h2>{{ party.display_name }}</h2><p class="dn-ui-muted">{{ party.document_type }} {{ party.document_full }}</p></div><span class="dn-ui-badge">{{ 'Activo' if party.is_active else 'Inactivo' }}</span></header>
+  <div class="dn-ui-panel-body">
+    <div class="dn-ui-badges">{% for code in party.active_roles()|sort %}<span class="dn-ui-badge">{{ code.replace('_', ' ') }}</span>{% endfor %}</div>
+    <details><summary class="dn-ui-disclosure">Información del sistema · solo lectura</summary>
+      <dl class="dn-ui-field-grid dn-ui-definition">
+        <div><dt class="dn-ui-label">ID</dt><dd class="dn-ui-value">{{ party.id }}</dd></div>
+        <div><dt class="dn-ui-label">Creado por · ID usuario</dt><dd class="dn-ui-value">{{ party.created_by_id or 'No registrado' }}</dd></div>
+        <div><dt class="dn-ui-label">Creación</dt><dd class="dn-ui-value">{{ party.created_at.isoformat() if party.created_at else 'No registrada' }}</dd></div>
+        <div><dt class="dn-ui-label">Actualizado por · ID usuario</dt><dd class="dn-ui-value">{{ party.updated_by_id or 'No registrado' }}</dd></div>
+        <div><dt class="dn-ui-label">Última actualización</dt><dd class="dn-ui-value">{{ party.updated_at.isoformat() if party.updated_at else 'No registrada' }}</dd></div>
+      </dl>
+    </details>
+  </div>
+</section>
