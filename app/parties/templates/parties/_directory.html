@@ -1,0 +1,41 @@
+{% from 'admin/_ui.html' import ui_badge, ui_alert %}
+<section id="customer-directory" class="dn-ui-panel" aria-label="Directorio de clientes">
+  <header class="dn-ui-panel-heading">
+    <div><p class="dn-ui-kicker">Directorio comercial</p><h2>Clientes registrados</h2>
+      <p class="dn-ui-muted">{% if not directory_error %}{{ total }} resultados · Página {{ page }} de {{ pages }}{% else %}Consulta no disponible{% endif %}</p>
+    </div>
+    <span class="dn-ui-badge">Clientes activos · Rol vigente</span>
+  </header>
+  {% if directory_error %}
+    <div class="dn-ui-panel-body">{{ ui_alert(directory_error, 'error') }}</div>
+  {% else %}
+  <div class="dn-ui-table-scroll" tabindex="0" role="region" aria-label="Tabla de clientes; desplazable horizontalmente">
+    <table class="dn-ui-table">
+      <thead><tr><th scope="col">Cliente</th><th scope="col">Documento</th><th scope="col">Contacto</th><th scope="col">Pago</th></tr></thead>
+      <tbody>
+      {% for customer in customers %}
+      <tr data-customer-row data-customer-id="{{ customer.id }}">
+        <td><strong>{{ customer.display_name }}</strong>
+          {% if customer.trade_name and customer.trade_name != customer.legal_name %}<span class="dn-ui-muted">{{ customer.legal_name }}</span>{% endif %}
+          <span class="dn-ui-muted">{{ 'Empresa' if customer.party_type == 'JURIDICA' else 'Persona natural' }}</span>
+          <div class="dn-ui-badges">{% for label in profiles.get(customer.id, []) %}{{ ui_badge(label) }}{% endfor %}</div>
+        </td>
+        <td><span class="dn-ui-nowrap">{{ customer.document_type }} {{ customer.document_full }}</span></td>
+        <td><span class="dn-ui-break">{{ customer.email or 'Sin correo' }}</span><span class="dn-ui-muted">{{ customer.phone or customer.whatsapp or 'Sin teléfono' }}</span></td>
+        <td>{{ (customer.payment_term_days|string) + ' días' if customer.payment_term_days else 'Contado' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="dn-ui-empty">No hay clientes que coincidan con estos filtros.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <footer class="dn-ui-panel-footer">
+    <span class="dn-ui-muted">{{ customers|length }} en esta página · En móvil puedes deslizar la tabla</span>
+    <nav class="dn-ui-actions" aria-label="Páginas del directorio">
+      {% if links.previous %}<a class="dn-ui-button dn-ui-button-small" href="{{ links.previous }}" hx-get="{{ links.previous }}" hx-target="#customer-directory" hx-swap="outerHTML" hx-push-url="true" hx-sync="#customer-filters:replace" hx-indicator="#customer-directory-loading">Anterior</a>{% endif %}
+      {% if links.next %}<a class="dn-ui-button dn-ui-button-small" href="{{ links.next }}" hx-get="{{ links.next }}" hx-target="#customer-directory" hx-swap="outerHTML" hx-push-url="true" hx-sync="#customer-filters:replace" hx-indicator="#customer-directory-loading">Siguiente</a>{% endif %}
+    </nav>
+  </footer>
+  {% endif %}
+</section>

@@ -1,0 +1,7 @@
+{% macro ui_badge(label) -%}
+<span class="dn-ui-badge">{{ label }}</span>
+{%- endmacro %}
+
+{% macro ui_alert(message, tone='info') -%}
+<div class="dn-ui-alert" data-tone="{{ tone }}" role="{{ 'alert' if tone == 'error' else 'status' }}">{{ message }}</div>
+{%- endmacro %}

@@ -14,6 +14,8 @@ from app.models.party import DOCUMENT_TYPES, PARTY_ROLE_CODES, Party, PartyRole
 
 from app.security.permissions import require_role
 
+from app.parties.workspace import render_customers_workspace
+
 parties_bp = Blueprint("parties", __name__, url_prefix="/api/v1")
 parties_admin_bp = Blueprint(
     "parties_admin", __name__, template_folder="templates", url_prefix=""
@@ -98,20 +100,7 @@ def create_customer():
 @login_required
 @require_role("ADMIN", "VENTAS")
 def customers_admin_page():
-    try:
-        customers = _customer_query().all()
-    except SQLAlchemyError:
-        db.session.rollback()
-        customers = []
-
-    return render_template(
-        "customers_admin.html",
-        customers=customers,
-        document_types=DOCUMENT_TYPES,
-        customer_roles=("CUSTOMER", "CAFETERIA", "INTERMEDIARY"),
-        demo_mode=False,
-        can_view_customers=True,
-    )
+    return render_customers_workspace()
 
 def _customer_query():
     today = date.today()
