@@ -1,0 +1,12 @@
+<article id="bourbon-chapter" class="bg-chapter" data-chapter-key="{{ chapter_key }}" aria-live="polite" aria-atomic="true">
+  <div class="bg-chapter-inner">
+    <div class="bg-chapter-number" aria-hidden="true">{{ chapter.number }}</div>
+    <div class="bg-chapter-copy">
+      <p class="bg-label">{{ chapter.label }} / Cuaderno del microlote</p>
+      <h3>{{ chapter.title }}</h3>
+      <p>{{ chapter.text }}</p>
+      <p class="bg-caption">{{ chapter.note }}</p>
+      {% if chapter_key != 'origen' %}<a class="bg-text-link" href="{{ url_for('storefront.product_detail', slug='bourbon-rosado') }}">Consultar la ficha del café <span aria-hidden="true">↗</span></a>{% endif %}
+    </div>
+  </div>
+</article>

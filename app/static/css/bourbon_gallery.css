@@ -1,0 +1,98 @@
+/* Galeria Bourbon: tokens aislados, sin hojas admin ni microlote.css. */
+body.dn-bourbon-gallery {
+ --bg-putty:#c4c3b6; --bg-ink:#000; --bg-bone:#e7e5e4; --bg-chalk:#ebebeb;
+ --bg-vellum:#dfdcd5; --bg-graphite:#595855; --bg-paper:#fff;
+ --bg-serif:'Cormorant Garamond',Georgia,serif; --bg-sans:'Inter',Arial,sans-serif;
+ --bg-gutter:clamp(20px,4vw,76px);
+ margin:0; color:var(--bg-ink); background:var(--bg-putty);
+ font:400 16px/1.6 var(--bg-sans);
+}
+.dn-bourbon-gallery *, .dn-bourbon-gallery *::before, .dn-bourbon-gallery *::after { box-sizing:border-box; }
+.dn-bourbon-gallery [hidden] { display:none !important; }
+.dn-bourbon-gallery a { color:inherit; text-decoration:none; }
+.dn-bourbon-gallery button { font:inherit; cursor:pointer; }
+.dn-bourbon-gallery :focus-visible { outline:2px solid currentColor; outline-offset:5px; }
+.dn-bourbon-gallery :is(h1,h2,h3,p,figure) { margin:0; }
+.dn-bourbon-gallery :is(h1,h2,h3) { font-family:var(--bg-serif); font-weight:500; letter-spacing:-.025em; }
+.dn-bourbon-gallery em { font-weight:400; }
+.dn-bourbon-gallery .bg-label { font:500 12px/1.5 var(--bg-sans); letter-spacing:.06em; text-transform:uppercase; }
+.dn-bourbon-gallery .bg-caption { color:var(--bg-graphite); font-size:12px; line-height:1.6; }
+.dn-bourbon-gallery .bg-skip { position:absolute; top:12px; left:12px; z-index:20; padding:10px 16px; background:var(--bg-bone); transform:translateY(-180%); }
+.dn-bourbon-gallery .bg-skip:focus { transform:none; }
+.dn-bourbon-gallery .bg-header { display:flex; align-items:center; justify-content:space-between; min-height:80px; padding:16px var(--bg-gutter); }
+.dn-bourbon-gallery .bg-brand { display:grid; place-items:center; width:44px; height:44px; }
+.dn-bourbon-gallery .bg-text-link { display:inline-flex; align-items:center; gap:8px; min-height:44px; font-size:14px; text-underline-offset:5px; }
+.dn-bourbon-gallery .bg-text-link:hover { text-decoration:underline; }
+.dn-bourbon-gallery .bg-hero { overflow:hidden; }
+.dn-bourbon-gallery .bg-hero-meta, .dn-bourbon-gallery .bg-hero-foot, .dn-bourbon-gallery .bg-section-top { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; }
+.dn-bourbon-gallery .bg-hero-meta { padding:20px var(--bg-gutter) 0; }
+.dn-bourbon-gallery .bg-hero-center { display:grid; justify-items:center; gap:24px; padding:60px var(--bg-gutter) 52px; text-align:center; }
+.dn-bourbon-gallery .bg-hero h1 { font-size:clamp(68px,8vw,126px); line-height:.9; }
+.dn-bourbon-gallery .bg-hero h1 em { display:block; }
+.dn-bourbon-gallery .bg-hero-lead { max-width:530px; font-size:16px; }
+.dn-bourbon-gallery .bg-pill { display:inline-flex; align-items:center; justify-content:center; gap:20px; min-height:46px; padding:10px 20px; border:1px solid var(--bg-ink); border-radius:28.8px; background:var(--bg-ink); color:var(--bg-paper); font-size:14px; }
+.dn-bourbon-gallery .bg-pill:hover { background:transparent; color:var(--bg-ink); }
+.dn-bourbon-gallery .bg-wordmark-window { overflow:hidden; padding:8px 0 12px; }
+.dn-bourbon-gallery .bg-wordmark { display:block; width:max-content; position:relative; left:50%; margin-left:-.5em; transform:translateX(-50%); white-space:nowrap; font:500 clamp(100px,26vw,374px)/.84 var(--bg-serif); letter-spacing:-.009em; }
+.dn-bourbon-gallery .bg-hero-foot { padding:26px var(--bg-gutter) 34px; }
+.dn-bourbon-gallery .bg-exhibition { background:var(--bg-ink); color:var(--bg-paper); }
+.dn-bourbon-gallery .bg-exhibition-stage { position:relative; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); min-height:720px; }
+.dn-bourbon-gallery .bg-exhibition-media { position:relative; min-width:0; overflow:hidden; background:var(--bg-ink); }
+.dn-bourbon-gallery .bg-art-image, .dn-bourbon-gallery .bg-film { display:block; width:100%; height:100%; min-height:600px; object-fit:contain; }
+.dn-bourbon-gallery .bg-exhibition-copy { display:flex; flex-direction:column; justify-content:center; align-items:flex-start; gap:24px; padding:80px var(--bg-gutter); }
+.dn-bourbon-gallery .bg-exhibition h2 { font-size:clamp(52px,6vw,94px); line-height:.94; }
+.dn-bourbon-gallery .bg-exhibition-copy > p:not(.bg-label) { max-width:430px; font-size:15px; }
+.dn-bourbon-gallery .bg-exhibition-stage.is-choreographed { display:block; height:100svh; min-height:0; }
+.dn-bourbon-gallery .is-choreographed .bg-exhibition-media { position:absolute; inset:0; }
+.dn-bourbon-gallery .is-choreographed :is(.bg-art-image,.bg-film) { height:100%; min-height:0; }
+.dn-bourbon-gallery .is-choreographed .bg-exhibition-copy { position:absolute; top:0; bottom:0; left:55%; right:5%; padding:35px 0; }
+.dn-bourbon-gallery .bg-media-fallback { position:absolute; inset:0; display:grid; place-content:center; padding:32px; text-align:center; font-size:15px; }
+.dn-bourbon-gallery .bg-video-controls { position:absolute; left:6%; bottom:12%; z-index:2; display:flex; flex-wrap:wrap; gap:8px; }
+.dn-bourbon-gallery .bg-control { min-height:44px; padding:9px 14px; color:var(--bg-paper); background:var(--bg-ink); border:1px solid var(--bg-vellum); border-radius:28.8px; font-size:12px; }
+.dn-bourbon-gallery .bg-notebook { padding:52px var(--bg-gutter) 96px; background:var(--bg-bone); }
+.dn-bourbon-gallery .bg-notebook > h2 { padding:74px 0 64px; font-size:clamp(52px,7vw,94px); line-height:.94; }
+.dn-bourbon-gallery .bg-notebook-layout { display:grid; grid-template-columns:minmax(210px,.6fr) minmax(0,1.4fr); gap:clamp(28px,6vw,110px); align-items:start; }
+.dn-bourbon-gallery .bg-chapter-nav { display:grid; gap:0; }
+.dn-bourbon-gallery .bg-chapter-link { display:grid; grid-template-columns:14px 24px minmax(0,1fr) auto; align-items:center; gap:12px; min-height:64px; border-bottom:1px solid var(--bg-graphite); font-size:14px; }
+.dn-bourbon-gallery .bg-chapter-link strong { font-weight:400; }
+.dn-bourbon-gallery .bg-chapter-link.is-active strong { font-weight:500; }
+.dn-bourbon-gallery .bg-chapter-link.is-active svg { fill:currentColor; }
+.dn-bourbon-gallery .bg-chapter-status, .dn-bourbon-gallery .bg-chapter-error { margin-top:16px; font-size:12px; }
+.dn-bourbon-gallery .htmx-indicator { display:none; }
+.dn-bourbon-gallery .htmx-indicator.htmx-request { display:block; }
+.dn-bourbon-gallery .bg-chapter { min-height:350px; border-top:1px solid var(--bg-ink); }
+.dn-bourbon-gallery .bg-chapter-inner { display:grid; grid-template-columns:90px minmax(0,1fr); gap:24px; padding:28px 0; }
+.dn-bourbon-gallery .bg-chapter-number { font:400 82px/1 var(--bg-serif); }
+.dn-bourbon-gallery .bg-chapter-copy { display:grid; gap:20px; align-content:start; }
+.dn-bourbon-gallery .bg-chapter h3 { font-size:clamp(34px,4vw,52px); line-height:1; }
+.dn-bourbon-gallery .bg-chapter-copy > p:not(.bg-label):not(.bg-caption) { font-size:15px; max-width:600px; }
+.dn-bourbon-gallery .bg-manifesto { background:var(--bg-ink); color:var(--bg-paper); padding:52px var(--bg-gutter); }
+.dn-bourbon-gallery .bg-manifesto h2 { padding:96px 0; max-width:1400px; font-size:clamp(44px,6.3vw,94px); line-height:1; }
+.dn-bourbon-gallery .bg-manifesto h2 em { color:var(--bg-putty); }
+.dn-bourbon-gallery .bg-manifesto-bottom { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:24px; padding-top:24px; border-top:1px solid var(--bg-graphite); }
+.dn-bourbon-gallery .bg-invitation { display:grid; justify-items:center; gap:28px; padding:96px var(--bg-gutter); text-align:center; background:var(--bg-putty); }
+.dn-bourbon-gallery .bg-invitation h2 { font-size:clamp(76px,10vw,160px); line-height:.86; }
+.dn-bourbon-gallery .bg-footer { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:24px; padding:40px var(--bg-gutter); background:var(--bg-chalk); }
+.dn-bourbon-gallery .bg-footer strong { display:block; font:500 34px/1 var(--bg-serif); }
+.dn-bourbon-gallery .bg-footer span { display:block; margin-top:8px; font-size:12px; }
+@media(max-width:1099px) {
+ .dn-bourbon-gallery .bg-exhibition-stage { grid-template-columns:minmax(0,1fr); min-height:0; }
+ .dn-bourbon-gallery :is(.bg-art-image,.bg-film) { height:min(80svh,700px); min-height:0; }
+ .dn-bourbon-gallery .bg-exhibition-copy { padding:52px var(--bg-gutter); }
+ .dn-bourbon-gallery .bg-video-controls { position:relative; left:auto; bottom:auto; padding:0 var(--bg-gutter) 24px; }
+}
+@media(max-width:680px) {
+ .dn-bourbon-gallery .bg-header { min-height:72px; }
+ .dn-bourbon-gallery .bg-hero-meta { padding-top:16px; }
+ .dn-bourbon-gallery .bg-hero-meta .bg-label { font-size:11px; }
+ .dn-bourbon-gallery .bg-hero-center { padding-top:48px; gap:22px; }
+ .dn-bourbon-gallery .bg-desktop-break { display:none; }
+ .dn-bourbon-gallery .bg-hero-foot { padding-top:20px; }
+ .dn-bourbon-gallery .bg-notebook-layout { grid-template-columns:minmax(0,1fr); gap:28px; }
+ .dn-bourbon-gallery .bg-notebook { padding-top:32px; padding-bottom:60px; }
+ .dn-bourbon-gallery .bg-notebook > h2 { padding:48px 0 36px; }
+ .dn-bourbon-gallery .bg-chapter-inner { grid-template-columns:48px minmax(0,1fr); gap:16px; }
+ .dn-bourbon-gallery .bg-chapter-number { font-size:52px; }
+ .dn-bourbon-gallery .bg-manifesto h2 { padding:64px 0; }
+ .dn-bourbon-gallery .bg-invitation { padding-top:72px; padding-bottom:72px; }
+}
