@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/bourbon_gallery.css', v='1') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bourbon_gallery.css', v='2') }}">
 </head>
 <body class="dn-bourbon-gallery">
 <a class="bg-skip" href="#contenido">Saltar al contenido</a>
@@ -20,7 +20,13 @@
   <a class="bg-text-link" href="{{ url_for('storefront.product_detail', slug='bourbon-rosado') }}">Elegir mi café <span aria-hidden="true">↗</span></a>
 </header>
 <main id="contenido">
-<section class="bg-hero" aria-labelledby="bourbon-title">
+<svg class="bg-story-route" data-story-route viewBox="0 0 80 1200" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+  <path class="bg-route-track" data-route-track d="M40 12C8 180 72 300 40 430S8 760 40 900S72 1080 40 1188"/>
+  <path class="bg-route-progress" data-route-progress d="M40 12C8 180 72 300 40 430S8 760 40 900S72 1080 40 1188"/>
+  <g data-route-nodes></g>
+</svg>
+
+<section id="umbral" data-journey-step="umbral" class="bg-hero" aria-labelledby="bourbon-title">
   <div class="bg-hero-meta"><span class="bg-label">Café especial / Microlote</span><span class="bg-label">Guavatá, Santander</span></div>
   <div class="bg-hero-center">
     <p class="bg-label">Un cuaderno de origen</p>
@@ -31,7 +37,7 @@
   <div class="bg-wordmark-window" aria-hidden="true"><span class="bg-wordmark" data-gallery-wordmark>Densa Niebla</span></div>
   <div class="bg-hero-foot"><span class="bg-label">Colombia / Café de finca</span><a class="bg-text-link" href="#cuaderno">Explorar el microlote ↓</a></div>
 </section>
-<section id="pieza" class="bg-exhibition" aria-labelledby="piece-title">
+<section id="pieza" data-journey-step="pieza" class="bg-exhibition" aria-labelledby="piece-title">
   <div class="bg-exhibition-stage" data-exhibition-stage>
     <div class="bg-exhibition-media" data-exhibition-media>
       {% if video_url %}
@@ -51,11 +57,13 @@
     {% if video_url %}<div class="bg-video-controls"><button type="button" class="bg-control" data-video-toggle aria-pressed="false">Reproducir película</button><button type="button" class="bg-control" data-sound-toggle aria-pressed="false">Activar sonido</button></div>{% endif %}
   </div>
 </section>
-<section id="cuaderno" class="bg-notebook" aria-labelledby="notebook-title">
+<section id="cuaderno" data-journey-step="cuaderno" class="bg-notebook" aria-labelledby="notebook-title">
+  <div class="bg-notebook-atmosphere" aria-hidden="true"><span class="bg-mist-cloud bg-mist-cloud-one" data-notebook-mist></span><span class="bg-mist-cloud bg-mist-cloud-two" data-notebook-mist></span></div>
   <div class="bg-section-top"><p class="bg-label">02 / Cuaderno del microlote</p><span class="bg-label">De origen a taza</span></div>
   <h2 id="notebook-title">Conocer también<br>es parte del <em>ritual.</em></h2>
   <div class="bg-notebook-layout">
     <nav class="bg-chapter-nav" aria-label="Capítulos del microlote">
+      <div class="bg-chapter-meter" aria-hidden="true"><span data-chapter-meter></span></div>
       {% for key, item in chapters.items() %}
       <a class="bg-chapter-link {% if key == chapter_key %}is-active{% endif %}" data-chapter-link="{{ key }}"
          href="{{ url_for(chapter_endpoint, chapter=key, _anchor='cuaderno') }}"
@@ -73,12 +81,12 @@
     {% include 'microlote_gallery/_chapter.html' %}
   </div>
 </section>
-<section class="bg-manifesto" aria-labelledby="manifesto-title">
+<section id="recorrido" data-journey-step="recorrido" class="bg-manifesto" aria-labelledby="manifesto-title">
   <div class="bg-section-top"><span class="bg-label">03 / Lo que conserva la taza</span><span class="bg-label">Densa Niebla</span></div>
   <h2 id="manifesto-title">No queríamos que solo<br>probaras el café.<br><em>Queríamos que conocieras<br>de dónde viene.</em></h2>
   <div class="bg-manifesto-bottom"><span class="bg-label">Finca → Cosecha → Proceso → Tostión → Tu taza</span><a class="bg-text-link" href="https://www.instagram.com/cafedensaniebla/" target="_blank" rel="noopener noreferrer">Seguir la historia en Instagram ↗</a></div>
 </section>
-<section class="bg-invitation" aria-labelledby="invitation-title">
+<section id="tu-taza" data-journey-step="tu-taza" class="bg-invitation" aria-labelledby="invitation-title">
   <p class="bg-label">La próxima página</p>
   <h2 id="invitation-title">Ahora,<br><em>tu taza.</em></h2>
   <p>Explora la ficha de Bourbon Rosado y elige tu presentación.</p>
@@ -90,5 +98,5 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/ScrollTrigger.min.js" defer></script>
 <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous" defer></script>
-<script src="{{ url_for('static', filename='js/bourbon_gallery.js', v='1') }}" defer></script>
+<script src="{{ url_for('static', filename='js/bourbon_gallery.js', v='2') }}" defer></script>
 </body></html>

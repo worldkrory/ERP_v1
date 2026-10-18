@@ -1,7 +1,8 @@
-/* Galeria Bourbon: tokens aislados, sin hojas admin ni microlote.css. */
+/* Galeria Bourbon v2: componentes aislados; paleta y recorrido revisados. */
 body.dn-bourbon-gallery {
- --bg-putty:#c4c3b6; --bg-ink:#000; --bg-bone:#e7e5e4; --bg-chalk:#ebebeb;
- --bg-vellum:#dfdcd5; --bg-graphite:#595855; --bg-paper:#fff;
+ --bg-putty:#d4c5c2; --bg-ink:#241820; --bg-bone:#e9ddd7; --bg-chalk:#e5d6d2;
+ --bg-vellum:#b9a4a7; --bg-graphite:#5c454f; --bg-paper:#f8efeb;
+ --bg-rose:#c77a8c; --bg-rose-deep:#814456; --bg-mist:#e6b6c0; --bg-gold:#c6aa70;
  --bg-serif:'Cormorant Garamond',Georgia,serif; --bg-sans:'Inter',Arial,sans-serif;
  --bg-gutter:clamp(20px,4vw,76px);
  margin:0; color:var(--bg-ink); background:var(--bg-putty);
@@ -28,12 +29,12 @@ body.dn-bourbon-gallery {
 .dn-bourbon-gallery .bg-hero-meta { padding:20px var(--bg-gutter) 0; }
 .dn-bourbon-gallery .bg-hero-center { display:grid; justify-items:center; gap:24px; padding:60px var(--bg-gutter) 52px; text-align:center; }
 .dn-bourbon-gallery .bg-hero h1 { font-size:clamp(68px,8vw,126px); line-height:.9; }
-.dn-bourbon-gallery .bg-hero h1 em { display:block; }
+.dn-bourbon-gallery .bg-hero h1 em { display:block; color:var(--bg-rose-deep); }
 .dn-bourbon-gallery .bg-hero-lead { max-width:530px; font-size:16px; }
 .dn-bourbon-gallery .bg-pill { display:inline-flex; align-items:center; justify-content:center; gap:20px; min-height:46px; padding:10px 20px; border:1px solid var(--bg-ink); border-radius:28.8px; background:var(--bg-ink); color:var(--bg-paper); font-size:14px; }
 .dn-bourbon-gallery .bg-pill:hover { background:transparent; color:var(--bg-ink); }
-.dn-bourbon-gallery .bg-wordmark-window { overflow:hidden; padding:8px 0 12px; }
-.dn-bourbon-gallery .bg-wordmark { display:block; width:max-content; position:relative; left:50%; margin-left:-.5em; transform:translateX(-50%); white-space:nowrap; font:500 clamp(100px,26vw,374px)/.84 var(--bg-serif); letter-spacing:-.009em; }
+.dn-bourbon-gallery .bg-wordmark-window { overflow:hidden; padding:16px var(--bg-gutter) 12px; }
+.dn-bourbon-gallery .bg-wordmark { display:block; width:100%; margin:0; white-space:nowrap; text-align:center; font:500 clamp(68px,17.2vw,260px)/.9 var(--bg-serif); letter-spacing:-.025em; color:var(--bg-rose-deep); }
 .dn-bourbon-gallery .bg-hero-foot { padding:26px var(--bg-gutter) 34px; }
 .dn-bourbon-gallery .bg-exhibition { background:var(--bg-ink); color:var(--bg-paper); }
 .dn-bourbon-gallery .bg-exhibition-stage { position:relative; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); min-height:720px; }
@@ -49,29 +50,31 @@ body.dn-bourbon-gallery {
 .dn-bourbon-gallery .bg-media-fallback { position:absolute; inset:0; display:grid; place-content:center; padding:32px; text-align:center; font-size:15px; }
 .dn-bourbon-gallery .bg-video-controls { position:absolute; left:6%; bottom:12%; z-index:2; display:flex; flex-wrap:wrap; gap:8px; }
 .dn-bourbon-gallery .bg-control { min-height:44px; padding:9px 14px; color:var(--bg-paper); background:var(--bg-ink); border:1px solid var(--bg-vellum); border-radius:28.8px; font-size:12px; }
-.dn-bourbon-gallery .bg-notebook { padding:52px var(--bg-gutter) 96px; background:var(--bg-bone); }
+.dn-bourbon-gallery .bg-notebook { padding:52px var(--bg-gutter) 96px; background:var(--bg-bone); overflow:hidden; isolation:isolate; }
 .dn-bourbon-gallery .bg-notebook > h2 { padding:74px 0 64px; font-size:clamp(52px,7vw,94px); line-height:.94; }
 .dn-bourbon-gallery .bg-notebook-layout { display:grid; grid-template-columns:minmax(210px,.6fr) minmax(0,1.4fr); gap:clamp(28px,6vw,110px); align-items:start; }
 .dn-bourbon-gallery .bg-chapter-nav { display:grid; gap:0; }
 .dn-bourbon-gallery .bg-chapter-link { display:grid; grid-template-columns:14px 24px minmax(0,1fr) auto; align-items:center; gap:12px; min-height:64px; border-bottom:1px solid var(--bg-graphite); font-size:14px; }
 .dn-bourbon-gallery .bg-chapter-link strong { font-weight:400; }
+.dn-bourbon-gallery .bg-chapter-link.is-active { color:var(--bg-rose-deep); }
 .dn-bourbon-gallery .bg-chapter-link.is-active strong { font-weight:500; }
 .dn-bourbon-gallery .bg-chapter-link.is-active svg { fill:currentColor; }
 .dn-bourbon-gallery .bg-chapter-status, .dn-bourbon-gallery .bg-chapter-error { margin-top:16px; font-size:12px; }
 .dn-bourbon-gallery .htmx-indicator { display:none; }
 .dn-bourbon-gallery .htmx-indicator.htmx-request { display:block; }
-.dn-bourbon-gallery .bg-chapter { min-height:350px; border-top:1px solid var(--bg-ink); }
+.dn-bourbon-gallery .bg-chapter { min-height:350px; border-top:1px solid var(--bg-rose-deep); position:relative; perspective:1000px; }
 .dn-bourbon-gallery .bg-chapter-inner { display:grid; grid-template-columns:90px minmax(0,1fr); gap:24px; padding:28px 0; }
-.dn-bourbon-gallery .bg-chapter-number { font:400 82px/1 var(--bg-serif); }
+.dn-bourbon-gallery .bg-chapter-number { font:400 82px/1 var(--bg-serif); color:var(--bg-rose-deep); }
 .dn-bourbon-gallery .bg-chapter-copy { display:grid; gap:20px; align-content:start; }
 .dn-bourbon-gallery .bg-chapter h3 { font-size:clamp(34px,4vw,52px); line-height:1; }
 .dn-bourbon-gallery .bg-chapter-copy > p:not(.bg-label):not(.bg-caption) { font-size:15px; max-width:600px; }
 .dn-bourbon-gallery .bg-manifesto { background:var(--bg-ink); color:var(--bg-paper); padding:52px var(--bg-gutter); }
 .dn-bourbon-gallery .bg-manifesto h2 { padding:96px 0; max-width:1400px; font-size:clamp(44px,6.3vw,94px); line-height:1; }
-.dn-bourbon-gallery .bg-manifesto h2 em { color:var(--bg-putty); }
+.dn-bourbon-gallery .bg-manifesto h2 em { color:var(--bg-mist); }
 .dn-bourbon-gallery .bg-manifesto-bottom { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:24px; padding-top:24px; border-top:1px solid var(--bg-graphite); }
 .dn-bourbon-gallery .bg-invitation { display:grid; justify-items:center; gap:28px; padding:96px var(--bg-gutter); text-align:center; background:var(--bg-putty); }
 .dn-bourbon-gallery .bg-invitation h2 { font-size:clamp(76px,10vw,160px); line-height:.86; }
+.dn-bourbon-gallery .bg-invitation h2 em { color:var(--bg-rose-deep); }
 .dn-bourbon-gallery .bg-footer { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:24px; padding:40px var(--bg-gutter); background:var(--bg-chalk); }
 .dn-bourbon-gallery .bg-footer strong { display:block; font:500 34px/1 var(--bg-serif); }
 .dn-bourbon-gallery .bg-footer span { display:block; margin-top:8px; font-size:12px; }
@@ -95,4 +98,36 @@ body.dn-bourbon-gallery {
  .dn-bourbon-gallery .bg-chapter-number { font-size:52px; }
  .dn-bourbon-gallery .bg-manifesto h2 { padding:64px 0; }
  .dn-bourbon-gallery .bg-invitation { padding-top:72px; padding-bottom:72px; }
+}
+
+/* Escenario compartido: el mismo trazo atraviesa las cinco estaciones. */
+.dn-bourbon-gallery #contenido { position:relative; isolation:isolate; }
+.dn-bourbon-gallery #contenido > section { position:relative; z-index:1; }
+.dn-bourbon-gallery .bg-story-route { position:absolute; z-index:3; top:0; left:4px; width:clamp(10px,calc(var(--bg-gutter) - 14px),62px); height:100%; overflow:visible; pointer-events:none; }
+.dn-bourbon-gallery .bg-story-route path { fill:none; stroke-linecap:round; vector-effect:non-scaling-stroke; }
+.dn-bourbon-gallery .bg-route-track { stroke:var(--bg-rose); stroke-width:1; opacity:.25; }
+.dn-bourbon-gallery .bg-route-progress { stroke:var(--bg-rose); stroke-width:1.5; opacity:.9; }
+.dn-bourbon-gallery .bg-route-node { fill:var(--bg-bone); stroke:var(--bg-rose-deep); stroke-width:1; vector-effect:non-scaling-stroke; }
+.dn-bourbon-gallery .bg-route-node.is-passed { fill:var(--bg-rose); stroke:var(--bg-rose); }
+.dn-bourbon-gallery .bg-header { border-bottom:1px solid var(--bg-vellum); }
+.dn-bourbon-gallery .bg-brand { color:var(--bg-rose-deep); }
+.dn-bourbon-gallery .bg-section-top { position:relative; }
+.dn-bourbon-gallery .bg-notebook > :not(.bg-notebook-atmosphere) { position:relative; z-index:1; }
+.dn-bourbon-gallery .bg-notebook-atmosphere { position:absolute; z-index:0; inset:0; overflow:hidden; pointer-events:none; }
+.dn-bourbon-gallery .bg-mist-cloud { position:absolute; display:block; border-radius:50%; }
+.dn-bourbon-gallery .bg-mist-cloud-one { width:110%; height:650px; left:-35%; top:-150px; background:radial-gradient(ellipse,rgba(199,122,140,.43) 0%,rgba(230,182,192,.28) 38%,rgba(230,182,192,0) 73%); }
+.dn-bourbon-gallery .bg-mist-cloud-two { width:90%; height:570px; right:-32%; bottom:-190px; background:radial-gradient(ellipse,rgba(154,79,105,.28),rgba(230,182,192,.2) 40%,rgba(230,182,192,0) 72%); }
+.dn-bourbon-gallery .bg-notebook > h2 em { color:var(--bg-rose-deep); }
+.dn-bourbon-gallery .bg-notebook-layout { padding-top:24px; border-top:1px solid var(--bg-vellum); }
+.dn-bourbon-gallery .bg-chapter-meter { height:2px; margin:0 0 14px; background:var(--bg-vellum); overflow:hidden; }
+.dn-bourbon-gallery .bg-chapter-meter span { display:block; width:100%; height:100%; background:var(--bg-rose-deep); transform:scaleX(.333333); transform-origin:left center; }
+.dn-bourbon-gallery .bg-chapter-copy h3 { color:var(--bg-rose-deep); }
+.dn-bourbon-gallery .bg-chapter-copy > .bg-label { color:var(--bg-rose-deep); }
+.dn-bourbon-gallery .bg-exhibition-copy em { color:var(--bg-mist); }
+.dn-bourbon-gallery .bg-manifesto .bg-section-top { color:var(--bg-mist); }
+@media(max-width:680px) {
+ .dn-bourbon-gallery .bg-story-route { left:2px; width:10px; opacity:.65; }
+ .dn-bourbon-gallery .bg-mist-cloud-one { height:530px; width:145%; left:-60%; }
+ .dn-bourbon-gallery .bg-mist-cloud-two { width:150%; right:-80%; }
+ .dn-bourbon-gallery .bg-chapter { min-height:390px; }
 }

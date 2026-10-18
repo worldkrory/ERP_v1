@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Bourbon Rosado de Densa Niebla. Un cuaderno de origen para conocer la historia del café de Guavatá, Santander, y explorar su ficha en la tienda.">
+<title>Bourbon Rosado · Cuaderno de origen | Densa Niebla</title>
+<link rel="canonical" href="{{ url_for('bourbon_rosado', _external=True) }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bourbon_gallery.css', v='1') }}">
+</head>
+<body class="dn-bourbon-gallery">
+<a class="bg-skip" href="#contenido">Saltar al contenido</a>
+{% set is_preview = request.endpoint == 'bourbon_gallery.preview' %}
+{% set chapter_endpoint = 'bourbon_gallery.preview' if is_preview else 'bourbon_rosado' %}
+<header class="bg-header">
+  <a class="bg-brand" href="{{ url_for('storefront.collection') }}" aria-label="Densa Niebla · Ir a la tienda">{% include 'microlote_gallery/_toche.html' %}</a>
+  <a class="bg-text-link" href="{{ url_for('storefront.product_detail', slug='bourbon-rosado') }}">Elegir mi café <span aria-hidden="true">↗</span></a>
+</header>
+<main id="contenido">
+<section class="bg-hero" aria-labelledby="bourbon-title">
+  <div class="bg-hero-meta"><span class="bg-label">Café especial / Microlote</span><span class="bg-label">Guavatá, Santander</span></div>
+  <div class="bg-hero-center">
+    <p class="bg-label">Un cuaderno de origen</p>
+    <h1 id="bourbon-title">Bourbon <em>Rosado</em></h1>
+    <p class="bg-hero-lead">Un café nacido entre montaña, neblina<br class="bg-desktop-break"> y manos que conocen la tierra.</p>
+    <a class="bg-pill" href="#pieza">Entrar en la historia <span aria-hidden="true">↓</span></a>
+  </div>
+  <div class="bg-wordmark-window" aria-hidden="true"><span class="bg-wordmark" data-gallery-wordmark>Densa Niebla</span></div>
+  <div class="bg-hero-foot"><span class="bg-label">Colombia / Café de finca</span><a class="bg-text-link" href="#cuaderno">Explorar el microlote ↓</a></div>
+</section>
+<section id="pieza" class="bg-exhibition" aria-labelledby="piece-title">
+  <div class="bg-exhibition-stage" data-exhibition-stage>
+    <div class="bg-exhibition-media" data-exhibition-media>
+      {% if video_url %}
+      <video class="bg-film" data-gallery-video muted playsinline loop preload="none" poster="{{ image_url }}" aria-label="Video del origen de Bourbon Rosado" data-video-src="{{ video_url }}"></video>
+      {% else %}
+      <img class="bg-art-image" src="{{ image_url }}" alt="Empaque de Bourbon Rosado de Densa Niebla" width="900" height="1125" loading="lazy" decoding="async" data-gallery-image>
+      {% endif %}
+      <p class="bg-media-fallback" data-media-fallback hidden>La pieza no está disponible.<br>La historia continúa en el cuaderno.</p>
+    </div>
+    <div class="bg-exhibition-copy" data-exhibition-copy>
+      <p class="bg-label">01 / La pieza</p>
+      <h2 id="piece-title">Un lugar.<br><em>Una historia.</em></h2>
+      <p>Este Bourbon Rosado nace en las montañas de Guavatá, Santander, en una finca rodeada por el paisaje que inspira a Densa Niebla.</p>
+      <p>Cada lote tiene un origen, un proceso y unas manos detrás.</p>
+      <a class="bg-text-link" href="#cuaderno">Abrir el cuaderno <span aria-hidden="true">↗</span></a>
+    </div>
+    {% if video_url %}<div class="bg-video-controls"><button type="button" class="bg-control" data-video-toggle aria-pressed="false">Reproducir película</button><button type="button" class="bg-control" data-sound-toggle aria-pressed="false">Activar sonido</button></div>{% endif %}
+  </div>
+</section>
+<section id="cuaderno" class="bg-notebook" aria-labelledby="notebook-title">
+  <div class="bg-section-top"><p class="bg-label">02 / Cuaderno del microlote</p><span class="bg-label">De origen a taza</span></div>
+  <h2 id="notebook-title">Conocer también<br>es parte del <em>ritual.</em></h2>
+  <div class="bg-notebook-layout">
+    <nav class="bg-chapter-nav" aria-label="Capítulos del microlote">
+      {% for key, item in chapters.items() %}
+      <a class="bg-chapter-link {% if key == chapter_key %}is-active{% endif %}" data-chapter-link="{{ key }}"
+         href="{{ url_for(chapter_endpoint, chapter=key, _anchor='cuaderno') }}"
+         {% if key == chapter_key %}aria-current="true"{% endif %}
+         hx-get="{{ url_for('bourbon_gallery.chapter_fragment', key=key, preview='1' if is_preview else '0') }}"
+         hx-target="#bourbon-chapter" hx-swap="outerHTML" hx-sync="#cuaderno:replace"
+         hx-push-url="{{ url_for(chapter_endpoint, chapter=key, _anchor='cuaderno') }}" hx-indicator="#chapter-loading">
+        <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" aria-hidden="true"><path d="m10 1 8 4.5v9L10 19l-8-4.5v-9L10 1Z"/></svg>
+        <span>{{ item.number }}</span><strong>{{ item.label }}</strong><span aria-hidden="true">↗</span>
+      </a>
+      {% endfor %}
+      <span id="chapter-loading" class="bg-chapter-status htmx-indicator" role="status">Abriendo capítulo…</span>
+      <p class="bg-chapter-error" data-chapter-error role="status" hidden></p>
+    </nav>
+    {% include 'microlote_gallery/_chapter.html' %}
+  </div>
+</section>
+<section class="bg-manifesto" aria-labelledby="manifesto-title">
+  <div class="bg-section-top"><span class="bg-label">03 / Lo que conserva la taza</span><span class="bg-label">Densa Niebla</span></div>
+  <h2 id="manifesto-title">No queríamos que solo<br>probaras el café.<br><em>Queríamos que conocieras<br>de dónde viene.</em></h2>
+  <div class="bg-manifesto-bottom"><span class="bg-label">Finca → Cosecha → Proceso → Tostión → Tu taza</span><a class="bg-text-link" href="https://www.instagram.com/cafedensaniebla/" target="_blank" rel="noopener noreferrer">Seguir la historia en Instagram ↗</a></div>
+</section>
+<section class="bg-invitation" aria-labelledby="invitation-title">
+  <p class="bg-label">La próxima página</p>
+  <h2 id="invitation-title">Ahora,<br><em>tu taza.</em></h2>
+  <p>Explora la ficha de Bourbon Rosado y elige tu presentación.</p>
+  <a class="bg-pill" href="{{ url_for('storefront.product_detail', slug='bourbon-rosado') }}">Elegir presentación <span aria-hidden="true">↗</span></a>
+  <p class="bg-caption">Precio y disponibilidad actuales en la tienda.</p>
+</section>
+</main>
+<footer class="bg-footer"><div><strong>Densa Niebla</strong><span>Guavatá · Santander · Colombia</span></div><a class="bg-text-link" href="{{ url_for('storefront.collection') }}">Volver a la colección ↗</a></footer>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/ScrollTrigger.min.js" defer></script>
+<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous" defer></script>
+<script src="{{ url_for('static', filename='js/bourbon_gallery.js', v='1') }}" defer></script>
+</body></html>
