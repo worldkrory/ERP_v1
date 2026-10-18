@@ -1,14 +1,9 @@
-<script src="https://unpkg.com/htmx.org@2.0.8"></script>
-
 {% extends "base.html" %}
 
 {% block title %}Gran Sorteo | Densa Niebla{% endblock %}
 
 {% block extra_css %}
-  <link
-    rel="stylesheet"
-    href="{{ url_for('static', filename='css/raffle.css') }}"
-  >
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/raffle.css', v='2') }}">
 {% endblock %}
 
 {% block content %}
@@ -51,15 +46,20 @@
 
           <div class="raffle-trust">
             <span aria-hidden="true">✦</span>
-            <p>Una participación por número de WhatsApp. Tus datos se cuidan y no se comparten con terceros.</p>
+            <p>Una participación por número de WhatsApp. Tus datos se usan solo para esta convocatoria y para lo que autorices.</p>
           </div>
         </div>
 
-        <aside class="raffle-panel" id="raffle-form-zone">
+        <aside class="raffle-panel" id="raffle-form-zone" aria-live="polite">
           {% include "raffle/_raffle_form.html" %}
         </aside>
       </div>
     </div>
   </section>
 </main>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js" defer></script>
+<script src="{{ url_for('static', filename='js/raffle.js', v='1') }}" defer></script>
 {% endblock %}

@@ -1,5 +1,7 @@
 {% set values = values or {} %}
 {% set errors = errors or {} %}
+{% set privacy_url = config.get('RAFFLE_PRIVACY_URL') %}
+{% set terms_url = config.get('RAFFLE_TERMS_URL') %}
 
 <div class="form-card">
   <div class="form-card-heading">
@@ -10,102 +12,64 @@
 
   <form
     method="post"
-    action="{{ url_for('raffle.raffle_preview_entry') }}"
-    x-post="{{ url_for('raffle.raffle_preview_entry') }}"
+    action="{{ url_for('raffle.create_raffle_entry') }}"
+    hx-post="{{ url_for('raffle.create_raffle_entry') }}"
     hx-target="#raffle-form-zone"
     hx-swap="innerHTML"
     hx-indicator="#raffle-loading"
+    hx-disabled-elt="find button[type='submit']"
+    data-raffle-form
     novalidate
   >
-    <input
-      type="hidden"
-      name="source"
-      value="{{ request.args.get('source', 'whatsapp') }}"
-    >
+    <input type="hidden" name="source" value="{{ source or 'whatsapp' }}">
 
     <div class="field-group">
       <label for="full_name">¿Cómo te llamas?</label>
-      <input
-        id="full_name"
-        name="full_name"
-        type="text"
-        autocomplete="name"
-        placeholder="Tu nombre completo"
-        value="{{ values.get('full_name', '') }}"
-        required
-      >
-      {% if errors.get('full_name') %}
-        <p class="field-error">{{ errors['full_name'] }}</p>
-      {% endif %}
+      <input id="full_name" name="full_name" type="text" maxlength="100" autocomplete="name"
+             placeholder="Tu nombre completo" value="{{ values.get('full_name', '') }}" required
+             {% if errors.get('full_name') %}aria-invalid="true" aria-describedby="err-full_name"{% endif %}>
+      {% if errors.get('full_name') %}<p class="field-error" id="err-full_name">{{ errors['full_name'] }}</p>{% endif %}
     </div>
 
     <div class="field-group">
       <label for="whatsapp">Tu WhatsApp</label>
-      <input
-        id="whatsapp"
-        name="whatsapp"
-        type="tel"
-        inputmode="numeric"
-        autocomplete="tel"
-        placeholder="300 123 4567"
-        value="{{ values.get('whatsapp', '') }}"
-        required
-      >
+      <input id="whatsapp" name="whatsapp" type="tel" maxlength="40" inputmode="tel" autocomplete="tel"
+             placeholder="300 123 4567" value="{{ values.get('whatsapp', '') }}" required
+             {% if errors.get('whatsapp') %}aria-invalid="true" aria-describedby="err-whatsapp"{% endif %}>
       <p class="field-helper">Te avisaremos por aquí si eres la persona ganadora.</p>
-      {% if errors.get('whatsapp') %}
-        <p class="field-error">{{ errors['whatsapp'] }}</p>
-      {% endif %}
+      {% if errors.get('whatsapp') %}<p class="field-error" id="err-whatsapp">{{ errors['whatsapp'] }}</p>{% endif %}
     </div>
 
     <div class="field-group">
       <label for="email">Correo <span>opcional</span></label>
-      <input
-        id="email"
-        name="email"
-        type="email"
-        autocomplete="email"
-        placeholder="tu@correo.com"
-        value="{{ values.get('email', '') }}"
-      >
+      <input id="email" name="email" type="email" maxlength="255" autocomplete="email"
+             placeholder="tu@correo.com" value="{{ values.get('email', '') }}"
+             {% if errors.get('email') %}aria-invalid="true" aria-describedby="err-email"{% endif %}>
+      {% if errors.get('email') %}<p class="field-error" id="err-email">{{ errors['email'] }}</p>{% endif %}
     </div>
 
     <div class="field-group">
       <label for="city">¿Desde dónde nos acompañas? <span>opcional</span></label>
-      <input
-        id="city"
-        name="city"
-        type="text"
-        autocomplete="address-level2"
-        placeholder="Ej. Manizales"
-        value="{{ values.get('city', '') }}"
-      >
+      <input id="city" name="city" type="text" maxlength="100" autocomplete="address-level2"
+             placeholder="Ej. Manizales" value="{{ values.get('city', '') }}"
+             {% if errors.get('city') %}aria-invalid="true" aria-describedby="err-city"{% endif %}>
+      {% if errors.get('city') %}<p class="field-error" id="err-city">{{ errors['city'] }}</p>{% endif %}
     </div>
 
     <label class="check-row {% if errors.get('accepts_data_processing') %}has-error{% endif %}">
-      <input
-        type="checkbox"
-        name="accepts_data_processing"
-        required
-      >
+      <input type="checkbox" name="accepts_data_processing" required
+             {% if errors.get('accepts_data_processing') %}aria-invalid="true" aria-describedby="err-consent"{% endif %}>
       <span>
-        Acepto el tratamiento de mis datos para validar mi participación,
-        conforme al aviso de tratamiento de datos personales de Densa Niebla.
-        </span>
+        Acepto el tratamiento de mis datos para validar mi participación en este sorteo
+        {% if privacy_url %}, conforme a la <a href="{{ privacy_url }}" target="_blank" rel="noopener noreferrer">política de tratamiento de datos</a> de Densa Niebla{% endif %}.
+        {% if terms_url %}Conozco los <a href="{{ terms_url }}" target="_blank" rel="noopener noreferrer">términos del sorteo</a>.{% endif %}
+      </span>
     </label>
-
-    {% if errors.get('accepts_data_processing') %}
-      <p class="field-error">{{ errors['accepts_data_processing'] }}</p>
-    {% endif %}
+    {% if errors.get('accepts_data_processing') %}<p class="field-error" id="err-consent">{{ errors['accepts_data_processing'] }}</p>{% endif %}
 
     <label class="check-row">
-      <input
-        type="checkbox"
-        name="accepts_marketing"
-        {% if values.get('accepts_marketing') %}checked{% endif %}
-      >
-      <span>
-        También quiero recibir primero nuevos microlotes, rituales y próximos sorteos.
-      </span>
+      <input type="checkbox" name="accepts_marketing" {% if values.get('accepts_marketing') %}checked{% endif %}>
+      <span>También quiero recibir primero nuevos microlotes, rituales y próximos sorteos.</span>
     </label>
 
     <button class="raffle-submit" type="submit">
@@ -113,12 +77,14 @@
       <span aria-hidden="true">→</span>
     </button>
 
-    <div id="raffle-loading" class="htmx-indicator raffle-loading">
+    <div id="raffle-loading" class="htmx-indicator raffle-loading" role="status">
       Guardando tu lugar en la niebla…
     </div>
 
-    <p class="form-footnote">
-      Solo una participación por WhatsApp. No vendemos ni cedemos tus datos.
+    <p class="field-error" data-raffle-network-error role="alert" hidden>
+      No pudimos conectar. Revisa tu conexión e inténtalo de nuevo; tus datos siguen en el formulario.
     </p>
+
+    <p class="form-footnote">Solo una participación por WhatsApp.</p>
   </form>
 </div>

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Sorteo | Densa Niebla{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/raffle.css', v='2') }}">
+{% endblock %}
+
+{% block content %}
+<main class="raffle-page">
+  <section class="raffle-hero">
+    <div class="raffle-shell">
+      <p class="eyebrow">COMUNIDAD DENSA NIEBLA</p>
+      <div class="success-card existing-entry" role="status">
+        {% if state == "upcoming" %}
+          <h1>El sorteo todavía no abre.</h1>
+          <p class="success-lead">Muy pronto podrás participar. Sigue nuestras novedades.</p>
+        {% elif state == "ended" %}
+          <h1>Esta convocatoria ya terminó.</h1>
+          <p class="success-lead">Gracias por acompañarnos. Pronto habrá nuevas selecciones y sorteos.</p>
+        {% elif state == "unavailable" %}
+          <h1>Estamos ajustando la niebla.</h1>
+          <p class="success-lead">No pudimos cargar el sorteo en este momento. Inténtalo de nuevo en unos minutos.</p>
+        {% else %}
+          <h1>Este sorteo no está disponible.</h1>
+          <p class="success-lead">Revisa el enlace o sigue nuestras novedades.</p>
+        {% endif %}
+        <a class="success-link" href="https://www.instagram.com/cafedensaniebla/" target="_blank" rel="noopener noreferrer">
+          Sigue el origen en Instagram <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}

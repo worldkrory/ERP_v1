@@ -359,3 +359,13 @@
     padding-inline: 1rem;
   }
 }
+/* AGREGAR AL FINAL de app/static/css/raffle.css (no enlazar como otra hoja). */
+.success-link { background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
+.raffle-code { display: inline-block; color: var(--dn-gold-bright); font-size: 1.25rem; letter-spacing: .08em; }
+.raffle-code-char { display: inline-block; }
+.raffle-sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.raffle-orbit { position: absolute; border: 1px solid rgba(215, 187, 124, .16); border-radius: 50%; pointer-events: none; }
+.raffle-orbit-one { width: 34rem; height: 34rem; top: -12rem; right: -10rem; }
+.raffle-orbit-two { width: 22rem; height: 22rem; bottom: -8rem; left: -6rem; border-color: rgba(216, 212, 202, .1); }
+.field-group input[aria-invalid="true"] { border-color: #f1a39b; }
+@media (prefers-reduced-motion: reduce) { .raffle-submit { transition: none; } }

@@ -1,30 +1,27 @@
-<div class="success-card" role="status" aria-live="polite">
+<div class="success-card" role="status" aria-live="polite" data-raffle-success>
   <div class="success-mark" aria-hidden="true">✦</div>
 
   <p class="eyebrow">PARTICIPACIÓN CONFIRMADA</p>
 
-  <h2>Tu lugar está reservado, {{ participant.first_name }}.</h2>
+  <h2>Tu lugar está reservado, {{ entry.full_name.split()[0] }}.</h2>
 
-<p>
-  Tu código de participación es:
-  <strong>{{ participant.entry_code }}</strong>
-</p>
+  <p>
+    Tu código de participación es:
+    <strong class="raffle-code" data-raffle-code data-code="{{ entry.entry_code }}">{{ entry.entry_code }}</strong>
+  </p>
 
-<p>
-  Te escribiremos al WhatsApp terminado en
-  {{ participant.whatsapp_last_four }}.
-</p>
+  <p>Te escribiremos al WhatsApp terminado en {{ entry.whatsapp[-4:] }}.</p>
 
   <div class="success-note">
     <p>Guarda este código. Muy pronto podrás descubrir nuevas selecciones, microlotes y rituales nacidos entre montaña y niebla.</p>
   </div>
 
-  <a
-    class="success-link"
-    href="https://www.instagram.com/TU_USUARIO/"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
+  <p>
+    <button type="button" class="success-link" data-copy-code>Copiar código</button>
+    <span class="field-helper" data-copy-status role="status" aria-live="polite"></span>
+  </p>
+
+  <a class="success-link" href="https://www.instagram.com/cafedensaniebla/" target="_blank" rel="noopener noreferrer">
     Sigue el origen en Instagram <span aria-hidden="true">↗</span>
   </a>
 </div>

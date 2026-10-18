@@ -88,7 +88,15 @@ class Config:
     WEB_EVENT_HASH_SECRET = os.getenv("WEB_EVENT_HASH_SECRET")
     TRUST_PROXY_HEADERS = (
     os.getenv("TRUST_PROXY_HEADERS", "false").strip().lower() == "true"
-)
+    )
+
+    RAFFLE_CODE = os.getenv("RAFFLE_CODE", "V60-CASTILLO-2026")
+    RAFFLE_NAME = os.getenv("RAFFLE_NAME", "Gran Sorteo Densa Niebla")
+    RAFFLE_ACTIVE = os.getenv("RAFFLE_ACTIVE", "true").strip().lower() == "true"
+    RAFFLE_STARTS_AT = os.getenv("RAFFLE_STARTS_AT")   # ISO, ej. 2026-10-18T00:00:00-05:00
+    RAFFLE_ENDS_AT = os.getenv("RAFFLE_ENDS_AT")       # ISO. SIN ESTE VALOR EL SORTEO NO CIERRA NUNCA
+    RAFFLE_PRIVACY_URL = os.getenv("RAFFLE_PRIVACY_URL")
+    RAFFLE_TERMS_URL = os.getenv("RAFFLE_TERMS_URL")
 
     @classmethod
     def init_app(cls, app):

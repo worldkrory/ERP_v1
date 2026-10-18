@@ -1,8 +1,7 @@
-<div class="form-card form-card-error" role="alert">
-  <p class="eyebrow">ALGO CAMBIÓ</p>
-  <h2>No pudimos registrar tu participación.</h2>
-  <p>{{ message }}</p>
-  <a class="success-link" href="{{ url_for('raffle.raffle_page') }}">
-    Volver al sorteo <span aria-hidden="true">→</span>
-  </a>
+<div class="success-card existing-entry" role="alert">
+  <p class="eyebrow">NO PUDIMOS COMPLETARLO</p>
+  <h2>{{ message }}</h2>
+  <p class="form-footnote">
+    <a href="{{ url_for('raffle.raffle_page') }}">Volver al formulario</a>
+  </p>
 </div>
