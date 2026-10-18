@@ -39,7 +39,7 @@
    chapterContext = gsap.context(() => {
      const timeline = gsap.timeline({ defaults:{ ease:'power3.out' } });
      timeline.from(chapter.querySelector('.bg-chapter-inner'), {
-       x:16, rotationY:-4, transformOrigin:'left center', duration:.55,
+       x:16 * (window.DNBourbonDirection || 1), rotationY:-4 * (window.DNBourbonDirection || 1), transformOrigin:'left center', duration:.55,
        clearProps:'transform,transformOrigin'
      }, 0);
      timeline.from(chapter.querySelector('.bg-chapter-number'), {
@@ -69,7 +69,7 @@
    if (!main || !svg) return;
    const bounds = main.getBoundingClientRect();
    const height = Math.max(1200, Math.round(bounds.height));
-   const steps = [...root.querySelectorAll('[data-journey-step]')];
+   const steps = [...root.querySelectorAll('[data-journey-step]')].filter(step => step.getBoundingClientRect().height > 0);
    journeyPoints = steps.map((step,index) => {
      const box = step.getBoundingClientRect();
      return { x:index % 2 ? 24 : 52,
