@@ -109,8 +109,8 @@ def create_app(config_name=None):
         if should_notify_visit(event):
             notify_web_visit_safely(event)
 
-
-        return render_template('microlote_bourbon_rosado.html')
+        return render_bourbon_gallery()
+        #return render_template('microlote_bourbon_rosado.html')
 
 
 
