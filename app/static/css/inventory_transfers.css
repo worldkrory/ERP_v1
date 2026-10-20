@@ -1,0 +1,59 @@
+#inventory-workspace.dn-transfer-page .dn-transfer-composer { display:grid; gap:22px; padding:24px; }
+
+.dn-route { position:relative; display:flex; justify-content:space-between; align-items:center; padding:6px 4px; }
+.dn-route::before { content:""; position:absolute; left:60px; right:60px; top:50%; height:2px; transform:translateY(-50%);
+  background:repeating-linear-gradient(90deg,var(--dn-line) 0 8px,transparent 8px 14px); }
+.dn-route-node { position:relative; z-index:1; display:grid; gap:2px; justify-items:center; min-width:130px; padding:12px 16px;
+  border:1px solid var(--dn-line); border-radius:14px; background:var(--dn-paper); text-align:center;
+  transition:border-color .2s ease, box-shadow .2s ease; }
+.dn-route-node small { color:var(--dn-muted); font-size:.62rem; letter-spacing:.1em; text-transform:uppercase; }
+.dn-route-node strong { color:var(--dn-forest); font:600 1.05rem/1.2 Georgia,serif; }
+.dn-route-node.is-set { border-color:var(--dn-forest); box-shadow:0 6px 18px rgba(0,0,0,.06); }
+.dn-route-dot { position:absolute; z-index:2; top:50%; left:0; width:14px; height:14px; margin:-7px 0 0 -7px; border-radius:50%;
+  background:var(--dn-gold,#b8924a); box-shadow:0 0 0 6px rgba(184,146,74,.22); opacity:0; pointer-events:none; }
+
+.dn-transfer-fields { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+.dn-transfer-fields .dn-span-all { grid-column:1/-1; }
+
+.dn-transfer-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+.dn-transfer-toolbar input[type=search] { max-width:280px; }
+.dn-transfer-lines { display:grid; gap:8px; }
+.dn-transfer-line { display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:16px; align-items:center; padding:12px 14px;
+  border:1px solid var(--dn-line); border-radius:12px; background:#fff; transition:border-color .2s ease, background .2s ease; }
+.dn-transfer-line.is-active { border-color:var(--dn-forest); background:var(--dn-paper); }
+.dn-transfer-line-info { display:grid; gap:2px; min-width:0; }
+.dn-transfer-line-info strong { color:var(--dn-forest); overflow-wrap:anywhere; }
+.dn-transfer-line-avail { display:grid; text-align:right; font-size:.72rem; color:var(--dn-muted); }
+.dn-transfer-line-avail strong { color:var(--dn-forest); font:600 1.25rem/1.1 Georgia,serif; }
+
+.dn-stepper { display:flex; align-items:center; gap:6px; }
+.dn-stepper button { min-width:36px; min-height:36px; border:1px solid var(--dn-line); border-radius:10px; background:#fff;
+  color:var(--dn-forest); font-size:1.05rem; cursor:pointer; }
+.dn-stepper button:hover, .dn-stepper button:focus-visible { border-color:var(--dn-forest); outline:none; }
+.dn-stepper input { width:76px; min-height:36px; text-align:center; border:1px solid var(--dn-line); border-radius:10px; }
+.dn-stepper .dn-stepper-all { padding:0 12px; font-size:.7rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+
+.dn-transfer-summary { position:sticky; bottom:12px; z-index:3; display:flex; align-items:center; justify-content:space-between;
+  gap:16px; flex-wrap:wrap; padding:14px 18px; border:1px solid var(--dn-line); border-radius:14px; background:var(--dn-paper);
+  box-shadow:0 10px 30px rgba(0,0,0,.08); }
+.dn-transfer-summary p { margin:0; color:var(--dn-forest); font-weight:600; }
+
+.dn-transfer-list { display:grid; gap:10px; }
+.dn-transfer-card { display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:16px; align-items:center; padding:16px 18px;
+  border:1px solid var(--dn-line); border-radius:14px; background:#fff; }
+.dn-transfer-card h3 { margin:4px 0; font-size:1.15rem; }
+.dn-transfer-arrow { color:var(--dn-muted); }
+
+#dn-toast-stack { position:fixed; right:18px; bottom:18px; z-index:200; display:grid; gap:8px; max-width:min(92vw,380px); }
+.dn-toast { margin:0; padding:14px 16px; border:1px solid var(--dn-line); border-left-width:4px; border-radius:10px;
+  background:#fff; box-shadow:0 14px 34px rgba(0,0,0,.14); font-size:.85rem; }
+.dn-toast-success { border-left-color:#3f7d4e; }
+.dn-toast-error { border-left-color:#b5483c; }
+
+@media (max-width:760px) {
+  .dn-route-node { min-width:96px; padding:10px; }
+  .dn-transfer-fields { grid-template-columns:minmax(0,1fr); }
+  .dn-transfer-line, .dn-transfer-card { grid-template-columns:minmax(0,1fr); }
+  .dn-transfer-line-avail { text-align:left; }
+  .dn-stepper input, .dn-stepper button { min-height:44px; }
+}

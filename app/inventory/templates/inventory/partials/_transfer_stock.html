@@ -1,21 +1,30 @@
 {% if balances %}
-<table>
-  <thead><tr><th>Producto</th><th>Lote</th><th>Disponible</th><th>Trasladar</th></tr></thead>
-  <tbody>
+<div class="dn-transfer-toolbar">
+  <h3 style="margin:0;">Qué vas a mover</h3>
+  <input id="transfer-search" type="search" class="dn-field" placeholder="Filtrar por producto o lote" aria-label="Filtrar productos">
+</div>
+<div class="dn-transfer-lines">
   {% for b in balances %}
-    <tr>
-      <td>{{ b.product.name }}</td>
-      <td>{{ b.batch.batch_code if b.batch else "—" }}</td>
-      <td>{{ b.quantity_base|inventory_quantity }}</td>
-      <td>
-        <input type="number" name="qty_{{ b.id }}" min="0"
-               max="{{ b.quantity_base }}" step="any" inputmode="decimal"
-               aria-label="Cantidad de {{ b.product.name }}">
-      </td>
-    </tr>
+  <div class="dn-transfer-line" data-line
+       data-name="{{ (b.product.name ~ ' ' ~ (b.batch.batch_code if b.batch else '') ~ ' ' ~ b.product.sku)|lower }}">
+    <div class="dn-transfer-line-info">
+      <strong>{{ b.product.name }}</strong>
+      <span class="dn-table-muted">{{ b.product.sku }}{% if b.batch %} · Lote {{ b.batch.batch_code }}{% endif %}</span>
+    </div>
+    <div class="dn-transfer-line-avail">
+      <span>Disponible</span>
+      <strong>{{ b.quantity_base|inventory_quantity }}</strong>
+    </div>
+    <div class="dn-stepper">
+      <button type="button" data-step="-1" aria-label="Quitar una unidad de {{ b.product.name }}">−</button>
+      <input type="number" name="qty_{{ b.id }}" min="0" max="{{ b.quantity_base }}" step="any"
+             inputmode="decimal" placeholder="0" aria-label="Cantidad de {{ b.product.name }}">
+      <button type="button" data-step="1" aria-label="Agregar una unidad de {{ b.product.name }}">+</button>
+      <button type="button" class="dn-stepper-all" data-all>Todo</button>
+    </div>
+  </div>
   {% endfor %}
-  </tbody>
-</table>
+</div>
 {% else %}
 <p class="dn-section-note">Esta bodega no tiene existencia para trasladar.</p>
 {% endif %}

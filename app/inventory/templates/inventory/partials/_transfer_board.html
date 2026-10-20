@@ -1,0 +1,33 @@
+{% if shipments %}
+<div class="dn-transfer-list">
+  {% for s in shipments %}
+  <article class="dn-transfer-card" id="transfer-{{ s.id }}" {% if flash_id == s.id %}data-flash{% endif %}>
+    <div>
+      <span class="dn-panel-kicker">{{ s.shipment_number }}</span>
+      <h3>{{ s.origin_location.name if s.origin_location else "—" }}
+        <span class="dn-transfer-arrow">→</span>
+        {{ s.destination_location.name if s.destination_location else "—" }}</h3>
+      <span class="dn-table-muted">
+        {{ s.items|length }} línea{{ "s" if s.items|length != 1 }} ·
+        {{ s.items|sum(attribute="quantity_base")|inventory_quantity }} unidades
+        {% if s.tracking_number %} · Guía {{ s.tracking_number }}{% endif %}
+        {% if s.dispatched_at %} · {{ s.dispatched_at.strftime("%d/%m/%Y") }}{% endif %}
+      </span>
+    </div>
+    <span class="dn-status {{ 'dn-status-draft' if s.is_in_transit else ('dn-status-confirmed' if s.status == 'DELIVERED' else 'dn-status-cancelled') }}">
+      {{ {"DISPATCHED": "En tránsito", "IN_TRANSIT": "En tránsito", "DELIVERED": "Recibido", "CANCELLED": "Cancelado"}.get(s.status, s.status) }}
+    </span>
+    {% if s.is_in_transit %}
+    <button type="button" class="dn-button dn-button-primary"
+            hx-post="{{ url_for('inventory_admin.transfer_receive', shipment_id=s.id) }}"
+            hx-target="#transfer-board" hx-swap="innerHTML" hx-disabled-elt="this"
+            hx-confirm="¿Confirmas que {{ s.shipment_number }} llegó a {{ s.destination_location.name if s.destination_location else 'la bodega destino' }}?">
+      Marcar recibido
+    </button>
+    {% else %}<span></span>{% endif %}
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<p class="dn-section-note">Aún no hay traslados.</p>
+{% endif %}

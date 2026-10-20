@@ -5,6 +5,8 @@ from urllib.parse import urlsplit
 from flask import abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
+import json
+
 from sqlalchemy import case, exists, func, or_, select
 from sqlalchemy.orm import joinedload
 
@@ -276,27 +278,7 @@ def product_detail(product_id):
 TRANSFER_ROLES = ("INVENTARIO", "ADMIN")
 
 
-@inventory_admin_bp.get("/inventario/traslados")
-@login_required
-@require_role(*TRANSFER_ROLES)
-def transfers():
-    warehouses = db.session.scalars(
-        select(InventoryLocation)
-        .where(InventoryLocation.location_type == "WAREHOUSE",
-               InventoryLocation.is_active.is_(True))
-        .order_by(InventoryLocation.name)
-    ).all()
-    shipments = db.session.scalars(
-        select(Shipment)
-        .where(Shipment.shipment_type == "TRANSFER")
-        .options(joinedload(Shipment.origin_location),
-                 joinedload(Shipment.destination_location))
-        .order_by(Shipment.id.desc()).limit(30)
-    ).all()
-    return render_template("inventory/transfers.html",
-                           warehouses=warehouses, shipments=shipments), 200, {
-        "Cache-Control": "no-store",
-    }
+
 
 
 @inventory_admin_bp.get("/inventario/traslados/existencias")
@@ -316,6 +298,54 @@ def transfer_stock():
         ).all()
     return render_template("inventory/partials/_transfer_stock.html",
                            balances=balances)
+
+
+
+def _is_htmx() -> bool:
+    return request.headers.get("HX-Request") == "true"
+
+
+def _recent_transfers():
+    return db.session.scalars(
+        select(Shipment)
+        .where(Shipment.shipment_type == "TRANSFER")
+        .options(joinedload(Shipment.origin_location),
+                 joinedload(Shipment.destination_location),
+                 joinedload(Shipment.items))
+        .order_by(Shipment.id.desc()).limit(30)
+    ).unique().all()
+
+
+def _board(flash_id=None):
+    return render_template("inventory/partials/_transfer_board.html",
+                           shipments=_recent_transfers(), flash_id=flash_id)
+
+
+def _hx(kind: str, message: str, **events):
+    payload = {"dn:toast": {"kind": kind, "message": message}, **events}
+    return {"HX-Trigger": json.dumps(payload)}
+
+
+def _error_message(exc: Exception) -> str:
+    if isinstance(exc, InventoryError):
+        return str(exc)
+    return "Revisa las cantidades y los datos del traslado."
+
+
+@inventory_admin_bp.get("/inventario/traslados")
+@login_required
+@require_role(*TRANSFER_ROLES)
+def transfers():
+    warehouses = db.session.scalars(
+        select(InventoryLocation)
+        .where(InventoryLocation.location_type == "WAREHOUSE",
+               InventoryLocation.is_active.is_(True))
+        .order_by(InventoryLocation.name)
+    ).all()
+    return render_template("inventory/transfers.html", warehouses=warehouses,
+                           shipments=_recent_transfers(), flash_id=None), 200, {
+        "Cache-Control": "no-store",
+    }
 
 
 @inventory_admin_bp.post("/inventario/traslados")
@@ -350,10 +380,19 @@ def transfer_create():
             notes=request.form.get("notes", "").strip() or None,
         )
         db.session.commit()
-        flash(f"Traslado {shipment.shipment_number} despachado.", "success")
     except (KeyError, ValueError, ArithmeticError, InventoryError) as exc:
         db.session.rollback()
-        flash(str(exc) or "Datos del traslado no válidos.", "error")
+        message = _error_message(exc)
+        if _is_htmx():
+            return "", 200, {**_hx("error", message), "HX-Reswap": "none"}
+        flash(message, "error")
+        return redirect(url_for("inventory_admin.transfers"))
+
+    message = f"Traslado {shipment.shipment_number} despachado."
+    if _is_htmx():
+        return _board(shipment.id), 200, _hx(
+            "success", message, **{"dn:dispatched": {"id": shipment.id}})
+    flash(message, "success")
     return redirect(url_for("inventory_admin.transfers"))
 
 
@@ -367,8 +406,15 @@ def transfer_receive(shipment_id: int):
             received_by=str(current_user.get_id()),
         )
         db.session.commit()
-        flash(f"Traslado {shipment.shipment_number} recibido.", "success")
     except InventoryError as exc:
         db.session.rollback()
+        if _is_htmx():
+            return "", 200, {**_hx("error", str(exc)), "HX-Reswap": "none"}
         flash(str(exc), "error")
+        return redirect(url_for("inventory_admin.transfers"))
+
+    message = f"Traslado {shipment.shipment_number} recibido."
+    if _is_htmx():
+        return _board(shipment.id), 200, _hx("success", message)
+    flash(message, "success")
     return redirect(url_for("inventory_admin.transfers"))

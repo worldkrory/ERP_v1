@@ -6,10 +6,11 @@
 {% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/inventory_workspace.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/inventory_transfers.css') }}">
 {% endblock %}
 {% block content %}
 {% call admin_shell(active_section="inventory", active_module="inventory", page_kicker="Densa Niebla · Inventario", page_title="Traslados entre bodegas", page_hint="El café queda en tránsito hasta que se recibe en la bodega destino.", admin_user=current_user) %}
-<div id="inventory-workspace" class="dn-workspace-shell">
+<div id="inventory-workspace" class="dn-workspace-shell dn-transfer-page">
   <a class="dn-button dn-button-outline" href="{{ url_for('inventory_admin.workspace') }}">Volver al inventario</a>
 
   {% with messages = get_flashed_messages(with_categories=true) %}
@@ -18,70 +19,65 @@
     {% endfor %}
   {% endwith %}
 
-  <section class="dn-card">
-    <h2>Nuevo traslado</h2>
-    <form method="post" action="{{ url_for('inventory_admin.transfer_create') }}" class="dn-inventory-filters">
-      <label class="dn-field"><span>Bodega origen</span>
-        <select name="from_location_id" required
-                hx-get="{{ url_for('inventory_admin.transfer_stock') }}"
-                hx-trigger="change" hx-target="#transfer-stock" hx-swap="innerHTML">
-          <option value="">Elige una bodega</option>
-          {% for w in warehouses %}<option value="{{ w.id }}">{{ w.code }} · {{ w.name }}</option>{% endfor %}
-        </select>
-      </label>
-      <label class="dn-field"><span>Bodega destino</span>
-        <select name="to_location_id" required>
-          <option value="">Elige una bodega</option>
-          {% for w in warehouses %}<option value="{{ w.id }}">{{ w.code }} · {{ w.name }}</option>{% endfor %}
-        </select>
-      </label>
-      <label class="dn-field"><span>Transportador</span>
-        <input name="carrier_name" value="Inter Rapidísimo" maxlength="120"></label>
-      <label class="dn-field"><span>Guía</span>
-        <input name="tracking_number" maxlength="80"></label>
-      <label class="dn-field"><span>Flete (COP)</span>
-        <input name="freight_cost" inputmode="decimal" placeholder="0"></label>
-      <label class="dn-field"><span>Notas</span>
-        <input name="notes" maxlength="200"></label>
+  <section class="dn-card dn-transfer-composer">
+    <div id="transfer-route" class="dn-route" aria-hidden="true">
+      <div class="dn-route-node" data-node="origin"><small>Origen</small><strong>—</strong></div>
+      <div class="dn-route-node" data-node="transit"><small>En camino</small><strong>Tránsito</strong></div>
+      <div class="dn-route-node" data-node="dest"><small>Destino</small><strong>—</strong></div>
+      <span class="dn-route-dot"></span>
+    </div>
 
-      <div id="transfer-stock" style="grid-column: 1 / -1;">
+    <form id="transfer-form" method="post"
+          action="{{ url_for('inventory_admin.transfer_create') }}"
+          hx-post="{{ url_for('inventory_admin.transfer_create') }}"
+          hx-target="#transfer-board" hx-swap="innerHTML"
+          hx-disabled-elt="#transfer-submit" hx-sync="this:drop">
+      <div class="dn-transfer-fields">
+        <label class="dn-field"><span>Bodega origen</span>
+          <select name="from_location_id" required
+                  hx-get="{{ url_for('inventory_admin.transfer_stock') }}"
+                  hx-trigger="change" hx-target="#transfer-stock" hx-swap="innerHTML"
+                  hx-indicator="#stock-loading">
+            <option value="">Elige una bodega</option>
+            {% for w in warehouses %}<option value="{{ w.id }}" data-name="{{ w.name }}">{{ w.code }} · {{ w.name }}</option>{% endfor %}
+          </select>
+        </label>
+        <label class="dn-field"><span>Bodega destino</span>
+          <select name="to_location_id" required>
+            <option value="">Elige una bodega</option>
+            {% for w in warehouses %}<option value="{{ w.id }}" data-name="{{ w.name }}">{{ w.code }} · {{ w.name }}</option>{% endfor %}
+          </select>
+        </label>
+        <label class="dn-field"><span>Transportador</span>
+          <input name="carrier_name" value="Inter Rapidísimo" maxlength="120"></label>
+        <label class="dn-field"><span>Guía</span>
+          <input name="tracking_number" maxlength="80"></label>
+        <label class="dn-field"><span>Flete (COP)</span>
+          <input name="freight_cost" inputmode="decimal" placeholder="0"></label>
+        <label class="dn-field"><span>Notas</span>
+          <input name="notes" maxlength="200"></label>
+      </div>
+
+      <span id="stock-loading" class="htmx-indicator" role="status">Consultando existencias…</span>
+      <div id="transfer-stock" style="margin-top:18px;">
         <p class="dn-section-note">Elige la bodega origen para ver su existencia.</p>
       </div>
 
-      <div class="dn-inventory-actions">
-        <button type="submit" class="dn-button dn-button-primary">Despachar traslado</button>
+      <div class="dn-transfer-summary" style="margin-top:18px;">
+        <p id="transfer-summary-text" aria-live="polite">Sin productos seleccionados</p>
+        <button id="transfer-submit" type="submit" class="dn-button dn-button-primary" disabled>Despachar traslado</button>
       </div>
     </form>
   </section>
 
-  <section class="dn-card">
-    <h2>Traslados recientes</h2>
-    {% if shipments %}
-    <table>
-      <thead><tr><th>Número</th><th>Origen</th><th>Destino</th><th>Guía</th><th>Estado</th><th></th></tr></thead>
-      <tbody>
-      {% for s in shipments %}
-        <tr>
-          <td>{{ s.shipment_number }}</td>
-          <td>{{ s.origin_location.name if s.origin_location else "—" }}</td>
-          <td>{{ s.destination_location.name if s.destination_location else "—" }}</td>
-          <td>{{ s.tracking_number or "—" }}</td>
-          <td>{{ {"DISPATCHED": "En tránsito", "IN_TRANSIT": "En tránsito", "DELIVERED": "Recibido", "CANCELLED": "Cancelado"}.get(s.status, s.status) }}</td>
-          <td>
-            {% if s.is_in_transit %}
-            <form method="post" action="{{ url_for('inventory_admin.transfer_receive', shipment_id=s.id) }}">
-              <button type="submit" class="dn-button dn-button-outline">Recibir</button>
-            </form>
-            {% endif %}
-          </td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-    {% else %}
-    <p class="dn-section-note">Aún no hay traslados.</p>
-    {% endif %}
+  <section>
+    <div class="dn-inventory-results-heading"><h2>Traslados recientes</h2></div>
+    <div id="transfer-board" aria-live="polite">{% include "inventory/partials/_transfer_board.html" %}</div>
   </section>
 </div>
 {% endcall %}
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js"></script>
+<script src="{{ url_for('static', filename='js/inventory_transfers.js') }}" defer></script>
 {% endblock %}
