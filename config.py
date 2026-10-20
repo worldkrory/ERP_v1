@@ -149,3 +149,18 @@ config_by_name = {
     "testing": TestingConfig,
     "production": ProductionConfig,
 }
+
+
+STOREFRONT_DEFAULT_BAG_G = 340
+STOREFRONT_BAG_TARE_G = 30    # empaque por bolsa
+STOREFRONT_BOX_TARE_G = 150   # caja o sobre de despacho
+
+
+# Solo excepciones. Las bodegas con dirección y municipio se resuelven solas.
+STOREFRONT_LOCATION_DANE = {
+    "INUSUAL": "17001000",  # Manizales
+    "SOUL":    "17001000",  # Manizales
+}
+
+SHIPPING_MIN_UNITS = 2        # cotiza como si el pedido llevara al menos 2 unidades
+SHIPPING_MIN_CHARGE_COP = 0   # piso del envío al cliente; ej. 22000

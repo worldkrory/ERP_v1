@@ -173,3 +173,10 @@ body.dn-bourbon-gallery {
  .dn-bourbon-gallery .bg-collab-name { display:block; width:100%; text-align:center; }
  .dn-bourbon-gallery .bg-collab-x { display:block; width:100%; line-height:.8; }
 }
+.bg-collab-hero img{width:100%;aspect-ratio:21/9;object-fit:cover;filter:saturate(.9) contrast(1.05)}
+.bg-collab-strip{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.bg-collab-strip img{width:100%;height:100%;object-fit:cover;aspect-ratio:4/5}
+@media(max-width:700px){
+  .bg-collab-hero img{aspect-ratio:4/5}
+  .bg-collab-strip{grid-template-columns:1fr}
+}

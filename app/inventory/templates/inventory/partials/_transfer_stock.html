@@ -1,0 +1,21 @@
+{% if balances %}
+<table>
+  <thead><tr><th>Producto</th><th>Lote</th><th>Disponible</th><th>Trasladar</th></tr></thead>
+  <tbody>
+  {% for b in balances %}
+    <tr>
+      <td>{{ b.product.name }}</td>
+      <td>{{ b.batch.batch_code if b.batch else "—" }}</td>
+      <td>{{ b.quantity_base|inventory_quantity }}</td>
+      <td>
+        <input type="number" name="qty_{{ b.id }}" min="0"
+               max="{{ b.quantity_base }}" step="any" inputmode="decimal"
+               aria-label="Cantidad de {{ b.product.name }}">
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="dn-section-note">Esta bodega no tiene existencia para trasladar.</p>
+{% endif %}

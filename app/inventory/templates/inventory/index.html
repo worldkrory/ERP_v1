@@ -33,7 +33,8 @@
         <option value="{{ code }}" {% if filters.stock == code %}selected{% endif %}>{{ label }}</option>{% endfor %}
       </select></label>
       <div class="dn-inventory-actions"><button type="submit" class="dn-button dn-button-primary">Buscar</button>
-        <a class="dn-button dn-button-outline" href="{{ url_for('inventory_admin.workspace') }}">Limpiar</a></div>
+        <a class="dn-button dn-button-outline" href="{{ url_for('inventory_admin.workspace') }}">Limpiar</a>
+        <a class="dn-button dn-button-outline" href="{{ url_for('inventory_admin.transfers') }}">Traslados</a></div>
     </form>
     <p class="dn-section-note">Existencia registrada, no disponibilidad comercial ni reservas. Los servicios no se incluyen.</p>
     <span id="inventory-loading" class="htmx-indicator" role="status">Consultando inventario…</span>

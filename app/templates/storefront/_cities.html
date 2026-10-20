@@ -1,0 +1,11 @@
+{% for c in cities %}
+<li role="option">
+  <button type="button" class="city-option"
+          data-label="{{ c.nombre }}, {{ c.departamento }}"
+          hx-post="{{ url_for('storefront.checkout_quote') }}"
+          hx-vals='{{ {"ciudad_codigo": c.codigo}|tojson }}'
+          hx-target="#quote-panel" hx-swap="innerHTML">
+    {{ c.nombre }} <small>{{ c.departamento }}</small>
+  </button>
+</li>
+{% endfor %}

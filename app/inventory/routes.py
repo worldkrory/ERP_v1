@@ -2,8 +2,9 @@ from datetime import date
 from decimal import Decimal
 from urllib.parse import urlsplit
 
-from flask import abort, render_template, request, url_for
-from flask_login import login_required
+from flask import abort, flash, redirect, render_template, request, url_for
+from flask_login import current_user, login_required
+
 from sqlalchemy import case, exists, func, or_, select
 from sqlalchemy.orm import joinedload
 
@@ -14,6 +15,10 @@ from app.models.batch import Batch
 from app.models.inventory import InventoryBalance, InventoryLocation, InventoryMovement
 from app.models.product import Product
 from app.services.catalog_service import PUBLIC_COFFEES
+
+from app.models.shipment import Shipment
+from app.services.inventory_service import InventoryError
+from app.services.transfer_service import dispatch_transfer, receive_transfer
 
 from time import perf_counter
 
@@ -266,3 +271,104 @@ def product_detail(product_id):
     partial = request.headers.get("HX-Request") == "true"
     return render_template("inventory/partials/_detail.html" if partial else "inventory/detail.html",
                            **context), 200, {"Cache-Control": "no-store", "Vary": "HX-Request"}
+
+
+TRANSFER_ROLES = ("INVENTARIO", "ADMIN")
+
+
+@inventory_admin_bp.get("/inventario/traslados")
+@login_required
+@require_role(*TRANSFER_ROLES)
+def transfers():
+    warehouses = db.session.scalars(
+        select(InventoryLocation)
+        .where(InventoryLocation.location_type == "WAREHOUSE",
+               InventoryLocation.is_active.is_(True))
+        .order_by(InventoryLocation.name)
+    ).all()
+    shipments = db.session.scalars(
+        select(Shipment)
+        .where(Shipment.shipment_type == "TRANSFER")
+        .options(joinedload(Shipment.origin_location),
+                 joinedload(Shipment.destination_location))
+        .order_by(Shipment.id.desc()).limit(30)
+    ).all()
+    return render_template("inventory/transfers.html",
+                           warehouses=warehouses, shipments=shipments), 200, {
+        "Cache-Control": "no-store",
+    }
+
+
+@inventory_admin_bp.get("/inventario/traslados/existencias")
+@login_required
+@require_role(*TRANSFER_ROLES)
+def transfer_stock():
+    from_id = request.args.get("from_location_id", type=int)
+    balances = []
+    if from_id:
+        balances = db.session.scalars(
+            select(InventoryBalance)
+            .where(InventoryBalance.location_id == from_id,
+                   InventoryBalance.quantity_base > 0)
+            .options(joinedload(InventoryBalance.product),
+                     joinedload(InventoryBalance.batch))
+            .order_by(InventoryBalance.product_id, InventoryBalance.batch_id)
+        ).all()
+    return render_template("inventory/partials/_transfer_stock.html",
+                           balances=balances)
+
+
+@inventory_admin_bp.post("/inventario/traslados")
+@login_required
+@require_role(*TRANSFER_ROLES)
+def transfer_create():
+    try:
+        from_id = int(request.form["from_location_id"])
+        to_id = int(request.form["to_location_id"])
+        lines = []
+        for key, raw in request.form.items():
+            if not key.startswith("qty_") or not raw.strip():
+                continue
+            qty = Decimal(raw.replace(",", "."))
+            if qty <= 0:
+                continue
+            balance = db.session.get(InventoryBalance, int(key[4:]))
+            if balance is None or balance.location_id != from_id:
+                raise InventoryError("Una línea no pertenece a la bodega origen.")
+            lines.append({"product_id": balance.product_id,
+                          "batch_id": balance.batch_id, "quantity": qty})
+
+        shipment = dispatch_transfer(
+            db.session, from_location_id=from_id, to_location_id=to_id,
+            lines=lines,
+            carrier_name=request.form.get("carrier_name", "").strip() or None,
+            tracking_number=request.form.get("tracking_number", "").strip() or None,
+            freight_cost=Decimal(
+                (request.form.get("freight_cost") or "0").replace(",", ".")
+            ),
+            user_id=current_user.id,
+            notes=request.form.get("notes", "").strip() or None,
+        )
+        db.session.commit()
+        flash(f"Traslado {shipment.shipment_number} despachado.", "success")
+    except (KeyError, ValueError, ArithmeticError, InventoryError) as exc:
+        db.session.rollback()
+        flash(str(exc) or "Datos del traslado no válidos.", "error")
+    return redirect(url_for("inventory_admin.transfers"))
+
+
+@inventory_admin_bp.post("/inventario/traslados/<int:shipment_id>/recibir")
+@login_required
+@require_role(*TRANSFER_ROLES)
+def transfer_receive(shipment_id: int):
+    try:
+        shipment = receive_transfer(
+            db.session, shipment_id, user_id=current_user.id,
+            received_by=str(current_user.get_id()),
+        )
+        db.session.commit()
+        flash(f"Traslado {shipment.shipment_number} recibido.", "success")
+    except InventoryError as exc:
+        db.session.rollback()
+        flash(str(exc), "error")
+    return redirect(url_for("inventory_admin.transfers"))

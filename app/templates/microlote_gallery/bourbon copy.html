@@ -9,18 +9,31 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/bourbon_gallery.css', v='1') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bourbon_gallery.css', v='3') }}">
 </head>
 <body class="dn-bourbon-gallery">
 <a class="bg-skip" href="#contenido">Saltar al contenido</a>
 {% set is_preview = request.endpoint == 'bourbon_gallery.preview' %}
 {% set chapter_endpoint = 'bourbon_gallery.preview' if is_preview else 'bourbon_rosado' %}
+{% set collab = {
+  'label': 'Colaboración',
+  'partner': 'Inusual Rooftop',
+  'line': 'Una colaboración alrededor de Bourbon Rosado, el café de Guavatá, Santander.',
+  'url': '',
+  'url_label': 'Conocer Inusual Rooftop'
+} %}
 <header class="bg-header">
   <a class="bg-brand" href="{{ url_for('storefront.collection') }}" aria-label="Densa Niebla · Ir a la tienda">{% include 'microlote_gallery/_toche.html' %}</a>
   <a class="bg-text-link" href="{{ url_for('storefront.product_detail', slug='bourbon-rosado') }}">Elegir mi café <span aria-hidden="true">↗</span></a>
 </header>
 <main id="contenido">
-<section class="bg-hero" aria-labelledby="bourbon-title">
+<svg class="bg-story-route" data-story-route viewBox="0 0 80 1200" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+  <path class="bg-route-track" data-route-track d="M40 12C8 180 72 300 40 430S8 760 40 900S72 1080 40 1188"/>
+  <path class="bg-route-progress" data-route-progress d="M40 12C8 180 72 300 40 430S8 760 40 900S72 1080 40 1188"/>
+  <g data-route-nodes></g>
+</svg>
+
+<section id="umbral" data-journey-step="umbral" class="bg-hero" aria-labelledby="bourbon-title">
   <div class="bg-hero-meta"><span class="bg-label">Café especial / Microlote</span><span class="bg-label">Guavatá, Santander</span></div>
   <div class="bg-hero-center">
     <p class="bg-label">Un cuaderno de origen</p>
@@ -31,7 +44,39 @@
   <div class="bg-wordmark-window" aria-hidden="true"><span class="bg-wordmark" data-gallery-wordmark>Densa Niebla</span></div>
   <div class="bg-hero-foot"><span class="bg-label">Colombia / Café de finca</span><a class="bg-text-link" href="#cuaderno">Explorar el microlote ↓</a></div>
 </section>
-<section id="pieza" class="bg-exhibition" aria-labelledby="piece-title">
+<section id="niebla" data-journey-step="niebla" class="bg-reveal" data-reveal aria-labelledby="reveal-title">
+  <div class="bg-section-top"><p class="bg-label">00 / Abre la niebla</p><span class="bg-label">Guavatá</span></div>
+  <h2 id="reveal-title">Hay una historia<br>detrás de esta <em>bolsa.</em></h2>
+  <div class="bg-reveal-stage" data-reveal-stage data-state="closed">
+    <figure class="bg-reveal-art">
+      <img src="{{ image_url }}" alt="Bolsa de Bourbon Rosado de Densa Niebla" width="900" height="1125" loading="lazy" decoding="async" data-reveal-image>
+      <figcaption class="bg-reveal-fallback" data-reveal-fallback hidden>La imagen no está disponible.<br>La historia continúa abajo.</figcaption>
+    </figure>
+    <div class="bg-reveal-mist bg-reveal-mist-left" data-reveal-mist-left aria-hidden="true"></div>
+    <div class="bg-reveal-mist bg-reveal-mist-right" data-reveal-mist-right aria-hidden="true"></div>
+    <svg class="bg-reveal-toche" data-reveal-toche viewBox="28 0 155 138" fill="none" aria-hidden="true" focusable="false">
+      <g stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M89 90 40 36 106 48 133 98 54 121 89 90Z"/><path d="M63 40 46 10 106 48"/><path d="M63 40 89 90 115 68"/>
+        <path d="M89 90 141 48 171 59 151 63 133 98"/><path d="M153 51 151 63"/><path d="M89 90 75 126 54 121"/>
+      </g><circle cx="143" cy="57" r="1.8" fill="currentColor"/>
+    </svg>
+    <p class="bg-reveal-hint" data-reveal-hint>Desliza para abrir la niebla <span data-reveal-arrow aria-hidden="true">→</span></p>
+  </div>
+  <div class="bg-reveal-controls">
+    <label class="bg-reveal-range-wrap"><span class="bg-sr-only">Abrir la niebla</span>
+      <input class="bg-reveal-range" type="range" min="0" max="100" step="1" value="0" data-reveal-range>
+    </label>
+    <button type="button" class="bg-control" data-reveal-open>Descubrir</button>
+  </div>
+  <p class="bg-reveal-line" data-reveal-line>El origen no termina cuando el café sale de la finca.</p>
+  <p class="bg-caption bg-reveal-status" role="status" aria-live="polite" data-reveal-status></p>
+  <div class="bg-reveal-actions">
+    <a class="bg-pill" href="#pieza">Seguir la historia <span aria-hidden="true">↓</span></a>
+    <button type="button" class="bg-control" data-share>Compartir</button>
+  </div>
+  <p class="bg-caption" role="status" aria-live="polite" data-share-status></p>
+</section>
+<section id="pieza" data-journey-step="pieza" class="bg-exhibition" aria-labelledby="piece-title">
   <div class="bg-exhibition-stage" data-exhibition-stage>
     <div class="bg-exhibition-media" data-exhibition-media>
       {% if video_url %}
@@ -51,11 +96,13 @@
     {% if video_url %}<div class="bg-video-controls"><button type="button" class="bg-control" data-video-toggle aria-pressed="false">Reproducir película</button><button type="button" class="bg-control" data-sound-toggle aria-pressed="false">Activar sonido</button></div>{% endif %}
   </div>
 </section>
-<section id="cuaderno" class="bg-notebook" aria-labelledby="notebook-title">
+<section id="cuaderno" data-journey-step="cuaderno" class="bg-notebook" aria-labelledby="notebook-title">
+  <div class="bg-notebook-atmosphere" aria-hidden="true"><span class="bg-mist-cloud bg-mist-cloud-one" data-notebook-mist></span><span class="bg-mist-cloud bg-mist-cloud-two" data-notebook-mist></span></div>
   <div class="bg-section-top"><p class="bg-label">02 / Cuaderno del microlote</p><span class="bg-label">De origen a taza</span></div>
   <h2 id="notebook-title">Conocer también<br>es parte del <em>ritual.</em></h2>
   <div class="bg-notebook-layout">
     <nav class="bg-chapter-nav" aria-label="Capítulos del microlote">
+      <div class="bg-chapter-meter" aria-hidden="true"><span data-chapter-meter></span></div>
       {% for key, item in chapters.items() %}
       <a class="bg-chapter-link {% if key == chapter_key %}is-active{% endif %}" data-chapter-link="{{ key }}"
          href="{{ url_for(chapter_endpoint, chapter=key, _anchor='cuaderno') }}"
@@ -69,16 +116,27 @@
       {% endfor %}
       <span id="chapter-loading" class="bg-chapter-status htmx-indicator" role="status">Abriendo capítulo…</span>
       <p class="bg-chapter-error" data-chapter-error role="status" hidden></p>
+      <p class="bg-caption bg-swipe-hint">Desliza la página para cambiar de capítulo.</p>
     </nav>
     {% include 'microlote_gallery/_chapter.html' %}
   </div>
 </section>
-<section class="bg-manifesto" aria-labelledby="manifesto-title">
+<section id="recorrido" data-journey-step="recorrido" class="bg-manifesto" aria-labelledby="manifesto-title">
   <div class="bg-section-top"><span class="bg-label">03 / Lo que conserva la taza</span><span class="bg-label">Densa Niebla</span></div>
   <h2 id="manifesto-title">No queríamos que solo<br>probaras el café.<br><em>Queríamos que conocieras<br>de dónde viene.</em></h2>
   <div class="bg-manifesto-bottom"><span class="bg-label">Finca → Cosecha → Proceso → Tostión → Tu taza</span><a class="bg-text-link" href="https://www.instagram.com/cafedensaniebla/" target="_blank" rel="noopener noreferrer">Seguir la historia en Instagram ↗</a></div>
 </section>
-<section class="bg-invitation" aria-labelledby="invitation-title">
+<section id="alianza" data-journey-step="alianza" class="bg-collab" aria-labelledby="collab-title">
+  <div class="bg-section-top"><span class="bg-label">04 / {{ collab.label }}</span><span class="bg-label">Bourbon Rosado</span></div>
+  <h2 id="collab-title" class="bg-collab-title">
+    <span class="bg-collab-name">Densa Niebla</span>
+    <span class="bg-sr-only"> con </span><span class="bg-collab-x" aria-hidden="true">×</span>
+    <span class="bg-collab-name">{{ collab.partner }}</span>
+  </h2>
+  <p class="bg-collab-line">{{ collab.line }}</p>
+  {% if collab.url %}<a class="bg-text-link" href="{{ collab.url }}" target="_blank" rel="noopener noreferrer">{{ collab.url_label }} <span aria-hidden="true">↗</span></a>{% endif %}
+</section>
+<section id="tu-taza" data-journey-step="tu-taza" class="bg-invitation" aria-labelledby="invitation-title">
   <p class="bg-label">La próxima página</p>
   <h2 id="invitation-title">Ahora,<br><em>tu taza.</em></h2>
   <p>Explora la ficha de Bourbon Rosado y elige tu presentación.</p>
@@ -90,5 +148,6 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/ScrollTrigger.min.js" defer></script>
 <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous" defer></script>
-<script src="{{ url_for('static', filename='js/bourbon_gallery.js', v='1') }}" defer></script>
+<script src="{{ url_for('static', filename='js/bourbon_gallery.js', v='3') }}" defer></script>
+<script src="{{ url_for('static', filename='js/bourbon_mobile.js', v='1') }}" defer></script>
 </body></html>

@@ -15,13 +15,22 @@
 <a class="bg-skip" href="#contenido">Saltar al contenido</a>
 {% set is_preview = request.endpoint == 'bourbon_gallery.preview' %}
 {% set chapter_endpoint = 'bourbon_gallery.preview' if is_preview else 'bourbon_rosado' %}
+
+
 {% set collab = {
   'label': 'Colaboración',
   'partner': 'Inusual Rooftop',
-  'line': 'Una colaboración alrededor de Bourbon Rosado, el café de Guavatá, Santander.',
+  'line': 'Bourbon Rosado se prepara en sifón en Inusual Rooftop. Escanea, conoce el origen y pídelo en la mesa.',
   'url': '',
-  'url_label': 'Conocer Inusual Rooftop'
+  'url_label': 'Conocer Inusual Rooftop',
+  'photos': [
+    {'src': url_for('static', filename='img/alianza/inusual-vitrina-wide.jpg'), 'alt': 'Vitrina de Densa Niebla con sifón y bolsas en Inusual Rooftop'},
+    {'src': url_for('static', filename='img/alianza/inusual-sifon.webp'), 'alt': 'Sifón de latón preparando Bourbon Rosado'},
+    {'src': url_for('static', filename='img/alianza/inusual-vitrina-vertical.webp'), 'alt': 'Etiquetas Gesha, Origen y Bourbon Rosado en la vitrina'}
+  ]
 } %}
+
+
 <header class="bg-header">
   <a class="bg-brand" href="{{ url_for('storefront.collection') }}" aria-label="Densa Niebla · Ir a la tienda">{% include 'microlote_gallery/_toche.html' %}</a>
   <a class="bg-text-link" href="{{ url_for('storefront.product_detail', slug='bourbon-rosado') }}">Elegir mi café <span aria-hidden="true">↗</span></a>
@@ -126,16 +135,21 @@
   <h2 id="manifesto-title">No queríamos que solo<br>probaras el café.<br><em>Queríamos que conocieras<br>de dónde viene.</em></h2>
   <div class="bg-manifesto-bottom"><span class="bg-label">Finca → Cosecha → Proceso → Tostión → Tu taza</span><a class="bg-text-link" href="https://www.instagram.com/cafedensaniebla/" target="_blank" rel="noopener noreferrer">Seguir la historia en Instagram ↗</a></div>
 </section>
+
+
 <section id="alianza" data-journey-step="alianza" class="bg-collab" aria-labelledby="collab-title">
-  <div class="bg-section-top"><span class="bg-label">04 / {{ collab.label }}</span><span class="bg-label">Bourbon Rosado</span></div>
-  <h2 id="collab-title" class="bg-collab-title">
-    <span class="bg-collab-name">Densa Niebla</span>
-    <span class="bg-sr-only"> con </span><span class="bg-collab-x" aria-hidden="true">×</span>
-    <span class="bg-collab-name">{{ collab.partner }}</span>
-  </h2>
+  <!-- se conserva el título "Densa Niebla × partner" -->
+  <figure class="bg-collab-hero"><img src="{{ collab.photos[0].src }}" alt="{{ collab.photos[0].alt }}" loading="lazy" decoding="async"></figure>
+  <div class="bg-collab-strip">
+    {% for p in collab.photos[1:] %}
+    <figure><img src="{{ p.src }}" alt="{{ p.alt }}" loading="lazy" decoding="async"></figure>
+    {% endfor %}
+  </div>
   <p class="bg-collab-line">{{ collab.line }}</p>
-  {% if collab.url %}<a class="bg-text-link" href="{{ collab.url }}" target="_blank" rel="noopener noreferrer">{{ collab.url_label }} <span aria-hidden="true">↗</span></a>{% endif %}
+  <a class="bg-pill" href="{{ url_for('storefront.product_detail', slug='bourbon-rosado') }}?ref=inusual">Elegir mi café ↗</a>
 </section>
+
+
 <section id="tu-taza" data-journey-step="tu-taza" class="bg-invitation" aria-labelledby="invitation-title">
   <p class="bg-label">La próxima página</p>
   <h2 id="invitation-title">Ahora,<br><em>tu taza.</em></h2>

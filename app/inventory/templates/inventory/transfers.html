@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% from "admin/_admin_shell.html" import admin_shell %}
+{% block title %}Traslados | Inventario | Densa Niebla{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sales_workspace.css') }}">
+{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/inventory_workspace.css') }}">
+{% endblock %}
+{% block content %}
+{% call admin_shell(active_section="inventory", active_module="inventory", page_kicker="Densa Niebla · Inventario", page_title="Traslados entre bodegas", page_hint="El café queda en tránsito hasta que se recibe en la bodega destino.", admin_user=current_user) %}
+<div id="inventory-workspace" class="dn-workspace-shell">
+  <a class="dn-button dn-button-outline" href="{{ url_for('inventory_admin.workspace') }}">Volver al inventario</a>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <p class="dn-alert dn-alert-{{ 'error' if category == 'error' else 'success' }}">{{ message }}</p>
+    {% endfor %}
+  {% endwith %}
+
+  <section class="dn-card">
+    <h2>Nuevo traslado</h2>
+    <form method="post" action="{{ url_for('inventory_admin.transfer_create') }}" class="dn-inventory-filters">
+      <label class="dn-field"><span>Bodega origen</span>
+        <select name="from_location_id" required
+                hx-get="{{ url_for('inventory_admin.transfer_stock') }}"
+                hx-trigger="change" hx-target="#transfer-stock" hx-swap="innerHTML">
+          <option value="">Elige una bodega</option>
+          {% for w in warehouses %}<option value="{{ w.id }}">{{ w.code }} · {{ w.name }}</option>{% endfor %}
+        </select>
+      </label>
+      <label class="dn-field"><span>Bodega destino</span>
+        <select name="to_location_id" required>
+          <option value="">Elige una bodega</option>
+          {% for w in warehouses %}<option value="{{ w.id }}">{{ w.code }} · {{ w.name }}</option>{% endfor %}
+        </select>
+      </label>
+      <label class="dn-field"><span>Transportador</span>
+        <input name="carrier_name" value="Inter Rapidísimo" maxlength="120"></label>
+      <label class="dn-field"><span>Guía</span>
+        <input name="tracking_number" maxlength="80"></label>
+      <label class="dn-field"><span>Flete (COP)</span>
+        <input name="freight_cost" inputmode="decimal" placeholder="0"></label>
+      <label class="dn-field"><span>Notas</span>
+        <input name="notes" maxlength="200"></label>
+
+      <div id="transfer-stock" style="grid-column: 1 / -1;">
+        <p class="dn-section-note">Elige la bodega origen para ver su existencia.</p>
+      </div>
+
+      <div class="dn-inventory-actions">
+        <button type="submit" class="dn-button dn-button-primary">Despachar traslado</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="dn-card">
+    <h2>Traslados recientes</h2>
+    {% if shipments %}
+    <table>
+      <thead><tr><th>Número</th><th>Origen</th><th>Destino</th><th>Guía</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+      {% for s in shipments %}
+        <tr>
+          <td>{{ s.shipment_number }}</td>
+          <td>{{ s.origin_location.name if s.origin_location else "—" }}</td>
+          <td>{{ s.destination_location.name if s.destination_location else "—" }}</td>
+          <td>{{ s.tracking_number or "—" }}</td>
+          <td>{{ {"DISPATCHED": "En tránsito", "IN_TRANSIT": "En tránsito", "DELIVERED": "Recibido", "CANCELLED": "Cancelado"}.get(s.status, s.status) }}</td>
+          <td>
+            {% if s.is_in_transit %}
+            <form method="post" action="{{ url_for('inventory_admin.transfer_receive', shipment_id=s.id) }}">
+              <button type="submit" class="dn-button dn-button-outline">Recibir</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="dn-section-note">Aún no hay traslados.</p>
+    {% endif %}
+  </section>
+</div>
+{% endcall %}
+{% endblock %}

@@ -1,0 +1,18 @@
+{% if error %}
+  <p class="cart-note">No pudimos calcular el envío. Revisa la ciudad.</p>
+{% else %}
+  <div class="summary-row">
+    <span>Envío a {{ city.nombre }}</span>
+    <strong class="js-price" data-value="{{ shipping|int }}">{{ shipping|cop }}</strong>
+  </div>
+  {% if free %}
+    <p class="shipping-progress is-complete">Envío cortesía de Densa Niebla.</p>
+  {% endif %}
+  <div class="summary-row">
+    <span>Total</span>
+    <strong class="js-price" data-value="{{ total|int }}">{{ total|cop }}</strong>
+  </div>
+  {% if source == "respaldo" %}
+    <p class="cart-note">Tarifa estimada. Confirmaremos el valor final.</p>
+  {% endif %}
+{% endif %}
