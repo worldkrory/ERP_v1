@@ -65,21 +65,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("city-results").addEventListener("click", (e) => {
-    const b = e.target.closest(".city-option");
-    if (!b) return;
-    
-    document.getElementById("city-results").addEventListener("click", (e) => {
-    const btn = e.target.closest(".city-option");
-    if (!btn) return;
-    city.value = JSON.parse(btn.getAttribute("hx-vals")).ciudad_codigo;
-    label.value = btn.dataset.label;
-    document.getElementById("city-results").innerHTML = "";
-    refresh();
-    });
-
-
-    label.value = b.dataset.label;
-    document.getElementById("city-results").innerHTML = "";
+    const option = e.target.closest(".city-option");
+    if (!option) return;
+    city.value = JSON.parse(option.getAttribute("hx-vals")).ciudad_codigo;
+    label.value = option.dataset.label;
+    setTimeout(() => { document.getElementById("city-results").innerHTML = ""; }, 50);
     refresh();
   });
 
