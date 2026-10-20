@@ -98,6 +98,7 @@ def _available_dispatch_batches(
                 InventoryBalance.quantity_base > 0,
                 Batch.status == "ACTIVE",
                 InventoryLocation.is_active.is_(True),
+                InventoryLocation.location_type == "WAREHOUSE",
             )
             .order_by(
                 Batch.expiry_date.asc().nullslast(),
@@ -781,6 +782,7 @@ def available_sale_item_batches(sale_id: int, item_id: int):
                 InventoryBalance.product_id == item.product_id,
                 InventoryBalance.quantity_base > 0,
                 InventoryLocation.is_active.is_(True),
+                InventoryLocation.location_type == "WAREHOUSE",
             )
             .order_by(
                 Batch.received_date.asc(),

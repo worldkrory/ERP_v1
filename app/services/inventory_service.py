@@ -141,9 +141,7 @@ def _create_movement(
 	session.flush()
 	_update_balance(session, movement)
 	if batch_id is not None:
-		batch = session.get(Batch, batch_id)
-		if get_available_quantity(session, product_id, location_id, batch_id) == 0:
-			batch.status = "DEPLETED"
+		_sync_batch_status(session, batch_id)
 	return movement
 
 
@@ -494,6 +492,23 @@ def rebuild_balances(session: Session) -> None:
 	).all()
 	for movement in movements:
 		_update_balance(session, movement)
+
+
+def _sync_batch_status(session: Session, batch_id: int) -> None:
+    """DEPLETED = saldo cero sumando TODAS las ubicaciones. No pisa BLOCKED ni EXPIRED."""
+    batch = session.get(Batch, batch_id)
+    if batch is None or batch.status in ("BLOCKED", "EXPIRED"):
+        return
+    total = session.scalar(
+        select(func.coalesce(func.sum(InventoryBalance.quantity_base), 0)).where(
+            InventoryBalance.batch_id == batch_id
+        )
+    )
+    total = Decimal(str(total or 0))
+    if total <= 0 and batch.status == "ACTIVE":
+        batch.status = "DEPLETED"
+    elif total > 0 and batch.status == "DEPLETED":
+        batch.status = "ACTIVE"
 
 
 __all__ = [
