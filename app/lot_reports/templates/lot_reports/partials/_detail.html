@@ -1,0 +1,201 @@
+{% from "lot_reports/partials/_macros.html" import panel, track, state_pill %}
+{% set r = report %}
+{% set lot = r.lot %}
+{% set u = r.unit %}
+{% if partial %}<title>Informe {{ lot.batch_code }} | Densa Niebla</title>{% endif %}
+<article class="dn-lr-report" data-lr-detail data-lr-code="{{ lot.batch_code }}">
+  <a class="dn-back-link" data-lr-back href="{{ url_for('lot_reports.index') }}"
+     hx-get="{{ url_for('lot_reports.index') }}" hx-target="#lot-reports-stage" hx-swap="innerHTML" hx-push-url="true">← Volver a los lotes</a>
+
+  <header class="dn-sale-detail-header dn-lr-header">
+    <div>
+      <p class="dn-eyebrow">Densa Niebla · Informe administrativo y financiero</p>
+      <h1 tabindex="-1" data-lr-heading>{{ lot.batch_code }}</h1>
+      <p class="dn-sale-detail-subtitle">{{ lot.producto }}{% if lot.sku %} · {{ lot.sku }}{% endif %}.
+        {% if lot.production_date %}Producido el {{ lot.production_date|lr_date }}.{% endif %}
+        {% if lot.order_number %}Orden {{ lot.order_number }}.{% endif %}</p>
+      <div class="dn-lr-chips">
+        <span class="dn-status dn-lr-soft">{{ lot.batch_type }}</span>
+        <span class="dn-status {{ 'dn-status-confirmed' if lot.status == 'ACTIVE' else 'dn-status-draft' }}">{{ lot.status }}</span>
+        {% if lot.estado_orden %}<span class="dn-status dn-lr-info">Orden {{ lot.estado_orden }}</span>{% endif %}
+        <span class="dn-status {{ 'dn-lr-bad' if r.controls_bad else 'dn-lr-ok' }}">{{ (r.controls_bad ~ ' por revisar') if r.controls_bad else 'Sin alertas críticas' }}</span>
+        {% if r.controls_info %}<span class="dn-status dn-lr-warn">{{ r.controls_info }} informativo(s)</span>{% endif %}
+      </div>
+    </div>
+    <div class="dn-sale-detail-total">
+      <span>Corte de datos</span><strong>{{ r.cutoff|lr_date }}</strong>
+      <div class="dn-lr-actions">
+        <button type="button" class="dn-button dn-button-outline dn-button-small" data-lr-mask aria-pressed="false">Ocultar nombres</button>
+        <button type="button" class="dn-button dn-button-outline dn-button-small" data-lr-print>Imprimir / PDF</button>
+        <a class="dn-button dn-button-outline dn-button-small" href="{{ url_for('lot_reports.snapshot', code=lot.batch_code, corte=r.cutoff.isoformat()) }}">Datos (JSON)</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="dn-metrics-grid" aria-label="Indicadores del lote">
+    <article class="dn-metric-card dn-metric-card-money" data-lr-metric><span class="dn-metric-label">Ingreso neto vendido</span>
+      <strong data-count="{{ r.revenue|lr_num }}" data-fmt="money">{{ r.revenue|lr_money }}</strong>
+      <small>{{ r.sales|length }} venta(s) · {{ r.qty_sold|lr_qty }} {{ u }} · sin IVA</small></article>
+    <article class="dn-metric-card dn-metric-card-money" data-lr-metric><span class="dn-metric-label">Margen bruto</span>
+      <strong data-count="{{ r.margin|lr_num }}" data-fmt="money">{{ r.margin|lr_money }}</strong>
+      <small>{{ r.margin_pct|lr_pct }} sobre lo vendido</small></article>
+    <article class="dn-metric-card" data-lr-metric><span class="dn-metric-label">Vendido del lote</span>
+      <strong {% if r.sell_through is not none %}data-count="{{ r.sell_through|lr_num }}" data-fmt="pct"{% endif %}>{{ r.sell_through|lr_pct }}</strong>
+      <small>{{ r.qty_sold|lr_qty }} de {{ r.initial|lr_qty }} {{ u }}</small></article>
+    <article class="dn-metric-card dn-metric-card-money" data-lr-metric><span class="dn-metric-label">Por cobrar</span>
+      <strong data-count="{{ r.due|lr_num }}" data-fmt="money">{{ r.due|lr_money }}</strong>
+      <small>{% if r.overdue_count %}Vencido: {{ r.overdue_amount|lr_money }}{% else %}Sin cartera vencida{% endif %}</small></article>
+    <article class="dn-metric-card" data-lr-metric><span class="dn-metric-label">Costo recuperado</span>
+      <strong {% if r.recovered is not none %}data-count="{{ r.recovered|lr_num }}" data-fmt="pct"{% endif %}>{{ r.recovered|lr_pct }}</strong>
+      <small>Costo del lote {{ r.lot_cost|lr_money }}</small></article>
+  </section>
+
+  <div class="dn-lr-grid">
+    {% call panel("Lectura del lote", "Lo que dicen los datos", "dn-lr-s12") %}
+      <ul class="dn-lr-list-plain">{% for f in r.facts %}<li><span class="dn-lr-bullet" aria-hidden="true">•</span><p>{{ f }}</p></li>{% endfor %}</ul>
+    {% endcall %}
+
+    {% if r.composition %}
+    {% set comp = r.composition %}
+    {% call panel("Estructura del costo", "De qué está hecho el costo del lote", "dn-lr-s5", True) %}
+      <span class="dn-lr-label">Costo del lote</span>
+      <div class="dn-lr-big" data-count="{{ r.lot_cost|lr_num }}" data-fmt="money">{{ r.lot_cost|lr_money }}</div>
+      <p class="dn-lr-muted">{{ r.unit_cost|lr_money(2) }} por {{ u }} · {{ r.initial|lr_qty }} {{ u }}</p>
+      <div class="dn-lr-stack" role="img" aria-label="Composición del costo">{% for row in comp.rows %}<i class="dn-lr-fill" title="{{ row.label }}" style="width: {{ '%.1f'|format(row.width) }}%; background: {{ row.color }}"></i>{% endfor %}</div>
+      <div class="dn-lr-legend">
+        {% for row in comp.rows %}
+        <div class="dn-lr-legend-row"><span class="dn-lr-dot" style="background: {{ row.color }}"></span>
+          <span>{{ row.label }}<small>{{ row.pct_total|lr_pct }} del costo</small></span>
+          <span class="dn-lr-num">{{ row.lot_value|lr_money }}</span><span class="dn-lr-num dn-lr-soft-text">{{ row.per_unit|lr_money(2) }}/{{ u }}</span></div>
+        {% endfor %}
+      </div>
+      <p class="dn-lr-muted dn-lr-note-dark">{% if comp.share is not none and comp.share < 0.999 %}Se reparte el costo de la orden ({{ comp.total|lr_money }}) en la proporción del lote ({{ comp.share|lr_pct }}).{% else %}El lote lleva el costo completo de su orden.{% endif %}</p>
+    {% endcall %}
+    {% else %}
+    {% call panel("Estructura del costo", "Sin orden de producción", "dn-lr-s5") %}
+      <p class="dn-lr-muted">Este lote no tiene orden asociada. Su costo es el de compra: {{ r.unit_cost|lr_money(2) }} por {{ u }}.</p>
+    {% endcall %}
+    {% endif %}
+
+    {% call panel("Del ingreso al margen", "Economía de lo vendido", "dn-lr-s7") %}
+      <div class="dn-lr-hb">
+        <div><div class="dn-lr-top"><span>Ingreso neto</span><strong>{{ r.revenue|lr_money }}</strong></div>{{ track(r.econ_bars.rev, "var(--dn-forest)") }}</div>
+        <div><div class="dn-lr-top"><span>Costo de ventas</span><strong>{{ r.cogs|lr_money }}</strong></div>{{ track(r.econ_bars.cogs, "var(--dn-earth)") }}</div>
+        <div><div class="dn-lr-top"><span>Margen bruto</span><strong>{{ r.margin|lr_money }} · {{ r.margin_pct|lr_pct }}</strong></div>{{ track(r.econ_bars.margin, "#5da677") }}</div>
+      </div>
+      <div class="dn-lr-stat3">
+        <div><span class="dn-lr-label">Precio promedio</span><strong>{{ r.avg_price|lr_money(2) }}</strong></div>
+        <div><span class="dn-lr-label">Costo unitario</span><strong>{{ r.avg_cost|lr_money(2) }}</strong></div>
+        <div><span class="dn-lr-label">Margen unitario</span><strong>{% if r.avg_price is not none %}{{ (r.avg_price - r.avg_cost)|lr_money(2) }}{% else %}—{% endif %}</strong></div>
+      </div>
+      <p class="dn-lr-note">Margen bruto: no incluye flete de venta, comisiones, muestras, gastos fijos ni impuesto de renta. El IVA ({{ r.tax|lr_money }}) está fuera del ingreso.</p>
+    {% endcall %}
+
+    {% call panel("Recuperación del lote", "Punto de equilibrio y saldo", "dn-lr-s5") %}
+      <div class="dn-lr-hb">
+        <div><div class="dn-lr-top"><span>Vendido</span><strong>{{ r.qty_sold|lr_qty }} {{ u }}</strong></div>{{ track(r.rec_bars.sold, "var(--dn-forest)") }}</div>
+        <div><div class="dn-lr-top"><span>Punto de equilibrio al precio promedio</span><strong>{% if r.breakeven is not none %}{{ r.breakeven|lr_qty }} {{ u }}{% else %}—{% endif %}</strong></div>{{ track(r.rec_bars.breakeven, "#d8bd77") }}</div>
+        <div><div class="dn-lr-top"><span>Producido</span><strong>{{ r.initial|lr_qty }} {{ u }}</strong></div>{{ track(r.rec_bars.initial, "#b9c2b8") }}</div>
+      </div>
+      <div class="dn-lr-stat3">
+        <div><span class="dn-lr-label">Saldo{% if not r.has_inventory %} teórico{% endif %}</span><strong>{{ r.remaining|lr_qty }} {{ u }}</strong></div>
+        <div><span class="dn-lr-label">Saldo a costo</span><strong>{{ r.inventory_value|lr_money }}</strong></div>
+        <div><span class="dn-lr-label">Cobrado del costo</span><strong>{{ r.paid_of_cost|lr_pct }}</strong></div>
+      </div>
+      {% if not r.has_inventory %}<p class="dn-lr-note">El saldo es producido − vendido. No hay saldo registrado en inventario para contrastarlo.</p>{% endif %}
+    {% endcall %}
+
+    {% call panel("Ritmo de venta", "Unidades acumuladas en el tiempo", "dn-lr-s7") %}
+      {% if r.timeline %}{% set t = r.timeline %}
+      <div class="dn-lr-scroll"><svg viewBox="0 0 {{ t.W }} {{ t.H }}" width="100%" role="img" aria-label="Unidades acumuladas vendidas entre {{ t.start|lr_date }} y {{ t.end|lr_date }}: {{ t.total|lr_qty }}">
+        <line x1="{{ t.pl }}" y1="{{ t.y0 }}" x2="{{ t.W - t.pr }}" y2="{{ t.y0 }}" stroke="#d4d6cc"/>
+        <line x1="{{ t.pl }}" y1="{{ t.y1 }}" x2="{{ t.W - t.pr }}" y2="{{ t.y1 }}" stroke="#e8e8df" stroke-dasharray="3 4"/>
+        <path d="{{ t.path }}" fill="none" stroke="#1d4135" stroke-width="2.2" data-lr-line/>
+        {% for pt in t.points %}<circle cx="{{ pt.x }}" cy="{{ pt.y }}" r="4.2" fill="#a66b4a"><title>{{ pt.date|lr_date }} · acumulado {{ pt.cum|lr_qty }}</title></circle>{% endfor %}
+        <text x="{{ t.pl - 8 }}" y="{{ t.y0 + 4 }}" text-anchor="end" font-size="10" fill="#67736a">0</text>
+        <text x="{{ t.pl - 8 }}" y="{{ t.y1 + 4 }}" text-anchor="end" font-size="10" fill="#67736a">{{ t.ymax|lr_qty }}</text>
+        <text x="{{ t.pl }}" y="{{ t.H - 10 }}" font-size="10" fill="#67736a">{{ t.start|lr_date }}</text>
+        <text x="{{ t.W - t.pr }}" y="{{ t.H - 10 }}" text-anchor="end" font-size="10" fill="#67736a">{{ t.end|lr_date }} (corte)</text>
+      </svg></div>
+      {% else %}<p class="dn-lr-muted">Sin ventas confirmadas, despachadas o entregadas.</p>{% endif %}
+    {% endcall %}
+
+    {% call panel("Cartera", "Cuánto falta por cobrar y desde cuándo", "dn-lr-s5") %}
+      <div class="dn-lr-hb">{% for b in r.buckets %}<div><div class="dn-lr-top"><span>{{ b.label }}</span><strong>{{ b.amount|lr_money }}</strong></div>{{ track(b.width, b.color) }}</div>{% endfor %}</div>
+      <p class="dn-lr-note">Días calculados contra el corte ({{ r.cutoff|lr_date }}) y el vencimiento de cada venta. El cobro se atribuye al lote en proporción al total de cada venta.</p>
+    {% endcall %}
+
+    {% call panel("Mezcla comercial", "Canal y cliente", "dn-lr-s7") %}
+      {% if r.sales %}
+      <span class="dn-lr-label">Por canal · ingreso y margen</span>
+      <div class="dn-lr-hb dn-lr-gap">{% for x in r.by_channel %}<div><div class="dn-lr-top"><span>{{ x.label }}</span><strong>{{ x.rev|lr_money }} · {{ x.margin_pct|lr_pct }}</strong></div>{{ track(x.width, "var(--dn-forest)") }}<small class="dn-lr-muted">{{ x.n }} venta(s) · {{ x.q|lr_qty }} {{ u }}</small></div>{% endfor %}</div>
+      <span class="dn-lr-label">Por cliente ({{ r.by_client|length }})</span>
+      <div class="dn-lr-hb">{% for x in r.by_client[:6] %}<div><div class="dn-lr-top"><span data-lr-client data-mask="{{ x.mask }}">{{ x.label }}</span><strong>{{ x.rev|lr_money }} · {{ x.margin_pct|lr_pct }}</strong></div>{{ track(x.width, "var(--dn-forest)") }}<small class="dn-lr-muted">{{ x.n }} venta(s) · {{ x.q|lr_qty }} {{ u }}</small></div>{% endfor %}</div>
+      {% if r.by_client|length > 6 %}<p class="dn-lr-muted">y {{ r.by_client|length - 6 }} cliente(s) más en el detalle.</p>{% endif %}
+      {% else %}<p class="dn-lr-muted">Sin ventas.</p>{% endif %}
+    {% endcall %}
+
+    {% call panel("Proceso y rendimiento", "Producción de la orden completa", "dn-lr-s12") %}
+      {% if r.ejecuciones %}
+      <div class="dn-table-scroll" tabindex="0" role="region" aria-label="Ejecuciones de proceso; desplazable horizontalmente">
+        <table class="dn-sales-table dn-lr-table dn-lr-compact"><thead><tr>
+          <th scope="col">#</th><th scope="col">Proceso</th><th scope="col">Ejecutor</th><th scope="col">Estado</th>
+          <th scope="col" class="dn-lr-num">Entrada</th><th scope="col" class="dn-lr-num">Salida</th><th scope="col" class="dn-lr-num">Merma</th><th scope="col" class="dn-lr-num">Rend.</th>
+          <th scope="col" class="dn-lr-num">Pactado</th><th scope="col" class="dn-lr-num">Real</th><th scope="col" class="dn-lr-num">Desv.</th></tr></thead><tbody>
+        {% for e in r.ejecuciones %}
+          <tr><td>{{ e.sequence_no }}</td><td><strong class="dn-money">{{ e.proceso }}</strong></td>
+            <td>{{ e.ejecutor or 'Propio' }}<span class="dn-table-muted">{{ 'Maquila externa' if e.executor_type == 'EXTERNAL' else 'Interno' }}</span></td>
+            <td><span class="dn-status {{ 'dn-lr-ok' if e.status in ('DONE', 'RECEIVED') else 'dn-lr-warn' }}">{{ e.status }}</span></td>
+            <td class="dn-lr-num">{{ e.input_quantity_base|lr_qty }}</td><td class="dn-lr-num">{{ e.output_quantity_base|lr_qty }}</td><td class="dn-lr-num">{{ e.waste_quantity_base|lr_qty }}</td>
+            <td class="dn-lr-num">{{ e.yield_pct|lr_pct }}</td><td class="dn-lr-num">{{ e.computed_cost|lr_money }}</td>
+            <td class="dn-lr-num">{{ e.actual_cost|lr_money if e.actual_cost is not none else '—' }}</td><td class="dn-lr-num">{{ e.desviacion|lr_money if e.desviacion is not none else '—' }}</td></tr>
+        {% endfor %}</tbody></table>
+      </div>
+      {% set pr = r.process %}
+      <div class="dn-lr-stack dn-lr-stack-light" role="img" aria-label="Entrada {{ pr.input|lr_qty }}: salida {{ pr.output|lr_qty }}, merma {{ pr.waste|lr_qty }}">
+        <i class="dn-lr-fill" style="width: {{ '%.1f'|format(pr.w_out) }}%; background: var(--dn-forest)"></i><i class="dn-lr-fill" style="width: {{ '%.1f'|format(pr.w_waste) }}%; background: var(--dn-earth)"></i></div>
+      <p class="dn-lr-muted">Salida {{ pr.output|lr_qty }} · merma {{ pr.waste|lr_qty }} · entrada {{ pr.input|lr_qty }} (unidad base de la orden). Rendimiento {{ pr.yield|lr_pct }}.</p>
+      {% else %}<p class="dn-lr-muted">Sin ejecuciones de proceso registradas.</p>{% endif %}
+    {% endcall %}
+
+    {% call panel("Trazabilidad", "De la finca a la taza", "dn-lr-s12") %}
+      <div class="dn-lr-chain">
+        <div class="dn-lr-node {% if r.origin_gap %}is-gap{% endif %}"><small>Origen</small><b>{{ r.origin_name }}</b><small>{% if r.origin_gap %}Falta finca, municipio y cosecha{% else %}{{ r.origin_detail }}{% endif %}</small></div><span class="dn-lr-arrow" aria-hidden="true">→</span>
+        {% for p in r.padres %}<div class="dn-lr-node"><small>Lote padre · {{ p.contribution_pct|lr_pct }}</small><b>{{ p.lote_padre }}</b><small>{{ p.producto }}<br>{{ p.quantity_consumed|lr_qty }} {{ p.unidad_consumo }}{% if p.costo_consumido is not none %} · {{ p.costo_consumido|lr_money }}{% endif %}</small></div>
+        {% else %}<div class="dn-lr-node"><small>Lote padre</small><b>—</b><small>Sin linaje registrado</small></div>{% endfor %}<span class="dn-lr-arrow" aria-hidden="true">→</span>
+        <div class="dn-lr-node"><small>Orden</small><b>{{ lot.order_number or '—' }}</b><small>{% for e in r.ejecuciones %}{{ e.proceso }}{% if not loop.last %}, {% endif %}{% else %}Sin ejecuciones{% endfor %}</small></div><span class="dn-lr-arrow" aria-hidden="true">→</span>
+        <div class="dn-lr-node"><small>Lote</small><b>{{ lot.batch_code }}</b><small>{{ r.initial|lr_qty }} {{ u }}</small></div><span class="dn-lr-arrow" aria-hidden="true">→</span>
+        <div class="dn-lr-node"><small>Ventas</small><b>{{ r.sales|length }} venta(s)</b><small>{{ r.customers }} cliente(s)</small></div>
+      </div>
+      {% if r.hijos %}<p class="dn-lr-muted">Este lote alimentó a: {% for h in r.hijos %}{{ h.lote_hijo }}{% if not loop.last %}, {% endif %}{% endfor %}.</p>{% endif %}
+    {% endcall %}
+
+    {% call panel("Confianza del dato", r.controls|length ~ " controles", "dn-lr-s12") %}
+      <ul class="dn-lr-list-plain">{% for c in r.controls %}<li>{{ state_pill(c.state) }}<p><strong>{{ c.name }}</strong><span class="dn-lr-muted">{{ c.detail }}</span></p></li>{% endfor %}</ul>
+    {% endcall %}
+
+    {% call panel("Detalle", "Ventas atribuidas al lote", "dn-lr-s12") %}
+      {% if r.sales %}
+      <div class="dn-table-scroll" tabindex="0" role="region" aria-label="Ventas del lote; desplazable horizontalmente">
+        <table class="dn-sales-table dn-lr-table dn-lr-compact"><thead><tr>
+          <th scope="col">Fecha</th><th scope="col">Venta</th><th scope="col">Cliente</th><th scope="col">Canal</th><th scope="col" class="dn-lr-num">Cant.</th>
+          <th scope="col" class="dn-lr-num">Ingreso</th><th scope="col" class="dn-lr-num">Costo</th><th scope="col" class="dn-lr-num">Margen</th>
+          <th scope="col" class="dn-lr-num">Cobrado</th><th scope="col" class="dn-lr-num">Por cobrar</th><th scope="col">Vence</th></tr></thead><tbody>
+        {% for s in r.sales %}
+          <tr><td class="dn-lr-nowrap">{{ s.sale_date|lr_date }}</td>
+            <td class="dn-lr-nowrap"><strong class="dn-money">{{ s.sale_number }}</strong><span class="dn-table-muted"><span class="dn-status dn-payment-{{ s.payment_status|lower }}">{{ s.payment_status }}</span></span></td>
+            <td><span data-lr-client data-mask="{{ s.mask }}">{{ s.cliente }}</span></td><td>{{ s.channel }}</td>
+            <td class="dn-lr-num">{{ s.cantidad_base|lr_qty }}</td><td class="dn-lr-num">{{ s.ingreso_neto|lr_money }}</td><td class="dn-lr-num">{{ s.costo_ventas|lr_money(2) }}</td>
+            <td class="dn-lr-num">{{ s.margen|lr_money(2) }}<span class="dn-table-muted">{{ s.margen_pct|lr_pct }}</span></td>
+            <td class="dn-lr-num">{{ s.cobrado_atribuido|lr_money }}</td><td class="dn-lr-num dn-money">{{ s.por_cobrar_atribuido|lr_money }}</td>
+            <td class="dn-lr-nowrap">{{ s.due_date|lr_date }}{% if s.days_overdue is not none %}{% if s.days_overdue > 0 %}<span class="dn-table-muted"><span class="dn-status dn-lr-bad">{{ s.days_overdue }} d vencida</span></span>{% elif s.days_overdue == 0 %}<span class="dn-table-muted"><span class="dn-status dn-lr-warn">vence hoy</span></span>{% endif %}{% endif %}</td></tr>
+        {% endfor %}
+          <tr class="dn-lr-total"><td colspan="4"><strong>Total</strong></td><td class="dn-lr-num"><strong>{{ r.qty_sold|lr_qty }}</strong></td><td class="dn-lr-num"><strong>{{ r.revenue|lr_money }}</strong></td>
+            <td class="dn-lr-num"><strong>{{ r.cogs|lr_money(2) }}</strong></td><td class="dn-lr-num"><strong>{{ r.margin|lr_money(2) }}</strong></td><td class="dn-lr-num"><strong>{{ r.paid|lr_money }}</strong></td><td class="dn-lr-num"><strong>{{ r.due|lr_money }}</strong></td><td></td></tr>
+        </tbody></table>
+      </div>
+      {% else %}<p class="dn-lr-muted">Sin ventas confirmadas, despachadas o entregadas para este lote.</p>{% endif %}
+    {% endcall %}
+  </div>
+  <p class="dn-lr-foot">Documento de solo lectura. Contiene datos personales de clientes: usa “Ocultar nombres” antes de imprimir o compartir. Margen bruto = ingreso neto − costo de ventas congelado al vender.</p>
+</article>

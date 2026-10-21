@@ -1,0 +1,15 @@
+{% macro panel(kicker, title, cls="", dark=False) %}
+<section class="dn-card dn-lr-panel {{ cls }} {% if dark %}dn-financial-card{% endif %}" data-lr-panel>
+  <header class="dn-card-header"><div><p class="dn-panel-kicker">{{ kicker }}</p><h2>{{ title }}</h2></div></header>
+  <div class="dn-lr-body">{{ caller() }}</div>
+</section>
+{% endmacro %}
+
+{% macro track(width, color) -%}
+<div class="dn-lr-track"><i class="dn-lr-fill" style="width: {{ '%.1f'|format(width) }}%; background: {{ color }}"></i></div>
+{%- endmacro %}
+
+{% macro state_pill(state) -%}
+{%- set meta = {'OK': ('dn-lr-ok', 'OK'), 'REVISAR': ('dn-lr-bad', 'Revisar'), 'INFO': ('dn-lr-warn', 'Informativo'), 'NA': ('dn-lr-na', 'No aplica')}[state] -%}
+<span class="dn-status {{ meta[0] }}">{{ meta[1] }}</span>
+{%- endmacro %}

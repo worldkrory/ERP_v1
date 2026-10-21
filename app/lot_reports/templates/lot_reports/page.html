@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "admin/_admin_shell.html" import admin_shell %}
+{% block title %}{{ page_title|default("Informe por lote") }} | Densa Niebla{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sales_workspace.css') }}">
+{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/lot_reports.css') }}">
+{% endblock %}
+{% block content %}
+{% call admin_shell(
+  active_section="reports", active_module="lot_reports",
+  breadcrumb=[{"label": "Reportes", "href": url_for('lot_reports.index')}, {"label": "Informe por lote"}],
+  page_kicker="Densa Niebla · Reportes",
+  page_title="Informe por lote",
+  page_hint="Cuántos lotes se han producido, cuánto costaron, cuánto han dejado y cuánto falta por cobrar. Elige un lote para ver su informe completo.",
+  admin_user=current_user) %}
+<div id="lot-reports" class="dn-workspace-shell" data-lot-reports>
+  <div id="lot-reports-stage">{% include stage_template %}</div>
+</div>
+{% endcall %}
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js"></script>
+<script src="{{ url_for('static', filename='js/lot_reports.js') }}"></script>
+{% endblock %}

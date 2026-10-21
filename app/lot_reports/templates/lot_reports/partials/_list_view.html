@@ -1,0 +1,36 @@
+{% if partial %}<title>Informe por lote | Densa Niebla</title>{% endif %}
+<section class="dn-filter-panel" data-lr-filters>
+  <form id="lots-filters" class="dn-filter-form" method="get" action="{{ url_for('lot_reports.index') }}"
+        hx-get="{{ url_for('lot_reports.index') }}" hx-target="#lots-results" hx-swap="innerHTML" hx-push-url="false"
+        hx-trigger="submit, input changed delay:350ms from:input[name='q'], change from:select"
+        hx-sync="this:replace" hx-indicator="#lots-loading">
+    <label class="dn-field dn-search-field"><span>Buscar lote o producto</span>
+      <input type="search" name="q" value="{{ filters.q }}" placeholder="DN-CAST-…, Castillo, Bourbon" maxlength="120">
+    </label>
+    <label class="dn-field"><span>Tipo de lote</span>
+      <select name="type">
+        <option value="" {% if not filters.type %}selected{% endif %}>Todos</option>
+        {% for code, label in type_labels.items() %}<option value="{{ code }}" {% if filters.type == code %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </label>
+    <label class="dn-field"><span>Estado</span>
+      <select name="status">
+        <option value="" {% if not filters.status %}selected{% endif %}>Todos</option>
+        {% for code, label in status_labels.items() %}<option value="{{ code }}" {% if filters.status == code %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </label>
+    <label class="dn-field"><span>Ordenar por</span>
+      <select name="sort">
+        {% for code, label in sort_labels.items() %}<option value="{{ code }}" {% if filters.sort == code %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </label>
+    <div class="dn-filter-actions">
+      <button type="submit" class="dn-button dn-button-primary">Buscar</button>
+      <a class="dn-button dn-button-outline" href="{{ url_for('lot_reports.index') }}">Limpiar</a>
+    </div>
+  </form>
+  <p class="dn-section-note">Cifras de solo lectura: ventas confirmadas, despachadas o entregadas, sin IVA. El margen es bruto.</p>
+  <span id="lots-loading" class="htmx-indicator" role="status">Consultando…</span>
+  <p id="lot-reports-error" class="dn-alert dn-alert-error" role="alert" hidden></p>
+</section>
+<div id="lots-results" aria-live="polite">{% include "lot_reports/partials/_results.html" %}</div>

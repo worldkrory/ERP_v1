@@ -12,6 +12,9 @@ from app.storefront import storefront_bp
 from app.raffle import raffle_bp
 from app.inventory import inventory_admin_bp
 
+from app.lot_reports import lot_reports_bp
+
+
 from app.parties.field_editor import parties_editor_bp
 
 from app.microlote_gallery import bourbon_gallery_bp, render_bourbon_gallery
@@ -151,4 +154,5 @@ def register_blueprints(app):
     app.register_blueprint(raffle_bp)
     app.register_blueprint(inventory_admin_bp)
     app.register_blueprint(bourbon_gallery_bp)
+    app.register_blueprint(lot_reports_bp)
     return app

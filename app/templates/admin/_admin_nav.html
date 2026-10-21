@@ -23,6 +23,10 @@
       <strong>Café rumbo al cliente</strong>
       <small>Venta, lote y precio conectados.</small>
 
+    {% elif active_section == "reports" %}
+      <strong>Cifras con trazabilidad</strong>
+      <small>Del costo al cobro, lote por lote.</small>
+
     {% elif active_section == "dispatch" %}
       <strong>Salida trazable</strong>
       <small>Lote y ubicación confirmados.</small>
@@ -144,16 +148,16 @@
     <small>Próx.</small>
   </a>
 
-  <a href="#"
-     class="dn-admin-nav-link is-disabled"
-     aria-disabled="true"
-     tabindex="-1"
-     title="Reportes comerciales y operativos">
+  <a href="{{ url_for('lot_reports.index') }}"
+     class="dn-admin-nav-link {% if active_section == 'reports' %}is-active{% endif %}"
+     {% if active_section == 'reports' %}aria-current="page"{% endif %}
+     title="Informe administrativo y financiero por lote">
     <span class="dn-admin-nav-icon" aria-hidden="true">
       {{ admin_icon('reports') }}
     </span>
     <span>Reportes</span>
   </a>
+
 
   <a href="#"
      class="dn-admin-nav-link is-disabled"

@@ -1,0 +1,81 @@
+{% if list_error %}
+<p class="dn-alert dn-alert-error" role="alert">No fue posible consultar los lotes. Intenta nuevamente en unos minutos.</p>
+{% endif %}
+{% set produced = type_counts.get('PRODUCED', 0) %}
+<section class="dn-metrics-grid" aria-label="Resumen de lotes">
+  <article class="dn-metric-card" data-lr-metric>
+    <span class="dn-metric-label">Lotes producidos</span>
+    <strong data-count="{{ produced }}" data-fmt="int">{{ produced }}</strong>
+    <small>Comprados {{ type_counts.get('PURCHASED', 0) }} · Ajustados {{ type_counts.get('ADJUSTED', 0) }}</small>
+  </article>
+  <article class="dn-metric-card" data-lr-metric>
+    <span class="dn-metric-label">Lotes en este filtro</span>
+    <strong data-count="{{ summary.lots }}" data-fmt="int">{{ summary.lots }}</strong>
+    <small>{{ summary.with_sales }} con ventas · {{ summary.active }} activos</small>
+  </article>
+  <article class="dn-metric-card dn-metric-card-money" data-lr-metric>
+    <span class="dn-metric-label">Costo de los lotes</span>
+    <strong data-count="{{ summary.lot_cost|lr_num }}" data-fmt="money">{{ summary.lot_cost|lr_money }}</strong>
+    <small>Cantidad inicial × costo unitario</small>
+  </article>
+  <article class="dn-metric-card dn-metric-card-money" data-lr-metric>
+    <span class="dn-metric-label">Ingreso neto vendido</span>
+    <strong data-count="{{ summary.revenue|lr_num }}" data-fmt="money">{{ summary.revenue|lr_money }}</strong>
+    <small>Margen bruto {{ ((summary.revenue - summary.cogs) / summary.revenue)|lr_pct if summary.revenue > 0 else '—' }}</small>
+  </article>
+  <article class="dn-metric-card dn-metric-card-money" data-lr-metric>
+    <span class="dn-metric-label">Por cobrar</span>
+    <strong data-count="{{ summary.receivable|lr_num }}" data-fmt="money">{{ summary.receivable|lr_money }}</strong>
+    <small>Saldo atribuido a estos lotes</small>
+  </article>
+</section>
+
+<section class="dn-sales-list dn-lr-list" aria-label="Lotes">
+  <header class="dn-section-header">
+    <div><h2>{{ summary.lots }} lote{{ '' if summary.lots == 1 else 's' }}</h2>
+      <span class="dn-section-note">Página {{ page }} de {{ pages }}. Abre un lote para ver su informe completo.</span></div>
+  </header>
+  <div class="dn-table-scroll" tabindex="0" role="region" aria-label="Lotes; desplazable horizontalmente">
+    <table class="dn-sales-table dn-lr-table">
+      <thead><tr>
+        <th scope="col">Lote</th><th scope="col">Estado</th><th scope="col">Producción</th><th scope="col" class="dn-lr-num">Cantidad</th>
+        <th scope="col" class="dn-lr-num">Costo del lote</th><th scope="col">Vendido</th><th scope="col" class="dn-lr-num">Ingreso neto</th>
+        <th scope="col" class="dn-lr-num">Margen</th><th scope="col" class="dn-lr-num">Por cobrar</th><th scope="col" class="dn-table-action"><span class="dn-lr-sr">Acción</span></th>
+      </tr></thead>
+      <tbody>
+      {% for lot in lots %}
+        <tr data-lr-row>
+          <td><strong class="dn-money">{{ lot.batch_code }}</strong><span class="dn-table-muted">{{ lot.product }}</span></td>
+          <td>
+            <span class="dn-status {{ 'dn-status-confirmed' if lot.status == 'ACTIVE' else 'dn-status-draft' }}">{{ status_labels.get(lot.status, lot.status) }}</span>
+            <span class="dn-table-muted">{{ {'PRODUCED': 'Producido', 'PURCHASED': 'Comprado', 'ADJUSTED': 'Ajustado'}.get(lot.batch_type, lot.batch_type) }}</span>
+          </td>
+          <td class="dn-lr-nowrap">{{ lot.production_date|lr_date }}</td>
+          <td class="dn-lr-num dn-lr-nowrap">{{ lot.initial_quantity|lr_qty }} {{ lot.unit }}</td>
+          <td class="dn-lr-num dn-money">{{ lot.lot_cost|lr_money }}</td>
+          <td>
+            <div class="dn-lr-mini" role="img" aria-label="Vendido {{ lot.sell_through|lr_pct }}"><i class="dn-lr-fill" style="width: {{ '%.1f'|format(lot.sell_width) }}%"></i></div>
+            <span class="dn-table-muted">{{ lot.qty_sold|lr_qty }} de {{ lot.initial_quantity|lr_qty }} · {{ lot.sell_through|lr_pct }}</span>
+          </td>
+          <td class="dn-lr-num dn-money">{{ lot.revenue|lr_money }}</td>
+          <td class="dn-lr-num">{{ lot.margin|lr_money }}<span class="dn-table-muted">{{ lot.margin_pct|lr_pct }}</span></td>
+          <td class="dn-lr-num dn-money">{{ lot.receivable|lr_money }}</td>
+          <td class="dn-table-action">
+            <a class="dn-button dn-button-primary dn-button-small" data-lr-open="{{ lot.batch_code }}"
+               href="{{ url_for('lot_reports.detail', code=lot.batch_code) }}"
+               hx-get="{{ url_for('lot_reports.detail', code=lot.batch_code) }}" hx-target="#lot-reports-stage"
+               hx-swap="innerHTML" hx-push-url="true" hx-indicator="#lots-loading">Ver informe</a>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="10" class="dn-empty">Ningún lote coincide con estos filtros.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <nav class="dn-lr-pagination" aria-label="Páginas de lotes">
+    {% if links.previous %}<a class="dn-button dn-button-outline dn-button-small" href="{{ links.previous }}" hx-get="{{ links.previous }}" hx-target="#lots-results" hx-swap="innerHTML" hx-push-url="false">Anterior</a>{% endif %}
+    <span class="dn-section-note">{{ page }} / {{ pages }}</span>
+    {% if links.next %}<a class="dn-button dn-button-outline dn-button-small" href="{{ links.next }}" hx-get="{{ links.next }}" hx-target="#lots-results" hx-swap="innerHTML" hx-push-url="false">Siguiente</a>{% endif %}
+  </nav>
+</section>
