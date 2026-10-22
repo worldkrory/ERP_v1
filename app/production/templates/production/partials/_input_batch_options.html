@@ -35,7 +35,7 @@
 
         {% if balance.batch %}
             — costo del lote:
-            {{ "${:,.2f}".format(balance.batch.unit_cost)
+            {{ "${:,.0f}".format(balance.batch.unit_cost)
                 .replace(",", "_")
                 .replace(".", ",")
                 .replace("_", ".") }}
