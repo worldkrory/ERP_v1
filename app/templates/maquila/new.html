@@ -1,0 +1,50 @@
+{% extends 'maquila/base.html' %}{% block workspace %}
+<a href="{{ url_for('maquila.board') }}">← Volver al tablero</a>
+{% if not writes %}<div class="dn-ui-alert">Registro deshabilitado por seguridad. Puedes consultar el pronóstico. Habilita MAQUILA_DELIVERY_ENABLED solo después de probar en una base aislada.</div>{% endif %}
+<form id="mq-form" method="post" action="{{ url_for('maquila.submit') }}">
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="number" value="{{ number }}">
+<section class="dn-ui-panel"><div class="dn-ui-panel-body"><h2>1. Entrega realizada</h2><div class="dn-ui-field-grid">
+<label class="dn-ui-field">Bodega de origen<select class="dn-ui-input" name="origin_id" required><option value="">Selecciona</option>{% for x in origins %}<option value="{{ x.id }}">{{ x.code }} · {{ x.name }}</option>{% endfor %}</select></label>
+<label class="dn-ui-field">Ubicación del maquilador<select class="dn-ui-input" name="processor_id" required><option value="">Selecciona</option>{% for x in processors %}<option value="{{ x.id }}">{{ x.code }} · {{ x.name }}</option>{% endfor %}</select></label>
+<label class="dn-ui-field">Servicio<select class="dn-ui-input" name="process_id" required><option value="">Selecciona</option>{% for x in processes %}<option value="{{ x.id }}">{{ x.name }}</option>{% endfor %}</select></label>
+<label class="dn-ui-field">Fecha de entrega<input class="dn-ui-input" name="delivered_on" type="date" max="{{ today }}" value="{{ today }}" required></label>
+<label class="dn-ui-field">Plazo (lunes a viernes, sin festivos)<input class="dn-ui-input" name="days" type="number" min="1" max="60" value="5" required></label>
+<label class="dn-ui-field">Referencia del recibido<input class="dn-ui-input" name="reference" maxlength="120"></label></div>
+<h2>2. Café entregado</h2><p class="dn-ui-muted">Selecciona lotes con saldo en la bodega elegida. Solo materia prima registrada en KG. El servidor verifica saldo y valorización al confirmar.</p>
+<div id="mq-lines"><div class="mq-line"><label class="dn-ui-field">Lote<select class="dn-ui-input" name="batch_id" required><option value="">Selecciona primero una bodega</option>
+
+{% for b in batches %}
+<option
+    value="{{ b.id }}"
+    data-location="{{ b.location_id }}"
+    disabled
+    hidden
+>
+    {{ b.batch_code }} · {{ b.product_name }}
+    — Disponible:
+    {{ "{:,.4f}".format(b.available_quantity)
+        .rstrip("0")
+        .rstrip(".")
+        .replace(",", "_")
+        .replace(".", ",")
+        .replace("_", ".") }} kg
+    — Cantidad inicial:
+    {{ "{:,.4f}".format(b.initial_quantity)
+        .rstrip("0")
+        .rstrip(".")
+        .replace(",", "_")
+        .replace(".", ",")
+        .replace("_", ".") }} kg
+</option>
+{% endfor %}</select></label><label class="dn-ui-field">Kilogramos<input class="dn-ui-input" name="kg" type="number" step="0.0001" min="0.0001" required></label><button class="dn-ui-button" type="button" data-remove>Quitar</button></div></div>
+<button class="dn-ui-button" type="button" id="mq-add">Agregar lote</button>
+<h2>3. Referencia estimada</h2><div class="dn-ui-field-grid">
+<label class="dn-ui-field">Contenido neto por unidad (g)<input class="dn-ui-input" name="grams" type="number" step="0.01" min="0.01" value="340" required></label>
+<label class="dn-ui-field">Cotización total de maquila (COP, opcional)<input class="dn-ui-input" name="quote" type="number" min="0.01" step="0.01" placeholder="Sin separadores de miles"></label></div>
+<label class="dn-ui-field">Observaciones<textarea class="dn-ui-input" name="notes" maxlength="1000"></textarea></label>
+<button class="dn-ui-button" type="button" hx-post="{{ url_for('maquila.preview') }}" hx-include="#mq-form" hx-target="#mq-forecast" hx-indicator="#mq-loading" hx-sync="#mq-form:replace">Calcular pronóstico</button><span id="mq-loading" class="htmx-indicator" role="status">Calculando…</span><div id="mq-forecast" aria-live="polite"></div><p id="mq-error" role="alert" hidden></p>
+</div></section>
+<section class="dn-ui-panel"><div class="dn-ui-panel-body"><p>Confirmar crea la orden y traslada el café de la bodega al maquilador. No crea café terminado ni registra consumo productivo. La recepción de estas órdenes se entregará en una segunda integración; no uses el formulario completo para confirmar de nuevo esta misma orden.</p>
+<label><input name="confirmed" value="yes" type="checkbox" required> Confirmo que el café ya fue entregado y revisé los datos.</label>
+<button class="dn-ui-button dn-ui-button-primary" type="submit" {% if not writes %}disabled{% endif %}>Confirmar entrega</button></div></section>
+</form>{% endblock %}

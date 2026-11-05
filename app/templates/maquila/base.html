@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% from "admin/_admin_shell.html" import admin_shell %}
+{% block title %}Maquila | Densa Niebla{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static',filename='css/admin_ui.css') }}"><link rel="stylesheet" href="{{ url_for('static',filename='css/maquila.css') }}">{% endblock %}
+{% block content %}
+{% call admin_shell(active_section='production',active_module='maquila',page_kicker='Densa Niebla · Producción',page_title='Entregas a maquila',page_hint='Registra lo que entregaste. La recepción real es una operación posterior.',admin_user=current_user) %}
+<div class="dn-ui dn-ui-stack mq">{% block workspace %}{% endblock %}</div>
+{% endcall %}{% endblock %}
+{% block scripts %}<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js" defer></script><script src="{{ url_for('static',filename='js/maquila.js') }}" defer></script>{% endblock %}

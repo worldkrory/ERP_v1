@@ -22,6 +22,8 @@ from app.microlote_gallery import bourbon_gallery_bp, render_bourbon_gallery
 
 from app import models
 
+from app.maquila import maquila_bp
+
 from app.services.web_visit_service import (
     build_web_visit_event,
     notify_web_visit_safely,
@@ -155,4 +157,5 @@ def register_blueprints(app):
     app.register_blueprint(inventory_admin_bp)
     app.register_blueprint(bourbon_gallery_bp)
     app.register_blueprint(lot_reports_bp)
+    app.register_blueprint(maquila_bp)
     return app
