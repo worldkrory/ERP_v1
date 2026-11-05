@@ -1,0 +1,11 @@
+{% if error %}
+<div data-shipping-valid="false" role="alert"><p class="cart-note">{{ error }}</p><p class="cart-note">No se aplicó una tarifa de respaldo.</p></div>
+{% else %}
+<div data-shipping-valid="true" data-shipping-destination="{{ q.destination_dane }}" data-shipping-expires="{{ q.expires_at }}">
+<div class="summary-row"><span>Productos</span><strong>{{ q.subtotal|float|cop }}</strong></div>
+<div class="summary-row"><span>Envío a {{ q.destination_name }}</span><strong class="js-price" data-value="{{ q.shipping }}">{{ q.shipping|float|cop }}</strong></div>
+{% if q.free %}<p class="shipping-progress is-complete">Envío cortesía de Densa Niebla.</p>{% endif %}
+<div class="summary-row"><span>Total</span><strong class="js-price" data-value="{{ q.total }}">{{ q.total|float|cop }}</strong></div>
+<p class="cart-note">Despacho desde Manizales · {{ q.carrier|capitalize }} · {{ q.days }}.</p>
+<p class="cart-note">Cotización del carrito actual. Se verificará nuevamente antes del pago. No reserva inventario.</p>
+</div>{% endif %}

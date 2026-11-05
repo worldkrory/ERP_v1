@@ -82,7 +82,7 @@ class Config:
     ).strip().upper()
 
     STOREFRONT_FREE_SHIPPING_THRESHOLD_COP = int(
-        os.getenv("STOREFRONT_FREE_SHIPPING_THRESHOLD_COP", "120000")
+        os.getenv("STOREFRONT_FREE_SHIPPING_THRESHOLD_COP", "100000")
     )
 
     WEB_EVENT_HASH_SECRET = os.getenv("WEB_EVENT_HASH_SECRET")
@@ -105,6 +105,7 @@ class Config:
 
     # Solo excepciones. Las bodegas con dirección y municipio se resuelven solas.
     STOREFRONT_LOCATION_DANE = {
+        "INV_MAN": "17001000",
         "INUSUAL": "17001000",  # Manizales
         "SOUL":    "17001000",  # Manizales
     }
