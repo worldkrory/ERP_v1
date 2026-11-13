@@ -1,0 +1,12 @@
+{# Inclusion optativa: google_shopping_url debe ser el enlace verificado de la marca.
+   google_support_image_url: URL de la pieza original, no una captura de la pagina. #}
+<aside class="dn-google-support" aria-labelledby="dn-google-title">
+  <p class="dn-google-support__label">SIGAMOS CERCA</p>
+  {% if google_support_image_url|default('') %}<img class="dn-google-support__image" src="{{ google_support_image_url }}" alt="Invitacion de Densa Niebla para volver a encontrar sus cafes en Google" width="720" height="720" decoding="async">{% endif %}
+  <h2 id="dn-google-title">Que la proxima taza nos vuelva a encontrar.</h2>
+  <p>Encuentra Densa Niebla en Google y, si tu cuenta ofrece la opcion, guarda la marca o el cafe que te gusta.</p>
+  {% if google_shopping_url|default('') %}<a class="dn-google-support__cta" href="{{ google_shopping_url }}" target="_blank" rel="noopener noreferrer" data-dn-google-open>Ver Densa Niebla en Google ↗</a>{% else %}<p class="dn-google-support__pending">Vista previa: falta configurar el enlace verificado a Google.</p>{% endif %}
+  <details><summary>¿Como puedo apoyarlos?</summary><p>Abre el enlace y busca la opcion de guardar o de preferencias disponible en tu cuenta. Su nombre y disponibilidad pueden cambiar. Si no aparece, puedes volver a nuestra tienda cuando quieras.</p></details>
+  <details data-dn-notebook><summary>Un cuaderno de cata para ti</summary><p>Este recurso es para todos: no requiere guardar la marca, dejar una reseña ni registrarte.</p><div class="dn-google-support__notebook"><strong>Mi proxima taza</strong><p>Cafe y lote: ____________________</p><p>Metodo y fecha: ____________________</p><p>Aroma que me recuerda a: ____________________</p><p>Lo que encuentro caliente: ____________________</p><p>Lo que cambia al enfriarse: ____________________</p><p>En mi siguiente preparacion probaria: ____________________</p></div></details>
+  <small>No podemos comprobar desde esta pagina si guardaste la marca en Google.</small>
+</aside>

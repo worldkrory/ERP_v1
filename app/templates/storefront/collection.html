@@ -2,6 +2,11 @@
 
 {% block title %}Café de origen Santander y de especialidad | Densa Niebla{% endblock %}
 
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/google_support.css') }}">
+{% endblock %}
+
 {% block meta_description %}
   Compra café de especialidad de Guavatá, Santander. Descubre Origen Castillo y Bourbon Rosado de Densa Niebla y conoce la historia de cada lote.
 {% endblock %}
@@ -26,10 +31,9 @@
     </p>
   </div>
 
-  <div class="store-hero-mark" aria-hidden="true">
-    <span>Guavatá</span>
-    <small>Santander · Colombia</small>
-  </div>
+  {% set google_shopping_url = 'https://share.google/KFqizo69ciBz1iqsM' %}
+  {% set google_support_image_url = url_for('static', filename='img/alianza/bourbon-rosado-product.jpg') %}
+  {% include 'storefront/_google_support.html' %}
 </section>
 
 <section class="collection-section">
@@ -51,4 +55,9 @@
     {% endfor %}
   </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/google_support.js') }}" defer></script>
 {% endblock %}

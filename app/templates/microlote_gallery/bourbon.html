@@ -25,7 +25,7 @@
   'url_label': 'Conocer Inusual Rooftop',
   'photos': [
     {'src': url_for('static', filename='img/alianza/inusual-vitrina-wide.jpg'), 'alt': 'Vitrina de Densa Niebla con sifón y bolsas en Inusual Rooftop'},
-    {'src': url_for('static', filename='img/alianza/inusual-sifon.webp'), 'alt': 'Sifón de latón preparando Bourbon Rosado'},
+    {'src': url_for('static', filename='img/alianza/bourbon-rosado-product.jpg'), 'alt': "Bolsa de Bourbon Rosado de Densa Niebla mostrada en los resultados de Google Shopping", 'url': 'https://share.google/KFqizo69ciBz1iqsM'},
     {'src': url_for('static', filename='img/alianza/inusual-vitrina-vertical.webp'), 'alt': 'Etiquetas Gesha, Origen y Bourbon Rosado en la vitrina'}
   ]
 } %}
@@ -142,9 +142,17 @@
   <figure class="bg-collab-hero"><img src="{{ collab.photos[0].src }}" alt="{{ collab.photos[0].alt }}" loading="lazy" decoding="async"></figure>
   <div class="bg-collab-strip">
     {% for p in collab.photos[1:] %}
-    <figure><img src="{{ p.src }}" alt="{{ p.alt }}" loading="lazy" decoding="async"></figure>
+    <figure>
+      {% if p.get('url') %}
+      <a href="{{ p.url }}" target="_blank" rel="noopener">
+        <img src="{{ p.src }}" alt="{{ p.alt }}" loading="lazy" decoding="async">
+      </a>
+      {% else %}
+      <img src="{{ p.src }}" alt="{{ p.alt }}" loading="lazy" decoding="async">
+      {% endif %}
+    </figure>
     {% endfor %}
-  </div>
+</div>
   <p class="bg-collab-line">{{ collab.line }}</p>
   <a class="bg-pill" href="{{ url_for('storefront.product_detail', slug='bourbon-rosado') }}?ref=inusual">Elegir mi café ↗</a>
 </section>
