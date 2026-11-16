@@ -1,0 +1,12 @@
+<details>
+  <summary>Ver asientos técnicos ({{ technical_movements|length }})</summary>
+  <p class="dn-history-note">Detalle completo de esta operación para el producto y lote consultados. Puede incluir etapas fuera del período o bodega filtrados. No sumar sus cantidades para contar unidades trasladadas.</p>
+  <div class="dn-history-table-wrap"><table>
+    <thead><tr><th>Fecha (Colombia)</th><th>Ubicación</th><th>Movimiento</th><th>Cantidad</th><th>Lote / referencia</th></tr></thead>
+    <tbody>{% for m in technical_movements %}<tr>
+      <td>{{ m.occurred_at|inventory_local_datetime }}</td><td>{{ m.location.name }}</td>
+      <td>{{ m.movement_type }}<small>Asiento #{{ m.id }}{% if m.reverses_movement_id %} · Reversa de #{{ m.reverses_movement_id }}{% endif %}</small></td>
+      <td>{{ '+' if m.direction == 1 else '−' }}{{ m.quantity|inventory_quantity }} {{ m.unit.code }}</td>
+      <td>{{ m.batch.batch_code if m.batch else 'Sin lote' }}<small>{{ m.reference_type or 'Sin referencia' }}{% if m.reference_id %} #{{ m.reference_id }}{% endif %}</small>{% if m.notes %}<small>{{ m.notes }}</small>{% endif %}</td>
+    </tr>{% endfor %}</tbody></table></div>
+</details>

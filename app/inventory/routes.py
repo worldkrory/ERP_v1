@@ -135,7 +135,7 @@ def _listing(filters):
         func.coalesce(func.sum(case((low, 1), else_=0)), 0),
         func.coalesce(func.sum(case((negative > 0, 1), else_=0)), 0),
     ).outerjoin(totals, totals.c.product_id == Product.id).where(*conditions)
-    
+
     summary_started = perf_counter()
 
     total, positive, empty, low_count, negative_count = (
@@ -255,22 +255,14 @@ def workspace():
 @login_required
 @require_role(*ROLES)
 def product_detail(product_id):
-    product = db.session.get(Product, product_id)
+    from app.services.inventory_history_service import history_context
+
+    product = db.session.scalar(select(Product).where(Product.id == product_id).options(
+        joinedload(Product.base_unit), joinedload(Product.coffee_profile)))
     if product is None or product.product_kind == "SERVICE":
         abort(404)
-    balances = db.session.scalars(
-        select(InventoryBalance)
-        .where(InventoryBalance.product_id == product.id, InventoryBalance.quantity_base != 0)
-        .options(joinedload(InventoryBalance.location), joinedload(InventoryBalance.batch))
-        .order_by(InventoryBalance.location_id, InventoryBalance.batch_id)
-    ).all()
-    movements = db.session.scalars(
-        select(InventoryMovement).where(InventoryMovement.product_id == product.id)
-        .options(joinedload(InventoryMovement.location), joinedload(InventoryMovement.batch), joinedload(InventoryMovement.unit))
-        .order_by(InventoryMovement.occurred_at.desc(), InventoryMovement.id.desc()).limit(20)
-    ).all()
-    context = {"product": product, "balances": balances, "movements": movements, "today": date.today()}
-    partial = request.headers.get("HX-Request") == "true"
+    context = history_context(product)
+    partial = context["history_partial"]
     return render_template("inventory/partials/_detail.html" if partial else "inventory/detail.html",
                            **context), 200, {"Cache-Control": "no-store", "Vary": "HX-Request"}
 
@@ -306,12 +298,12 @@ def _is_htmx() -> bool:
 
 
 def _recent_transfers():
+    from app.services.inventory_history_service import shipment_options
+
     return db.session.scalars(
         select(Shipment)
         .where(Shipment.shipment_type == "TRANSFER")
-        .options(joinedload(Shipment.origin_location),
-                 joinedload(Shipment.destination_location),
-                 joinedload(Shipment.items))
+        .options(*shipment_options())
         .order_by(Shipment.id.desc()).limit(30)
     ).unique().all()
 
@@ -418,3 +410,20 @@ def transfer_receive(shipment_id: int):
         return _board(shipment.id), 200, _hx("success", message)
     flash(message, "success")
     return redirect(url_for("inventory_admin.transfers"))
+
+@inventory_admin_bp.app_template_filter("inventory_presentation")
+def inventory_presentation(product):
+    from app.services.inventory_history_service import presentation
+    return presentation(product)
+
+
+@inventory_admin_bp.app_template_filter("inventory_local_datetime")
+def inventory_local_datetime(value):
+    from app.services.inventory_history_service import local_datetime
+    return local_datetime(value)
+
+
+@inventory_admin_bp.app_template_filter("inventory_unit_totals")
+def inventory_unit_totals(items):
+    from app.services.inventory_history_service import unit_totals
+    return unit_totals(items)

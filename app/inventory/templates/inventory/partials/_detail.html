@@ -1,21 +1,52 @@
-<section class="dn-inventory-detail-body" data-inventory-detail>
-  <header class="dn-inventory-detail-heading"><h3>{{ product.name }}</h3><button type="button" class="dn-button dn-button-small" data-inventory-close>Cerrar detalle</button></header>
-  <p class="dn-section-note">Todas las ubicaciones del producto. Puede diferir del filtro de la lista.</p>
-  <h4>Lotes y ubicaciones con saldo</h4>
-  {% for balance in balances %}
-  <div class="dn-inventory-balance"><strong>{{ balance.quantity_base|inventory_quantity }} {{ product.base_unit.code }}</strong>
-    <span>{{ balance.location.code }} · {{ balance.location.name }} · {{ balance.location.location_type }}</span>
-    <span>{{ balance.batch.batch_code if balance.batch else 'Sin manejo de lote' }}</span>
-    {% if balance.batch %}<span class="dn-table-muted">Estado: {{ balance.batch.status }}{% if balance.batch.expiry_date %} · Vence: {{ balance.batch.expiry_date }}{% if balance.batch.expiry_date < today %} · Vencido{% endif %}{% endif %}</span>{% endif %}
-    {% if balance.quantity_base < 0 %}<span class="dn-status dn-status-cancelled">Revisar saldo negativo</span>{% endif %}
-  </div>
-  {% else %}<p class="dn-section-note">Sin posiciones con saldo distinto de cero.</p>{% endfor %}
-  <h4>Últimos 20 movimientos</h4>
-  {% for movement in movements %}
-  <div class="dn-inventory-movement"><strong>{{ '+' if movement.direction == 1 else '−' }}{{ movement.quantity|inventory_quantity }} {{ movement.unit.code }}</strong>
-    <span>{{ movement.movement_type }} · {{ movement.occurred_at.strftime('%d/%m/%Y %H:%M') }}</span>
-    <span>{{ movement.location.name }}{% if movement.batch %} · {{ movement.batch.batch_code }}{% endif %}</span>
-    {% if movement.reference_type %}<span class="dn-table-muted">{{ movement.reference_type }} #{{ movement.reference_id }}</span>{% endif %}
-  </div>
-  {% else %}<p class="dn-section-note">Sin movimientos registrados.</p>{% endfor %}
+{% include "inventory/partials/_history_style.html" %}
+<section class="dn-inventory-detail-body dn-history" data-inventory-detail>
+  <header class="dn-inventory-detail-heading"><h3>{{ product.name }}</h3>{% if history_partial %}<button type="button" class="dn-button dn-button-small" data-inventory-close>Cerrar detalle</button>{% endif %}</header>
+  <p class="dn-history-note">{{ product|inventory_presentation }} · {{ product.sku }}. Consulta sin modificar inventario.</p>
+  <h4>Historial de inventario</h4>
+  <form class="dn-history-filters" method="get" action="{{ url_for('inventory_admin.product_detail', product_id=product.id) }}"
+        {% if history_partial %}hx-get="{{ url_for('inventory_admin.product_detail', product_id=product.id) }}" hx-target="closest [data-inventory-detail-slot]" hx-swap="innerHTML" hx-sync="this:replace"{% endif %}>
+    <label class="dn-field"><span>Bodega / ubicación</span><select name="location"><option value="">Todas las ubicaciones</option>
+      {% for loc in history_locations %}<option value="{{ loc.id }}" {% if history_filters.location == loc.id %}selected{% endif %}>{{ loc.name }}{% if loc.location_type == 'IN_TRANSIT' %} · Tránsito{% endif %}{% if not loc.is_active %} · Inactiva{% endif %}</option>{% endfor %}
+    </select></label>
+    <label class="dn-field"><span>Operación</span><select name="category">{% for key,label in categories.items() %}<option value="{{ key }}" {% if history_filters.category == key %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label class="dn-field"><span>Sentido</span><select name="flow">{% for key,label in [('', 'Entradas y salidas'),('in','Entradas'),('out','Salidas')] %}<option value="{{ key }}" {% if history_filters.flow == key %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label class="dn-field"><span>Lote</span><select name="batch"><option value="">Todos los lotes</option>{% for b in history_batches %}<option value="{{ b.id }}" {% if history_filters.batch == b.id %}selected{% endif %}>{{ b.batch_code }}</option>{% endfor %}</select></label>
+    <label class="dn-field"><span>Desde (Colombia)</span><input type="date" name="start" value="{{ history_filters.start }}" min="1900-01-01" max="9998-12-31"></label>
+    <label class="dn-field"><span>Hasta (Colombia)</span><input type="date" name="end" value="{{ history_filters.end }}" min="1900-01-01" max="9998-12-31"></label>
+    <div class="dn-history-actions"><button class="dn-button dn-button-primary" type="submit">Aplicar filtros</button>
+      <a class="dn-button dn-button-outline" href="{{ url_for('inventory_admin.product_detail', product_id=product.id) }}" {% if history_partial %}hx-get="{{ url_for('inventory_admin.product_detail', product_id=product.id) }}" hx-target="closest [data-inventory-detail-slot]" hx-swap="innerHTML"{% endif %}>Limpiar</a></div>
+  </form>
+  <p class="dn-history-note">{{ history_total }} operaciones · Página {{ history_page }} de {{ history_pages }}. Un traslado se incluye si tiene actividad en el período; se muestra su recorrido completo. En traslados, el sentido requiere una bodega: sin ella se muestran ambos sentidos. Los saldos siguientes son actuales, no saldos a la fecha filtrada.</p>
+  <details><summary>Lotes y ubicaciones con saldo actual ({{ balances|length }})</summary>
+    <p class="dn-history-note">Filtrados por bodega y lote; no por fechas ni tipo de operación.</p>
+    {% for balance in balances %}<div class="dn-inventory-balance"><strong>{{ balance.quantity_base|inventory_quantity }} {{ product.base_unit.code }}</strong><span>{{ balance.location.name }}</span><span>{{ balance.batch.batch_code if balance.batch else 'Sin manejo de lote' }}</span>
+      {% if balance.batch and balance.batch.expiry_date %}<span>Vence: {{ balance.batch.expiry_date }}{% if balance.batch.expiry_date < today %} · Vencido{% endif %}</span>{% endif %}
+      {% if balance.quantity_base < 0 %}<span class="dn-history-warning">Revisar saldo negativo</span>{% endif %}</div>
+    {% else %}<p>Sin posiciones con saldo distinto de cero para esta bodega y lote.</p>{% endfor %}
+  </details>
+  {% for op in operations %}<article class="dn-history-operation">
+    {% if op.kind == 'transfer' %}{% set s = op.shipment %}
+      <div class="dn-history-top"><strong>Traslado · {{ s.shipment_number }}</strong><span class="dn-status {{ 'dn-status-confirmed' if s.status == 'DELIVERED' else 'dn-status-draft' }}">{{ op.status }}</span></div>
+      <div class="dn-history-route">{{ s.origin_location.name if s.origin_location else 'Origen no registrado' }} → En tránsito → {{ s.destination_location.name if s.destination_location else 'Destino no registrado' }}</div>
+      <p>{% for unit,qty in op.totals %}{{ qty|inventory_quantity }} {{ unit }}{% if not loop.last %} · {% endif %}{% endfor %} de este producto{% if history_filters.batch %} y lote{% endif %}.</p>
+      {% if history_filters.location == s.origin_location_id %}<small>Salida de la bodega seleccionada{% if s.status != 'DELIVERED' %} · Recepción aún no confirmada{% endif %}</small>{% elif history_filters.location == s.destination_location_id %}<small>{{ 'Entrada recibida' if s.status == 'DELIVERED' else 'Entrada prevista; recepción no confirmada' }}</small>{% endif %}
+      <small>Despachado: {{ s.dispatched_at|inventory_local_datetime }} · Recibido: {{ s.delivered_at|inventory_local_datetime }}</small>
+      {% if s.tracking_number %}<small>Guía: {{ s.tracking_number }}</small>{% endif %}
+      <ul>{% for item in op['items'] %}<li>{{ item.quantity|inventory_quantity }} {{ item.unit.code }} · {{ item.product.name }} · {{ item.product|inventory_presentation }} · Lote {{ item.batch.batch_code if item.batch else 'sin lote' }}</li>{% else %}<li class="dn-history-warning">Sin líneas asociadas; consultar asientos técnicos.</li>{% endfor %}</ul>
+      {% with technical_movements=op.movements %}{% include "inventory/partials/_history_technical.html" %}{% endwith %}
+    {% else %}{% set m = op.movement %}
+      <div class="dn-history-top"><strong>{{ op.label }}{% if op.sale %} · {{ op.sale.sale_number }}{% endif %}</strong><span>{{ op.at|inventory_local_datetime }}</span></div>
+      <p>{{ '+' if m.direction == 1 else '−' }}{{ m.quantity|inventory_quantity }} {{ m.unit.code }} · {{ m.location.name }}</p>
+      <p>{{ op.description or product.name }} · {{ product|inventory_presentation }}</p>
+      {% if op.sale %}<small>Cliente: {{ op.sale.party.display_name }}</small>{% endif %}
+      <small>Lote: {{ m.batch.batch_code if m.batch else 'Sin lote' }}</small>
+      {% if m.reverses_movement_id %}<p class="dn-history-warning">Movimiento de reversa: se muestra separado para no ocultar la corrección.</p>{% endif %}
+      {% if m.is_transfer %}<p class="dn-history-note">Asiento de traslado sin agrupación segura o de reversa. Se conserva individual.</p>{% endif %}
+      {% with technical_movements=[m] %}{% include "inventory/partials/_history_technical.html" %}{% endwith %}
+    {% endif %}
+  </article>{% else %}<p class="dn-section-note">No hay operaciones que coincidan con los filtros.</p>{% endfor %}
+  <nav class="dn-history-actions" aria-label="Páginas del historial">
+    {% for key,label in [('previous','Anterior'),('next','Siguiente')] %}{% if history_links.get(key) %}<a class="dn-button dn-button-outline" href="{{ history_links[key] }}" {% if history_partial %}hx-get="{{ history_links[key] }}" hx-target="closest [data-inventory-detail-slot]" hx-swap="innerHTML"{% endif %}>{{ label }}</a>{% endif %}{% endfor %}
+    <span>Página {{ history_page }} de {{ history_pages }}</span>
+  </nav>
 </section>
